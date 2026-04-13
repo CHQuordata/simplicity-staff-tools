@@ -215,15 +215,9 @@
   <!-- ── Charts ── -->
   <section>
     <h2 class="section-title">Boss Performance</h2>
-    <div class="charts-grid">
-      <div class="chart-card">
-        <h3>Total Kills per Boss</h3>
-        <canvas id="killsChart" height="260"></canvas>
-      </div>
-      <div class="chart-card">
-        <h3>Top Items by QS Value</h3>
-        <canvas id="valueChart" height="260"></canvas>
-      </div>
+    <div class="chart-card">
+      <h3>Total QS Earned per Boss</h3>
+      <canvas id="killsChart" height="220"></canvas>
     </div>
   </section>
 
@@ -578,41 +572,34 @@ const chartDefaults = {
   }
 };
 
+const sortedByQS = [...bosses].sort((a, b) => b.totalQS - a.totalQS);
 killsChartInst = new Chart(document.getElementById('killsChart'), {
   type: 'bar',
   data: {
-    labels: chartLabels,
+    labels: sortedByQS.map(b => toTitle(b.name)),
     datasets: [{
-      data: sorted.map(b => b.kills),
-      backgroundColor: sorted.map((_, i) => palette[i % palette.length] + 'cc'),
-      borderColor:     sorted.map((_, i) => palette[i % palette.length]),
+      data: sortedByQS.map(b => b.totalQS),
+      backgroundColor: sortedByQS.map((_, i) => palette[i % palette.length] + 'cc'),
+      borderColor:     sortedByQS.map((_, i) => palette[i % palette.length]),
       borderWidth: 1.5, borderRadius: 5,
     }]
   },
-  options: { ...chartDefaults, plugins: { ...chartDefaults.plugins,
-    tooltip: { ...chartDefaults.plugins.tooltip,
-      callbacks: { label: ctx => ` ${ctx.raw.toLocaleString()} kills` }
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1c2130', borderColor: '#2a3045', borderWidth: 1,
+        titleColor: '#e2e8f0', bodyColor: '#7a849e', padding: 10,
+        callbacks: { label: ctx => ` ${ctx.raw.toLocaleString()} QS · ${sortedByQS[ctx.dataIndex].kills.toLocaleString()} kills` }
+      }
+    },
+    scales: {
+      x: { ticks: { color: '#7a849e', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.06)' } },
+      y: { ticks: { color: '#e2e8f0', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,.04)' } }
     }
-  }}
-});
-
-const topItemsChart = items.filter(i => i.totalQS > 0).slice(0, 10);
-valueChartInst = new Chart(document.getElementById('valueChart'), {
-  type: 'bar',
-  data: {
-    labels: topItemsChart.map(i => i.name),
-    datasets: [{
-      data: topItemsChart.map(i => i.totalQS),
-      backgroundColor: topItemsChart.map((_, i) => palette[i % palette.length] + 'cc'),
-      borderColor:     topItemsChart.map((_, i) => palette[i % palette.length]),
-      borderWidth: 1.5, borderRadius: 5,
-    }]
-  },
-  options: { ...chartDefaults, plugins: { ...chartDefaults.plugins,
-    tooltip: { ...chartDefaults.plugins.tooltip,
-      callbacks: { label: ctx => ` ${ctx.raw.toLocaleString()} QS` }
-    }
-  }}
+  }
 });
 
 // ═══════════════════════════════════════════════════
