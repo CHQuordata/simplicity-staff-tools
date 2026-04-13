@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V3stige — Drop Report Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:       #0d0f14;
+    --surface:  #161a23;
+    --card:     #1c2130;
+    --border:   #2a3045;
+    --accent:   #7c6df0;
+    --accent2:  #e4a847;
+    --green:    #3ecf8e;
+    --red:      #e05c5c;
+    --text:     #e2e8f0;
+    --muted:    #7a849e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #1a1d2e 0%, #12172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 32px;
+    display: flex; align-items: center; gap: 20px;
+  }
+  .avatar {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: .5px; }
+  header p  { color: var(--muted); font-size: .9rem; margin-top: 2px; }
+  .badge {
+    margin-left: auto;
+    background: rgba(124,109,240,.18);
+    color: var(--accent);
+    border: 1px solid rgba(124,109,240,.35);
+    border-radius: 999px; padding: 5px 14px; font-size: .8rem; font-weight: 600;
+  }
+
+  /* ── Layout ── */
+  main { max-width: 1280px; margin: 0 auto; padding: 28px 24px; }
+  section { margin-bottom: 32px; }
+  h2.section-title {
+    font-size: .75rem; font-weight: 700; letter-spacing: 1.2px;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px;
+  }
+
+  /* ── Stat Cards ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px 22px; position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%; background: var(--accent-color, var(--accent));
+    border-radius: 12px 0 0 12px;
+  }
+  .stat-card .label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 8px; }
+  .stat-card .value { font-size: 1.9rem; font-weight: 800; line-height: 1; }
+  .stat-card .sub   { font-size: .78rem; color: var(--muted); margin-top: 6px; }
+
+  /* ── Charts row ── */
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 800px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 22px; position: relative;
+  }
+  .chart-card h3 { font-size: .85rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 18px; }
+  .chart-card canvas { width: 100% !important; }
+
+  /* ── Top Drops Table ── */
+  .table-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden;
+  }
+  .table-card h3 {
+    font-size: .85rem; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .8px;
+    padding: 18px 22px 14px; border-bottom: 1px solid var(--border);
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: rgba(255,255,255,.03);
+    padding: 10px 16px; text-align: left;
+    font-size: .72rem; font-weight: 700; letter-spacing: .8px;
+    text-transform: uppercase; color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr { transition: background .15s; }
+  tbody tr:hover { background: rgba(255,255,255,.025); }
+  tbody td { padding: 11px 16px; font-size: .875rem; border-bottom: 1px solid rgba(255,255,255,.04); }
+  tbody tr:last-child td { border-bottom: none; }
+  .rank { color: var(--muted); font-size: .8rem; font-weight: 700; }
+  .rank.gold   { color: #f0c040; }
+  .rank.silver { color: #c0c0c0; }
+  .rank.bronze { color: #cd7f32; }
+  .item-pill {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    font-size: .75rem; font-weight: 600;
+    background: rgba(124,109,240,.15); color: var(--accent);
+    border: 1px solid rgba(124,109,240,.25);
+  }
+  .val-bar-wrap { display: flex; align-items: center; gap: 10px; }
+  .val-bar { height: 6px; border-radius: 3px; background: var(--accent); flex-shrink: 0; }
+  .npc-tag {
+    font-size: .72rem; color: var(--muted);
+    background: rgba(255,255,255,.05); border-radius: 4px; padding: 2px 7px;
+  }
+
+  /* ── Boss breakdown ── */
+  .boss-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .boss-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .boss-card .boss-name { font-size: .85rem; font-weight: 700; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .boss-stat { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+  .boss-stat .k { font-size: .72rem; color: var(--muted); }
+  .boss-stat .v { font-size: .82rem; font-weight: 600; }
+  .eff-bar-bg { height: 4px; border-radius: 2px; background: var(--border); margin-top: 10px; }
+  .eff-bar-fg { height: 4px; border-radius: 2px; background: var(--accent); }
+
+  /* misc */
+  .green { color: var(--green); }
+  .gold  { color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="avatar">V</div>
+  <div>
+    <h1>V3stige</h1>
+    <p>Simplicity RSPS — Drop Report</p>
+  </div>
+  <div class="badge">All-Time Data</div>
+</header>
+
+<main>
+
+  <!-- ── Summary Stats ── -->
+  <section>
+    <h2 class="section-title">Overview</h2>
+    <div class="stats-grid" id="stats-grid"></div>
+  </section>
+
+  <!-- ── Charts ── -->
+  <section>
+    <h2 class="section-title">Boss Performance</h2>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Total Kills per Boss</h3>
+        <canvas id="killsChart" height="260"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Total QS Value per Boss</h3>
+        <canvas id="valueChart" height="260"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Efficiency ── -->
+  <section>
+    <h2 class="section-title">Boss Breakdown</h2>
+    <div class="boss-grid" id="boss-grid"></div>
+  </section>
+
+  <!-- ── Top Drops ── -->
+  <section>
+    <h2 class="section-title">Top 20 Highest-Value Drops</h2>
+    <div class="table-card">
+      <h3>Sorted by total QS earned · all bosses</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Item</th>
+            <th>Source</th>
+            <th>Qty</th>
+            <th>Total QS</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="drops-table"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════
+// RAW DATA
+// ═══════════════════════════════════════════════════
+const rawDrops = [
+  // ANCIENT CUSTODIAN (145 kills)
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"$50 Scroll",               qty:2,  qs:300  },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Sacred clay helm",          qty:2,  qs:190  },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Scythe of Vitur XI",        qty:1,  qs:150  },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Ruby Box",                  qty:4,  qs:144  },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Emerald Box",               qty:4,  qs:124  },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Sapphire Box",              qty:7,  qs:105  },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Sacred clay platebody",     qty:1,  qs:95   },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Sacred clay platelegs",     qty:1,  qs:95   },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Ring of Bosses",            qty:2,  qs:80   },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Scythe of Vitur X",         qty:1,  qs:80   },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Flame gloves (e)",          qty:3,  qs:75   },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Crystal Box",               qty:1,  qs:70   },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Infinity Box",              qty:21, qs:63   },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Onyx Box",                  qty:1,  qs:55   },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Demonic spirit shield",     qty:4,  qs:40   },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Sagittarian coif",          qty:6,  qs:36   },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Sagittarian boots",         qty:3,  qs:18   },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Sagittarian vambraces",     qty:3,  qs:18   },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Sagittarian body",          qty:2,  qs:12   },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Ancestral hat",             qty:1,  qs:10   },
+  { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Sagittarian chaps",         qty:1,  qs:6    },
+  // BLOOD STAR (2 kills)
+  { npc:"BLOOD STAR",          kills:2,   item:"Ruby Box",                  qty:1,  qs:36   },
+  { npc:"BLOOD STAR",          kills:2,   item:"Sapphire Box",              qty:1,  qs:15   },
+  // BRYOPHYTA (222 kills)
+  { npc:"BRYOPHYTA",           kills:222, item:"Ruby Box",                  qty:12, qs:432  },
+  { npc:"BRYOPHYTA",           kills:222, item:"Emerald Box",               qty:9,  qs:279  },
+  { npc:"BRYOPHYTA",           kills:222, item:"Sapphire Box",              qty:15, qs:225  },
+  { npc:"BRYOPHYTA",           kills:222, item:"Sacred clay helm",          qty:2,  qs:190  },
+  { npc:"BRYOPHYTA",           kills:222, item:"Sacred clay platebody",     qty:2,  qs:190  },
+  { npc:"BRYOPHYTA",           kills:222, item:"Sacred clay platelegs",     qty:2,  qs:190  },
+  { npc:"BRYOPHYTA",           kills:222, item:"Ring of Bosses",            qty:4,  qs:160  },
+  { npc:"BRYOPHYTA",           kills:222, item:"Flame gloves (e)",          qty:6,  qs:150  },
+  { npc:"BRYOPHYTA",           kills:222, item:"Demonic spirit shield",     qty:8,  qs:80   },
+  { npc:"BRYOPHYTA",           kills:222, item:"Scythe of Vitur X",         qty:1,  qs:80   },
+  { npc:"BRYOPHYTA",           kills:222, item:"Infinity Box",              qty:25, qs:75   },
+  { npc:"BRYOPHYTA",           kills:222, item:"$10 Scroll",                qty:2,  qs:70   },
+  { npc:"BRYOPHYTA",           kills:222, item:"Ancestral hat",             qty:4,  qs:40   },
+  { npc:"BRYOPHYTA",           kills:222, item:"Ancestral robe bottom",     qty:4,  qs:40   },
+  { npc:"BRYOPHYTA",           kills:222, item:"Sagittarian vambraces",     qty:6,  qs:36   },
+  { npc:"BRYOPHYTA",           kills:222, item:"Sagittarian body",          qty:3,  qs:18   },
+  { npc:"BRYOPHYTA",           kills:222, item:"Sagittarian boots",         qty:2,  qs:12   },
+  { npc:"BRYOPHYTA",           kills:222, item:"Sagittarian chaps",         qty:2,  qs:12   },
+  { npc:"BRYOPHYTA",           kills:222, item:"Sagittarian coif",          qty:2,  qs:12   },
+  { npc:"BRYOPHYTA",           kills:222, item:"Ancestral robe top",        qty:1,  qs:10   },
+  // DEMONIC ENT (139 kills)
+  { npc:"DEMONIC ENT",         kills:139, item:"Ruby Box",                  qty:6,  qs:216  },
+  { npc:"DEMONIC ENT",         kills:139, item:"Sanguinesti staff",         qty:2,  qs:200  },
+  { npc:"DEMONIC ENT",         kills:139, item:"Sacred clay helm",          qty:2,  qs:190  },
+  { npc:"DEMONIC ENT",         kills:139, item:"Sanguinesti staff X",       qty:1,  qs:180  },
+  { npc:"DEMONIC ENT",         kills:139, item:"Scythe of Vitur X",         qty:2,  qs:160  },
+  { npc:"DEMONIC ENT",         kills:139, item:"$50 Scroll",                qty:1,  qs:150  },
+  { npc:"DEMONIC ENT",         kills:139, item:"Scythe of Vitur XI",        qty:1,  qs:150  },
+  { npc:"DEMONIC ENT",         kills:139, item:"Sacred clay platebody",     qty:1,  qs:95   },
+  { npc:"DEMONIC ENT",         kills:139, item:"Emerald Box",               qty:3,  qs:93   },
+  { npc:"DEMONIC ENT",         kills:139, item:"$10 Scroll",                qty:2,  qs:70   },
+  { npc:"DEMONIC ENT",         kills:139, item:"Ancestral hat",             qty:7,  qs:70   },
+  { npc:"DEMONIC ENT",         kills:139, item:"Sapphire Box",              qty:4,  qs:60   },
+  { npc:"DEMONIC ENT",         kills:139, item:"Onyx Box",                  qty:1,  qs:55   },
+  { npc:"DEMONIC ENT",         kills:139, item:"Flame gloves (e)",          qty:2,  qs:50   },
+  { npc:"DEMONIC ENT",         kills:139, item:"Ring of Bosses",            qty:1,  qs:40   },
+  { npc:"DEMONIC ENT",         kills:139, item:"Demonic spirit shield",     qty:3,  qs:30   },
+  { npc:"DEMONIC ENT",         kills:139, item:"Sagittarian boots",         qty:5,  qs:30   },
+  { npc:"DEMONIC ENT",         kills:139, item:"Infinity Box",              qty:7,  qs:21   },
+  { npc:"DEMONIC ENT",         kills:139, item:"Sagittarian body",          qty:2,  qs:12   },
+  { npc:"DEMONIC ENT",         kills:139, item:"Sagittarian vambraces",     qty:2,  qs:12   },
+  { npc:"DEMONIC ENT",         kills:139, item:"Ancestral robe bottom",     qty:1,  qs:10   },
+  { npc:"DEMONIC ENT",         kills:139, item:"Ancestral robe top",        qty:1,  qs:10   },
+  { npc:"DEMONIC ENT",         kills:139, item:"Sagittarian chaps",         qty:1,  qs:6    },
+  { npc:"DEMONIC ENT",         kills:139, item:"Sagittarian coif",          qty:1,  qs:6    },
+  // DUST NAGUA (133 kills)
+  { npc:"DUST NAGUA",          kills:133, item:"Sacred clay helm",          qty:2,  qs:190  },
+  { npc:"DUST NAGUA",          kills:133, item:"$50 Scroll",                qty:1,  qs:150  },
+  { npc:"DUST NAGUA",          kills:133, item:"Ruby Box",                  qty:4,  qs:144  },
+  { npc:"DUST NAGUA",          kills:133, item:"Sapphire Box",              qty:7,  qs:105  },
+  { npc:"DUST NAGUA",          kills:133, item:"Sanguinesti staff",         qty:1,  qs:100  },
+  { npc:"DUST NAGUA",          kills:133, item:"Sacred clay platelegs",     qty:1,  qs:95   },
+  { npc:"DUST NAGUA",          kills:133, item:"Scythe of Vitur X",         qty:1,  qs:80   },
+  { npc:"DUST NAGUA",          kills:133, item:"$10 Scroll",                qty:2,  qs:70   },
+  { npc:"DUST NAGUA",          kills:133, item:"Crystal Box",               qty:1,  qs:70   },
+  { npc:"DUST NAGUA",          kills:133, item:"Emerald Box",               qty:2,  qs:62   },
+  { npc:"DUST NAGUA",          kills:133, item:"$20 Scroll",                qty:1,  qs:60   },
+  { npc:"DUST NAGUA",          kills:133, item:"Onyx Box",                  qty:1,  qs:55   },
+  { npc:"DUST NAGUA",          kills:133, item:"Infinity Box",              qty:11, qs:33   },
+  { npc:"DUST NAGUA",          kills:133, item:"Ancestral robe bottom",     qty:3,  qs:30   },
+  { npc:"DUST NAGUA",          kills:133, item:"Demonic spirit shield",     qty:3,  qs:30   },
+  { npc:"DUST NAGUA",          kills:133, item:"Flame gloves (e)",          qty:1,  qs:25   },
+  { npc:"DUST NAGUA",          kills:133, item:"Sagittarian body",          qty:3,  qs:18   },
+  { npc:"DUST NAGUA",          kills:133, item:"Sagittarian chaps",         qty:2,  qs:12   },
+  { npc:"DUST NAGUA",          kills:133, item:"Ancestral hat",             qty:1,  qs:10   },
+  { npc:"DUST NAGUA",          kills:133, item:"Ancestral robe top",        qty:1,  qs:10   },
+  { npc:"DUST NAGUA",          kills:133, item:"Sagittarian boots",         qty:1,  qs:6    },
+  { npc:"DUST NAGUA",          kills:133, item:"Sagittarian coif",          qty:1,  qs:6    },
+  { npc:"DUST NAGUA",          kills:133, item:"Sagittarian vambraces",     qty:1,  qs:6    },
+  // FOREST GUARDIAN (149 kills)
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Sacred clay platelegs",     qty:4,  qs:380  },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Emerald Box",               qty:8,  qs:248  },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Ruby Box",                  qty:5,  qs:180  },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Flame gloves (e)",          qty:7,  qs:175  },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Sapphire Box",              qty:10, qs:150  },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Scythe of Vitur XI",        qty:1,  qs:150  },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Sanguinesti staff",         qty:1,  qs:100  },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Sacred clay helm",          qty:1,  qs:95   },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"$20 Scroll",                qty:1,  qs:60   },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Onyx Box",                  qty:1,  qs:55   },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Infinity Box",              qty:14, qs:42   },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Demonic spirit shield",     qty:4,  qs:40   },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Sagittarian coif",          qty:5,  qs:30   },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Sagittarian chaps",         qty:4,  qs:24   },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Sagittarian vambraces",     qty:4,  qs:24   },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Ancestral hat",             qty:2,  qs:20   },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Ancestral robe bottom",     qty:2,  qs:20   },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Ancestral robe top",        qty:2,  qs:20   },
+  { npc:"FOREST GUARDIAN",     kills:149, item:"Sagittarian body",          qty:3,  qs:18   },
+  // GEMSTONE CRAB (2 kills)
+  { npc:"GEMSTONE CRAB",       kills:2,   item:"Sapphire Box",              qty:1,  qs:15   },
+  // GENERAL SHREDFLESH (17 kills)
+  { npc:"GENERAL SHREDFLESH",  kills:17,  item:"Superior Box",              qty:8,  qs:24   },
+  // IMMORTAL DARKFROST (8 kills)
+  { npc:"IMMORTAL DARKFROST",  kills:8,   item:"Onyx Box",                  qty:1,  qs:55   },
+  { npc:"IMMORTAL DARKFROST",  kills:8,   item:"Ruby Box",                  qty:1,  qs:36   },
+  // LITHIL (1 kill)
+  { npc:"LITHIL",              kills:1,   item:"Scythe of Vitur X",         qty:1,  qs:80   },
+  // NAGUA (31 kills)
+  { npc:"NAGUA",               kills:31,  item:"Ruby Box",                  qty:2,  qs:72   },
+  { npc:"NAGUA",               kills:31,  item:"Onyx Box",                  qty:1,  qs:55   },
+  { npc:"NAGUA",               kills:31,  item:"Emerald Box",               qty:1,  qs:31   },
+  { npc:"NAGUA",               kills:31,  item:"Superior Box",              qty:10, qs:30   },
+  { npc:"NAGUA",               kills:31,  item:"Flame gloves (e)",          qty:1,  qs:25   },
+  { npc:"NAGUA",               kills:31,  item:"Demonic spirit shield",     qty:2,  qs:20   },
+  { npc:"NAGUA",               kills:31,  item:"Justiciar chestguard",      qty:1,  qs:12   },
+  { npc:"NAGUA",               kills:31,  item:"Ancestral robe bottom",     qty:1,  qs:10   },
+  { npc:"NAGUA",               kills:31,  item:"Ancestral robe top",        qty:1,  qs:10   },
+  { npc:"NAGUA",               kills:31,  item:"Virtus robe legs",          qty:1,  qs:3    },
+  // STORMBRINGER (14 kills)
+  { npc:"STORMBRINGER",        kills:14,  item:"Crystal Box",               qty:2,  qs:140  },
+  { npc:"STORMBRINGER",        kills:14,  item:"Ruby Box",                  qty:1,  qs:36   },
+  { npc:"STORMBRINGER",        kills:14,  item:"Superior Box",              qty:6,  qs:18   },
+  { npc:"STORMBRINGER",        kills:14,  item:"Ancestral robe top",        qty:1,  qs:10   },
+  { npc:"STORMBRINGER",        kills:14,  item:"Demonic spirit shield",     qty:1,  qs:10   },
+  { npc:"STORMBRINGER",        kills:14,  item:"Torva platelegs",           qty:1,  qs:3    },
+  // TORTUGAN (165 kills)
+  { npc:"TORTUGAN",            kills:165, item:"$100 Scroll",               qty:3,  qs:1050 },
+  { npc:"TORTUGAN",            kills:165, item:"$50 Scroll",                qty:2,  qs:300  },
+  { npc:"TORTUGAN",            kills:165, item:"Ruby Box",                  qty:8,  qs:288  },
+  { npc:"TORTUGAN",            kills:165, item:"Emerald Box",               qty:8,  qs:248  },
+  { npc:"TORTUGAN",            kills:165, item:"Flame gloves (e)",          qty:6,  qs:150  },
+  { npc:"TORTUGAN",            kills:165, item:"Scythe of Vitur XI",        qty:1,  qs:150  },
+  { npc:"TORTUGAN",            kills:165, item:"Sanguinesti staff",         qty:1,  qs:100  },
+  { npc:"TORTUGAN",            kills:165, item:"Sacred clay helm",          qty:1,  qs:95   },
+  { npc:"TORTUGAN",            kills:165, item:"Sacred clay platebody",     qty:1,  qs:95   },
+  { npc:"TORTUGAN",            kills:165, item:"Scythe of Vitur X",         qty:1,  qs:80   },
+  { npc:"TORTUGAN",            kills:165, item:"Sapphire Box",              qty:5,  qs:75   },
+  { npc:"TORTUGAN",            kills:165, item:"Crystal Box",               qty:1,  qs:70   },
+  { npc:"TORTUGAN",            kills:165, item:"Onyx Box",                  qty:1,  qs:55   },
+  { npc:"TORTUGAN",            kills:165, item:"Demonic spirit shield",     qty:4,  qs:40   },
+  { npc:"TORTUGAN",            kills:165, item:"$10 Scroll",                qty:1,  qs:35   },
+  { npc:"TORTUGAN",            kills:165, item:"Infinity Box",              qty:11, qs:33   },
+  { npc:"TORTUGAN",            kills:165, item:"Ancestral robe bottom",     qty:3,  qs:30   },
+  { npc:"TORTUGAN",            kills:165, item:"Ancestral robe top",        qty:3,  qs:30   },
+  { npc:"TORTUGAN",            kills:165, item:"Sagittarian chaps",         qty:4,  qs:24   },
+  { npc:"TORTUGAN",            kills:165, item:"Sagittarian body",          qty:2,  qs:12   },
+  { npc:"TORTUGAN",            kills:165, item:"Sagittarian vambraces",     qty:2,  qs:12   },
+  { npc:"TORTUGAN",            kills:165, item:"Sagittarian boots",         qty:1,  qs:6    },
+];
+
+// ═══════════════════════════════════════════════════
+// AGGREGATE DATA
+// ═══════════════════════════════════════════════════
+const bossMap = {};
+rawDrops.forEach(d => {
+  if (!bossMap[d.npc]) bossMap[d.npc] = { kills: d.kills, totalQS: 0 };
+  bossMap[d.npc].totalQS += d.qs;
+});
+const bosses = Object.entries(bossMap).map(([name, v]) => ({
+  name, kills: v.kills, totalQS: v.totalQS,
+  qsPerKill: +(v.totalQS / v.kills).toFixed(2)
+}));
+const totalKills = bosses.reduce((s, b) => s + b.kills, 0);
+const totalQS    = bosses.reduce((s, b) => s + b.totalQS, 0);
+const uniqueNPCs = bosses.length;
+const bestBoss   = [...bosses].sort((a,b) => b.totalQS - a.totalQS)[0];
+const bestEff    = [...bosses].sort((a,b) => b.qsPerKill - a.qsPerKill)[0];
+const totalDrops = rawDrops.reduce((s, d) => s + d.qty, 0);
+
+// ═══════════════════════════════════════════════════
+// STAT CARDS
+// ═══════════════════════════════════════════════════
+const statsGrid = document.getElementById('stats-grid');
+const statData = [
+  { label:'Total Kills',     value: totalKills.toLocaleString(), sub:'across all bosses',  color:'#7c6df0' },
+  { label:'Total QS Earned', value: totalQS.toLocaleString(),   sub:'quest scroll value', color:'#e4a847' },
+  { label:'Unique Bosses',   value: uniqueNPCs,                  sub:'different NPCs',     color:'#3ecf8e' },
+  { label:'Total Items',     value: totalDrops.toLocaleString(), sub:'items dropped',      color:'#e05c5c' },
+  { label:'Best Boss (Value)', value: bestBoss.name.split(' ').map(w=>w[0]+w.slice(1).toLowerCase()).join(' '),
+    sub: `${bestBoss.totalQS.toLocaleString()} QS total`, color:'#e4a847' },
+  { label:'Best Efficiency', value: bestEff.name.split(' ').map(w=>w[0]+w.slice(1).toLowerCase()).join(' '),
+    sub: `${bestEff.qsPerKill} QS / kill`, color:'#3ecf8e' },
+];
+statData.forEach(s => {
+  statsGrid.innerHTML += `
+    <div class="stat-card" style="--accent-color:${s.color}">
+      <div class="label">${s.label}</div>
+      <div class="value" style="color:${s.color}">${s.value}</div>
+      <div class="sub">${s.sub}</div>
+    </div>`;
+});
+
+// ═══════════════════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════════════════
+const sorted = [...bosses].sort((a,b) => b.kills - a.kills);
+const chartLabels = sorted.map(b => b.name.split(' ').map(w => w[0]+w.slice(1).toLowerCase()).join(' '));
+
+const palette = [
+  '#7c6df0','#e4a847','#3ecf8e','#e05c5c','#5cb8e0',
+  '#c97de8','#6ee7b7','#fbbf24','#f472b6','#34d399',
+  '#60a5fa','#a78bfa','#f87171'
+];
+
+const chartDefaults = {
+  responsive: true,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: '#1c2130',
+      borderColor: '#2a3045',
+      borderWidth: 1,
+      titleColor: '#e2e8f0',
+      bodyColor: '#7a849e',
+      padding: 10,
+    }
+  },
+  scales: {
+    x: {
+      ticks: { color: '#7a849e', font: { size: 10 }, maxRotation: 30 },
+      grid:  { color: 'rgba(255,255,255,.04)' }
+    },
+    y: {
+      ticks: { color: '#7a849e', font: { size: 10 } },
+      grid:  { color: 'rgba(255,255,255,.06)' }
+    }
+  }
+};
+
+new Chart(document.getElementById('killsChart'), {
+  type: 'bar',
+  data: {
+    labels: chartLabels,
+    datasets: [{
+      data: sorted.map(b => b.kills),
+      backgroundColor: sorted.map((_, i) => palette[i % palette.length] + 'cc'),
+      borderColor:     sorted.map((_, i) => palette[i % palette.length]),
+      borderWidth: 1.5, borderRadius: 5,
+    }]
+  },
+  options: { ...chartDefaults, plugins: { ...chartDefaults.plugins,
+    tooltip: { ...chartDefaults.plugins.tooltip,
+      callbacks: { label: ctx => ` ${ctx.raw.toLocaleString()} kills` }
+    }
+  }}
+});
+
+const sortedVal = [...bosses].sort((a,b) => b.totalQS - a.totalQS);
+const valLabels = sortedVal.map(b => b.name.split(' ').map(w => w[0]+w.slice(1).toLowerCase()).join(' '));
+new Chart(document.getElementById('valueChart'), {
+  type: 'bar',
+  data: {
+    labels: valLabels,
+    datasets: [{
+      data: sortedVal.map(b => b.totalQS),
+      backgroundColor: sortedVal.map((_, i) => palette[i % palette.length] + 'cc'),
+      borderColor:     sortedVal.map((_, i) => palette[i % palette.length]),
+      borderWidth: 1.5, borderRadius: 5,
+    }]
+  },
+  options: { ...chartDefaults, plugins: { ...chartDefaults.plugins,
+    tooltip: { ...chartDefaults.plugins.tooltip,
+      callbacks: { label: ctx => ` ${ctx.raw.toLocaleString()} QS` }
+    }
+  }}
+});
+
+// ═══════════════════════════════════════════════════
+// BOSS GRID
+// ═══════════════════════════════════════════════════
+const maxQS  = Math.max(...bosses.map(b => b.totalQS));
+const bossGrid = document.getElementById('boss-grid');
+[...bosses].sort((a,b) => b.totalQS - a.totalQS).forEach((b, i) => {
+  const pct = Math.round(b.totalQS / maxQS * 100);
+  const color = palette[i % palette.length];
+  bossGrid.innerHTML += `
+    <div class="boss-card" style="border-top:2px solid ${color}">
+      <div class="boss-name" title="${b.name}">${b.name}</div>
+      <div class="boss-stat"><span class="k">Kills</span><span class="v">${b.kills.toLocaleString()}</span></div>
+      <div class="boss-stat"><span class="k">Total QS</span><span class="v gold">${b.totalQS.toLocaleString()}</span></div>
+      <div class="boss-stat"><span class="k">QS / Kill</span><span class="v green">${b.qsPerKill}</span></div>
+      <div class="eff-bar-bg"><div class="eff-bar-fg" style="width:${pct}%; background:${color}"></div></div>
+    </div>`;
+});
+
+// ═══════════════════════════════════════════════════
+// TOP DROPS TABLE
+// ═══════════════════════════════════════════════════
+const top20 = [...rawDrops].filter(d => d.qs > 0).sort((a,b) => b.qs - a.qs).slice(0, 20);
+const maxVal = top20[0].qs;
+const tbody = document.getElementById('drops-table');
+top20.forEach((d, i) => {
+  const rank = i === 0 ? `<span class="rank gold">#1</span>`
+             : i === 1 ? `<span class="rank silver">#2</span>`
+             : i === 2 ? `<span class="rank bronze">#3</span>`
+             : `<span class="rank">#${i+1}</span>`;
+  const barW = Math.round(d.qs / maxVal * 120);
+  tbody.innerHTML += `
+    <tr>
+      <td>${rank}</td>
+      <td><span class="item-pill">${d.item}</span></td>
+      <td><span class="npc-tag">${d.npc}</span></td>
+      <td style="color:var(--muted)">${d.qty}×</td>
+      <td style="font-weight:700;color:var(--accent2)">${d.qs.toLocaleString()} QS</td>
+      <td><div class="val-bar-wrap"><div class="val-bar" style="width:${barW}px;background:var(--accent)"></div></div></td>
+    </tr>`;
+});
+</script>
+</body>
+</html>

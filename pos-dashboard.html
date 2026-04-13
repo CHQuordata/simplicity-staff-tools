@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simplicity RSPS — POS Economy Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0d0f14; --surface: #161b24; --surface2: #1e2635; --border: #2a3347;
+    --accent: #4f8ef7; --accent2: #7c3aed; --green: #22c55e; --yellow: #eab308;
+    --red: #ef4444; --orange: #f97316; --text: #e2e8f0; --muted: #64748b; --dim: #94a3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px; }
+
+  /* ── UPLOAD ── */
+  #upload-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:40px; }
+  .u-logo { font-size:26px; font-weight:700; color:var(--accent); margin-bottom:4px; }
+  .u-sub { color:var(--muted); font-size:13px; margin-bottom:36px; }
+  .u-box { border:2px dashed var(--border); border-radius:14px; padding:52px 72px; text-align:center; cursor:pointer; background:var(--surface); max-width:440px; width:100%; transition:all .2s; }
+  .u-box:hover,.u-box.over { border-color:var(--accent); background:#161f35; }
+  .u-icon { font-size:36px; margin-bottom:14px; }
+  .u-box h2 { font-size:15px; margin-bottom:6px; }
+  .u-box p { color:var(--muted); font-size:12px; }
+  .u-btn { margin-top:20px; background:var(--accent); color:#fff; border:none; padding:9px 26px; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; }
+  .u-btn:hover { background:#3b7de8; }
+  #file-input { display:none; }
+
+  /* ── LOADING ── */
+  #loading { display:none; position:fixed; inset:0; background:rgba(13,15,20,.88); align-items:center; justify-content:center; flex-direction:column; gap:12px; z-index:200; }
+  .spinner { width:34px; height:34px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  #loading p { color:var(--muted); font-size:13px; }
+
+  /* ── DASHBOARD ── */
+  #dashboard { display:none; }
+
+  /* ── HEADER ── */
+  .hdr { background:var(--surface); border-bottom:1px solid var(--border); padding:12px 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+  .hdr-l { display:flex; align-items:center; gap:10px; }
+  .hdr-logo { font-size:15px; font-weight:700; color:var(--accent); }
+  .badge { background:var(--surface2); border:1px solid var(--border); padding:3px 9px; border-radius:20px; color:var(--dim); font-size:11px; }
+  .hdr-r { display:flex; align-items:center; gap:10px; }
+  .file-lbl { color:var(--muted); font-size:11px; }
+  .rbtn { background:var(--surface2); border:1px solid var(--border); color:var(--dim); padding:5px 12px; border-radius:6px; cursor:pointer; font-size:11px; transition:all .2s; }
+  .rbtn:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* ── LAYOUT ── */
+  .main { padding:20px 24px; max-width:1560px; margin:0 auto; }
+  .sec { font-size:11px; font-weight:600; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; margin:28px 0 12px; display:flex; align-items:center; gap:8px; }
+  .sec::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* ── KPI ── */
+  .kpi-row { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; }
+  @media(max-width:1100px){ .kpi-row { grid-template-columns:repeat(3,1fr); } }
+  .kpi { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:15px 16px; }
+  .kpi.hi-blue { border-color:rgba(79,142,247,.35); }
+  .kpi.hi-orange { border-color:rgba(249,115,22,.35); }
+  .kpi.hi-red { border-color:rgba(239,68,68,.35); }
+  .kpi.hi-green { border-color:rgba(34,197,94,.35); }
+  .kpi-lbl { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; margin-bottom:5px; }
+  .kpi-val { font-size:22px; font-weight:700; line-height:1; }
+  .kpi-meta { font-size:11px; color:var(--muted); margin-top:4px; display:flex; align-items:center; gap:4px; }
+  .delta { font-size:10px; font-weight:600; padding:1px 5px; border-radius:3px; }
+  .delta-up { background:rgba(34,197,94,.15); color:var(--green); }
+  .delta-down { background:rgba(239,68,68,.15); color:var(--red); }
+  .delta-neu { background:rgba(100,116,139,.15); color:var(--muted); }
+
+  /* ── CARDS ── */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px; }
+  .card-t { font-size:11px; font-weight:600; color:var(--dim); text-transform:uppercase; letter-spacing:.07em; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; }
+  .card-t-sub { font-size:10px; color:var(--muted); text-transform:none; letter-spacing:0; font-weight:400; }
+  .g2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .g3 { display:grid; grid-template-columns:2fr 1fr 1fr; gap:14px; }
+  .g4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:14px; }
+  @media(max-width:1100px){ .g2,.g3,.g4 { grid-template-columns:1fr; } }
+
+  /* ── TABLES ── */
+  table.dt { width:100%; border-collapse:collapse; }
+  table.dt th { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; text-align:left; padding:5px 7px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  table.dt td { padding:6px 7px; border-bottom:1px solid rgba(42,51,71,.4); font-size:12px; }
+  table.dt tr:last-child td { border-bottom:none; }
+  table.dt tr:hover td { background:rgba(255,255,255,.02); }
+  table.dt .r { color:var(--muted); font-size:10px; width:20px; }
+  table.dt .v { text-align:right; font-variant-numeric:tabular-nums; color:var(--dim); white-space:nowrap; }
+  table.dt .n { font-weight:500; }
+  .scroll { max-height:300px; overflow-y:auto; }
+  .scroll::-webkit-scrollbar { width:3px; }
+  .scroll::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+  /* ── PILLS ── */
+  .pill { display:inline-block; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:600; white-space:nowrap; }
+  .p-red { background:rgba(239,68,68,.15); color:var(--red); }
+  .p-yel { background:rgba(234,179,8,.15); color:var(--yellow); }
+  .p-grn { background:rgba(34,197,94,.15); color:var(--green); }
+  .p-blu { background:rgba(79,142,247,.15); color:var(--accent); }
+  .p-org { background:rgba(249,115,22,.15); color:var(--orange); }
+  .p-pur { background:rgba(124,58,237,.15); color:#a78bfa; }
+
+  /* ── WATCHLIST ── */
+  .wl-item { background:var(--surface2); border-left:3px solid; border-radius:0 7px 7px 0; padding:7px 10px; margin-bottom:5px; }
+  .wl-item.critical { border-color:var(--red); }
+  .wl-item.warning  { border-color:var(--yellow); }
+  .wl-item.info     { border-color:var(--accent); }
+  .wl-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; flex-wrap:wrap; gap:4px; }
+  .wl-name { font-size:12px; font-weight:700; }
+  .wl-item.critical .wl-name { color:var(--red); }
+  .wl-item.warning  .wl-name { color:var(--yellow); }
+  .wl-item.info     .wl-name { color:var(--accent); }
+  .wl-tags { display:flex; gap:4px; flex-wrap:wrap; }
+  .wl-detail { font-size:10px; color:var(--muted); line-height:1.4; }
+
+  /* ── PLAYER PROFILES ── */
+  .pp-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:12px; }
+  .pp-card { background:var(--surface2); border-radius:9px; padding:13px; }
+  .pp-hdr { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; gap:8px; flex-wrap:wrap; }
+  .pp-name { font-size:13px; font-weight:700; }
+  .pp-role { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; margin-top:2px; }
+  .pp-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; background:var(--surface); border-radius:6px; padding:9px; margin-bottom:9px; }
+  .pp-sl { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:2px; }
+  .pp-sv { font-size:13px; font-weight:700; }
+  .pp-ss { font-size:9px; color:var(--muted); margin-top:1px; }
+  .pp-note { font-size:10px; color:var(--muted); line-height:1.5; border-top:1px solid var(--border); padding-top:8px; }
+
+  /* ── HEAT BAR ── */
+  .hbar { height:5px; border-radius:3px; background:var(--border); overflow:hidden; }
+  .hbar-fill { height:100%; border-radius:3px; }
+
+  /* ── PRICE SPREAD ── */
+  .ps-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; }
+  .ps-card { background:var(--surface2); border-radius:8px; padding:12px; }
+  .ps-name { font-size:11px; font-weight:600; margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ps-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; margin-bottom:7px; }
+  .ps-stat-lbl { font-size:9px; color:var(--muted); }
+  .ps-stat-val { font-size:11px; font-weight:600; }
+
+  /* ── TABS ── */
+  .tab-bar { background:var(--surface); border-bottom:1px solid var(--border); padding:0 24px; display:flex; align-items:center; gap:2px; }
+  .tab-btn { background:none; border:none; color:var(--muted); font-size:12px; font-weight:600; padding:11px 18px; cursor:pointer; position:relative; transition:color .15s; letter-spacing:.01em; white-space:nowrap; }
+  .tab-btn::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:transparent; border-radius:2px 2px 0 0; transition:background .15s; }
+  .tab-btn:hover { color:var(--dim); }
+  .tab-btn.active { color:var(--text); }
+  .tab-btn.active::after { background:var(--accent); }
+  .tab-icon { margin-right:6px; }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  /* ── FOOTER ── */
+  .footer { text-align:center; color:var(--muted); font-size:10px; padding:28px; }
+
+  /* ── TREND TOGGLE ── */
+  .toggle-group { display:flex; gap:4px; }
+  .tog { background:var(--surface2); border:1px solid var(--border); color:var(--muted); padding:3px 9px; border-radius:5px; cursor:pointer; font-size:10px; transition:all .15s; }
+  .tog.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  /* ── NEW ACCOUNTS ── */
+  .na-item { display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px solid rgba(42,51,71,.4); }
+  .na-item:last-child { border-bottom:none; }
+
+  /* ── WATCHLIST GROUPS ── */
+  .wl-group-hdr { display:flex; align-items:center; justify-content:space-between; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); padding:7px 0 4px; margin-top:4px; border-top:1px solid var(--border); }
+  .wl-group-hdr:first-child { border-top:none; margin-top:0; padding-top:0; }
+  .wl-group-count { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:1px 7px; font-size:10px; color:var(--dim); }
+
+  /* ── RANKED ITEM LIST ── */
+  .item-rank-list { display:flex; flex-direction:column; gap:7px; }
+  .ir-row { display:flex; align-items:center; gap:10px; }
+  .ir-num { font-size:11px; color:var(--muted); width:18px; text-align:right; flex-shrink:0; font-variant-numeric:tabular-nums; }
+  .ir-name { font-size:12px; font-weight:500; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
+  .ir-bar-wrap { width:120px; flex-shrink:0; }
+  .ir-bar { height:6px; border-radius:3px; background:var(--border); overflow:hidden; }
+  .ir-fill { height:100%; border-radius:3px; }
+  .ir-val { font-size:11px; color:var(--dim); width:52px; text-align:right; flex-shrink:0; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .ir-sub { font-size:10px; color:var(--muted); width:40px; text-align:right; flex-shrink:0; }
+
+  /* ── INFLATION MONITOR ── */
+  .inf-health { display:flex; align-items:center; gap:14px; padding:14px; border-radius:10px; margin-bottom:14px; border:1px solid; }
+  .inf-health.green  { background:rgba(34,197,94,.07);  border-color:rgba(34,197,94,.3); }
+  .inf-health.yellow { background:rgba(234,179,8,.07);  border-color:rgba(234,179,8,.3); }
+  .inf-health.red    { background:rgba(239,68,68,.07);  border-color:rgba(239,68,68,.3); }
+  .inf-score { font-size:36px; font-weight:800; line-height:1; }
+  .inf-health.green  .inf-score { color:var(--green); }
+  .inf-health.yellow .inf-score { color:var(--yellow); }
+  .inf-health.red    .inf-score { color:var(--red); }
+  .inf-label { font-size:14px; font-weight:700; }
+  .inf-desc  { font-size:11px; color:var(--muted); margin-top:2px; line-height:1.5; }
+  .inf-signals { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+  .appr-row { display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px solid rgba(42,51,71,.4); }
+  .appr-row:last-child { border-bottom:none; }
+
+  /* ── BE CONTEXT ── */
+  .be-context { background:rgba(234,179,8,.07); border:1px solid rgba(234,179,8,.25); border-radius:8px; padding:11px 13px; margin-bottom:14px; font-size:11px; color:var(--dim); line-height:1.6; }
+  .be-context strong { color:var(--yellow); }
+</style>
+</head>
+<body>
+
+<!-- UPLOAD -->
+<div id="upload-screen">
+  <div class="u-logo">⚔ Simplicity RSPS</div>
+  <div class="u-sub">Operations Manager · POS Economy Dashboard</div>
+  <div class="u-box" id="drop-zone">
+    <div class="u-icon">📊</div>
+    <h2>Load POS Purchase Log</h2>
+    <p>Drop your <strong>pos_purchases.csv</strong> here or click to browse</p>
+    <button class="u-btn" onclick="document.getElementById('file-input').click()">Choose File</button>
+  </div>
+  <input type="file" id="file-input" accept=".csv">
+</div>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p id="loading-msg">Analysing economy data…</p>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="hdr">
+    <div class="hdr-l">
+      <span class="hdr-logo">⚔ Simplicity RSPS</span>
+      <span class="badge">POS Economy Dashboard</span>
+      <span class="badge" id="date-badge">—</span>
+    </div>
+    <div class="hdr-r">
+      <span class="file-lbl" id="file-lbl"></span>
+      <button class="rbtn" onclick="resetDashboard()">↩ Load New File</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('economy',this)"><span class="tab-icon">📈</span>Economy</button>
+    <button class="tab-btn" onclick="switchTab('players',this)"><span class="tab-icon">🎯</span>Players</button>
+    <button class="tab-btn" onclick="switchTab('items',this)"><span class="tab-icon">🏷</span>Items</button>
+  </div>
+
+  <div class="main">
+
+    <!-- ════════════════ TAB: ECONOMY ════════════════ -->
+    <div class="tab-panel active" id="tab-economy">
+
+    <!-- ── INFLATION MONITOR (TOP) ── -->
+    <div class="sec">Inflation Monitor</div>
+    <div class="card">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <div class="card-t" style="margin-bottom:10px">Economy Health Score</div>
+          <div id="inf-health-card"></div>
+        </div>
+        <div>
+          <div class="card-t" style="margin-bottom:10px">GP Flow — Injection vs Circulation</div>
+          <div id="gp-flow"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── KPIs ── -->
+    <div class="sec">Economy Snapshot</div>
+    <div class="kpi-row">
+      <div class="kpi hi-blue">
+        <div class="kpi-lbl">Total POS Volume</div>
+        <div class="kpi-val" id="k-vol">—</div>
+        <div class="kpi-meta"><span id="k-vol-delta"></span><span id="k-vol-sub"></span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Transactions</div>
+        <div class="kpi-val" id="k-txns">—</div>
+        <div class="kpi-meta"><span id="k-txns-delta"></span><span id="k-txns-sub"></span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Avg Unit Price</div>
+        <div class="kpi-val" id="k-avg">—</div>
+        <div class="kpi-meta"><span id="k-avg-delta"></span><span style="color:var(--muted)">inflation proxy</span></div>
+      </div>
+      <div class="kpi hi-orange">
+        <div class="kpi-lbl">Top 5 Buyer Concentration</div>
+        <div class="kpi-val" id="k-conc">—</div>
+        <div class="kpi-meta"><span style="color:var(--muted)" id="k-conc-sub"></span></div>
+      </div>
+      <div class="kpi" id="k-flags-card">
+        <div class="kpi-lbl">Active Flags</div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-top:2px">
+          <span class="kpi-val" id="k-crit" style="color:var(--red)">—</span>
+          <span style="font-size:11px;color:var(--muted)">crit</span>
+          <span class="kpi-val" style="font-size:16px" id="k-warn">—</span>
+          <span style="font-size:11px;color:var(--muted)">warn</span>
+        </div>
+        <div class="kpi-meta"><span id="k-info-lbl" style="color:var(--muted)"></span></div>
+      </div>
+    </div>
+
+    <!-- ── TREND ── -->
+    <div class="sec">Economy Trend</div>
+    <div class="card">
+      <div class="card-t">
+        Monthly Activity
+        <div class="toggle-group">
+          <button class="tog active" onclick="setTrend('count',this)">Txn Count</button>
+          <button class="tog" onclick="setTrend('vol',this)">GP Volume</button>
+        </div>
+      </div>
+      <div style="position:relative;height:220px"><canvas id="chart-trend"></canvas></div>
+    </div>
+
+    </div><!-- /tab-economy -->
+
+    <!-- ════════════════ TAB: ITEMS ════════════════ -->
+    <div class="tab-panel" id="tab-items">
+
+    <!-- ── MARKET COMPOSITION ── -->
+    <div class="sec">Market Composition</div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-t">Top Items by GP Volume <span class="card-t-sub">where the big money moves</span></div>
+        <div class="item-rank-list" id="list-items-vol"></div>
+      </div>
+      <div class="card">
+        <div class="card-t">Top Items by Transaction Count <span class="card-t-sub">what's actually moving daily</span></div>
+        <div class="item-rank-list" id="list-items-count"></div>
+      </div>
+    </div>
+
+    <!-- ── PRICE APPRECIATION ── -->
+    <div class="sec">Item Price Appreciation</div>
+    <div class="card">
+      <div class="card-t">MoM median price change on top items <span class="card-t-sub">red = appreciating faster than healthy · green = stable or declining</span></div>
+      <div id="price-appr" class="scroll" style="max-height:280px"></div>
+    </div>
+
+    <!-- ── TOP MERCHANT TRADE BREAKDOWN ── -->
+    <div class="sec">Top Merchant Trade Breakdown</div>
+    <div class="card">
+      <div class="card-t">Box Event — Buy vs Sell by Item <span class="card-t-sub">positive net = sold for more than bought — price anchor risk</span></div>
+      <div class="scroll" style="max-height:280px"><table class="dt" id="tbl-be"></table></div>
+    </div>
+
+    <!-- ── SUPPLY CONCENTRATION ── -->
+    <div class="sec">Market Cornering Risk</div>
+    <div class="card">
+      <div class="card-t">Items where 1–2 sellers control supply <span class="card-t-sub">≥75% supply share or ≤2 unique sellers · median >1B · ≥5 txns · sorted by volume</span></div>
+      <div id="supply-conc">
+        <div style="color:var(--muted);font-size:12px;padding:8px 0">Calculating…</div>
+      </div>
+    </div>
+
+    <!-- ── PRICE SPREAD ── -->
+    <div class="sec">High-Value Item Price Spread</div>
+    <div class="card">
+      <div class="card-t">Price variance across transactions — sorted by median price · high spread items may indicate listing snipes or manipulation</div>
+      <div class="ps-grid" id="price-spread"></div>
+    </div>
+
+    </div><!-- /tab-items -->
+
+    <!-- ════════════════ TAB: PLAYERS ════════════════ -->
+    <div class="tab-panel" id="tab-players">
+
+    <!-- ── PLAYER PROFILES ── -->
+    <div class="sec">Notable Player Profiles</div>
+    <div class="card">
+      <div class="card-t">Flagged & high-volume accounts <span class="card-t-sub">critical watchlist + top merchants + pure sellers</span></div>
+      <div class="pp-grid" id="player-profiles"></div>
+    </div>
+
+    <!-- ── PLAYERS OF INTEREST ── -->
+    <div class="sec">Watchlist & Price Behaviour</div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-t">🚨 Watchlist <span class="card-t-sub">grouped by severity — exploit & manipulation flags</span></div>
+        <div id="watchlist" class="scroll" style="max-height:480px"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card" style="flex:1">
+          <div class="card-t" style="color:var(--red)">▲ Selling Above Median <span class="card-t-sub" style="color:var(--muted)">anchoring price ceiling high — inflation risk</span></div>
+          <div class="scroll" style="max-height:200px"><table class="dt" id="tbl-above-sell"></table></div>
+        </div>
+        <div class="card" style="flex:1">
+          <div class="card-t" style="color:var(--accent)">▼ Buying Below Median <span class="card-t-sub" style="color:var(--muted)">sniping underpriced listings — merchant arbitrage</span></div>
+          <div class="scroll" style="max-height:200px"><table class="dt" id="tbl-below-buy"></table></div>
+        </div>
+      </div>
+    </div>
+
+    </div><!-- /tab-players -->
+
+    <div class="footer">Simplicity RSPS · Operations Dashboard v2 · Drop a new CSV anytime to refresh</div>
+  </div>
+</div>
+
+<script>
+// ── UTILS ────────────────────────────────────────────────────────────────────
+const fmt = (n, d=1) => {
+  if (n==null||isNaN(n)) return '—';
+  const a=Math.abs(n);
+  if(a>=1e15) return (n/1e15).toFixed(d)+'Q';
+  if(a>=1e12) return (n/1e12).toFixed(d)+'T';
+  if(a>=1e9)  return (n/1e9).toFixed(d)+'B';
+  if(a>=1e6)  return (n/1e6).toFixed(d)+'M';
+  return n.toLocaleString();
+};
+const pct = n => n.toFixed(1)+'%';
+const cleanName = s => s ? s.replace(/@\w+@/g,'').trim() : s;
+
+// Chart defaults
+const CD = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#0a0c10', borderColor:'#2a3347', borderWidth:1, titleColor:'#94a3b8', bodyColor:'#e2e8f0', padding:10 }},
+  scales:{
+    x:{ ticks:{color:'#64748b',font:{size:10}}, grid:{color:'rgba(42,51,71,0.5)'} },
+    y:{ ticks:{color:'#64748b',font:{size:10}}, grid:{color:'rgba(42,51,71,0.5)'} }
+  }
+};
+let charts={}, trendData={};
+
+function mkChart(id,cfg){ if(charts[id]){charts[id].destroy();} charts[id]=new Chart(document.getElementById(id),cfg); }
+
+// ── UPLOAD ────────────────────────────────────────────────────────────────────
+const dropZone=document.getElementById('drop-zone'), fileInput=document.getElementById('file-input');
+dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('over');});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('over'));
+dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('over');handleFile(e.dataTransfer.files[0]);});
+fileInput.addEventListener('change',e=>handleFile(e.target.files[0]));
+
+function handleFile(file){
+  if(!file) return;
+  document.getElementById('loading').style.display='flex';
+  document.getElementById('file-lbl').textContent=file.name+' ('+Math.round(file.size/1024)+' KB)';
+  setTimeout(()=>{
+    Papa.parse(file,{header:true,skipEmptyLines:true,dynamicTyping:true,
+      complete:r=>{ try{processData(r.data);}catch(e){alert('Error parsing data: '+e.message);document.getElementById('loading').style.display='none';} }
+    });
+  },80);
+}
+
+function switchTab(id, btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function resetDashboard(){
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('upload-screen').style.display='flex';
+  fileInput.value='';
+  Object.keys(charts).forEach(k=>{charts[k].destroy();delete charts[k];});
+  // reset to Economy tab
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-economy').classList.add('active');
+  document.querySelector('.tab-btn').classList.add('active');
+}
+
+// ── PROCESS ────────────────────────────────────────────────────────────────────
+function processData(raw){
+  const data=raw.filter(r=>r.id&&r.buyer&&r.seller&&Number(r.price)>0&&Number(r.quantity)>0)
+    .map(r=>({...r, price:Number(r.price), quantity:Number(r.quantity), total_value:Number(r.price)*Number(r.quantity), time:new Date(r.time)}));
+
+  if(!data.length){alert('No valid rows found — check CSV format.');document.getElementById('loading').style.display='none';return;}
+
+  // ── date range ──
+  const minDate=new Date(Math.min(...data.map(r=>r.time)));
+  const maxDate=new Date(Math.max(...data.map(r=>r.time)));
+  const fd=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  document.getElementById('date-badge').textContent=fd(minDate)+' – '+fd(maxDate);
+
+  // ── monthly buckets ──
+  const months={};
+  data.forEach(r=>{
+    const k=r.time.getFullYear()+'-'+String(r.time.getMonth()+1).padStart(2,'0');
+    if(!months[k]) months[k]={vol:0,count:0,prices:[]};
+    months[k].vol+=r.total_value; months[k].count++; months[k].prices.push(r.price);
+  });
+  const mKeys=Object.keys(months).sort();
+  const mLabels=mKeys.map(m=>{const[y,mo]=m.split('-');return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+mo-1]+' '+y.slice(2);});
+  const mVols=mKeys.map(k=>months[k].vol);
+  const mCounts=mKeys.map(k=>months[k].count);
+  const mAvgs=mKeys.map(k=>{ const p=months[k].prices; return p.reduce((s,v)=>s+v,0)/p.length; });
+
+  // ── MoM deltas (compare last 2 months if available) ──
+  const hasMoM=mKeys.length>=2;
+  const prevIdx=mKeys.length-2, currIdx=mKeys.length-1;
+  const momVol   = hasMoM ? (mVols[currIdx]-mVols[prevIdx])/mVols[prevIdx]*100 : null;
+  const momCount = hasMoM ? (mCounts[currIdx]-mCounts[prevIdx])/mCounts[prevIdx]*100 : null;
+  const momAvg   = hasMoM ? (mAvgs[currIdx]-mAvgs[prevIdx])/mAvgs[prevIdx]*100 : null;
+
+  // ── totals ──
+  const totalVol=data.reduce((s,r)=>s+r.total_value,0);
+  const avgPrice=data.reduce((s,r)=>s+r.price,0)/data.length;
+  const allBuyers=[...new Set(data.map(r=>r.buyer))];
+  const allSellers=[...new Set(data.map(r=>r.seller))];
+
+  // ── buyer/seller maps ──
+  const bSpend={},bTxns={},bItems={};
+  const sRev={},sTxns={},sItems={};
+  data.forEach(r=>{
+    bSpend[r.buyer]=(bSpend[r.buyer]||0)+r.total_value; bTxns[r.buyer]=(bTxns[r.buyer]||0)+1;
+    if(!bItems[r.buyer])bItems[r.buyer]=new Set(); bItems[r.buyer].add(r.item_name);
+    sRev[r.seller]=(sRev[r.seller]||0)+r.total_value; sTxns[r.seller]=(sTxns[r.seller]||0)+1;
+    if(!sItems[r.seller])sItems[r.seller]=new Set(); sItems[r.seller].add(r.item_name);
+  });
+  const topBuyers=Object.entries(bSpend).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  const topSellers=Object.entries(sRev).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  const top5Share=topBuyers.slice(0,5).reduce((s,r)=>s+r[1],0)/totalVol*100;
+
+  // ── items ──
+  const iVol={},iCount={};
+  data.forEach(r=>{
+    const n=cleanName(r.item_name);
+    iVol[n]=(iVol[n]||0)+r.total_value; iCount[n]=(iCount[n]||0)+1;
+  });
+  // Build item medians early so we can use them to filter junk items everywhere
+  const iMedEarly={};
+  {const tmp={}; data.forEach(r=>{const n=cleanName(r.item_name);if(!tmp[n])tmp[n]=[];tmp[n].push(r.price);});
+   Object.entries(tmp).forEach(([item,prices])=>{const s=prices.slice().sort((a,b)=>a-b);iMedEarly[item]=s[Math.floor(s.length/2)];});}
+  const MIN_ITEM_GP=1e9; // 1B — filters out junk items (bones, arrows, basic consumables)
+
+  const topIV=Object.entries(iVol).sort((a,b)=>b[1]-a[1]).filter(([n])=>(iMedEarly[n]||0)>=MIN_ITEM_GP).slice(0,12);
+  const topIC=Object.entries(iCount).sort((a,b)=>b[1]-a[1]).filter(([n])=>(iMedEarly[n]||0)>=MIN_ITEM_GP).slice(0,12);
+
+  // ── pure sellers ──
+  const buyerSet=new Set(data.map(r=>r.buyer));
+  const pureSellers=Object.entries(sRev).filter(([s])=>!buyerSet.has(s)).sort((a,b)=>b[1]-a[1]).slice(0,15);
+
+  // ── burst buyers ──
+  const pitMap={};
+  data.forEach(r=>{ const k=r.buyer+'||'+r.item_name; if(!pitMap[k])pitMap[k]=[]; pitMap[k].push({time:r.time,value:r.total_value,qty:r.quantity}); });
+  const bursts=[];
+  Object.entries(pitMap).forEach(([k,tr])=>{
+    tr.sort((a,b)=>a.time-b.time);
+    let bt=0,bv=0,bq=0;
+    for(let i=1;i<tr.length;i++){if((tr[i].time-tr[i-1].time)/1000<=60){bt++;bv+=tr[i].value;bq+=tr[i].qty;}}
+    if(bt>=3&&bv>0){const[buyer,item]=k.split('||');bursts.push({buyer,item,bt,bv,bq});}
+  });
+  bursts.sort((a,b)=>b.bv-a.bv);
+
+  // ── wash trades ──
+  const dayItemMap={};
+  data.forEach(r=>{
+    const k=cleanName(r.item_name)+'||'+r.time.toDateString();
+    if(!dayItemMap[k])dayItemMap[k]=[];
+    dayItemMap[k].push({buyer:r.buyer,seller:r.seller,value:r.total_value});
+  });
+  const washPairs=[];
+  Object.entries(dayItemMap).forEach(([k,trades])=>{
+    const seen=new Set();
+    trades.forEach(t=>{
+      const pk=[t.buyer,t.seller].sort().join('||');
+      if(seen.has(pk))return; seen.add(pk);
+      const fwd=trades.filter(x=>x.buyer===t.buyer&&x.seller===t.seller).reduce((s,x)=>s+x.value,0);
+      const rev=trades.filter(x=>x.buyer===t.seller&&x.seller===t.buyer).reduce((s,x)=>s+x.value,0);
+      if(fwd>0&&rev>0){const[item,date]=k.split('||');washPairs.push({item,date,a:t.buyer,b:t.seller,fwd,rev,combined:fwd+rev});}
+    });
+  });
+  washPairs.sort((a,b)=>b.combined-a.combined);
+
+  // ── same-day price flips ──
+  const pdBuy={},pdSell={};
+  data.forEach(r=>{
+    const k=r.buyer+'||'+cleanName(r.item_name)+'||'+r.time.toDateString();
+    if(!pdBuy[k])pdBuy[k]=[];
+    pdBuy[k].push({price:r.price,time:r.time});
+  });
+  data.forEach(r=>{
+    const k=r.seller+'||'+cleanName(r.item_name)+'||'+r.time.toDateString();
+    if(!pdSell[k])pdSell[k]=[];
+    pdSell[k].push({price:r.price,time:r.time});
+  });
+  const flips=[];
+  Object.keys(pdBuy).forEach(k=>{
+    if(!pdSell[k])return;
+    const buys=pdBuy[k],sells=pdSell[k];
+    const validSells=sells.filter(s=>buys.some(b=>s.time>b.time));
+    if(!validSells.length)return;
+    const minBuy=Math.min(...buys.map(b=>b.price));
+    const maxSell=Math.max(...validSells.map(s=>s.price));
+    if(maxSell>minBuy){
+      const markup=(maxSell-minBuy)/minBuy*100;
+      if(markup>25){const[player,item,date]=k.split('||');flips.push({player,item,date,buyPrice:minBuy,sellPrice:maxSell,markup});}
+    }
+  });
+  flips.sort((a,b)=>b.markup-a.markup);
+
+  // ── new high-volume accounts ──
+  // Detect players whose earliest transaction is in the most recent month
+  const latestMonth=mKeys[mKeys.length-1];
+  const playerFirst={};
+  data.forEach(r=>{
+    const mk=r.time.getFullYear()+'-'+String(r.time.getMonth()+1).padStart(2,'0');
+    if(!playerFirst[r.buyer]||mk<playerFirst[r.buyer])playerFirst[r.buyer]=mk;
+    if(!playerFirst[r.seller]||mk<playerFirst[r.seller])playerFirst[r.seller]=mk;
+  });
+  const newAccounts=Object.entries(playerFirst)
+    .filter(([p,m])=>m===latestMonth)
+    .map(([p,m])=>{
+      const spent=bSpend[p]||0, earned=sRev[p]||0, txns=(bTxns[p]||0)+(sTxns[p]||0);
+      return {player:p,spent,earned,txns,total:spent+earned};
+    })
+    .filter(a=>a.total>0&&a.txns>=3)
+    .sort((a,b)=>b.total-a.total)
+    .slice(0,12);
+
+  // ── Box Event ──
+  const beBuy=data.filter(r=>r.buyer==='Box Event');
+  const beSell=data.filter(r=>r.seller==='Box Event');
+  const beBuyVol=beBuy.reduce((s,r)=>s+r.total_value,0);
+  const beSellVol=beSell.reduce((s,r)=>s+r.total_value,0);
+  const beItemBuy={},beItemSell={};
+  beBuy.forEach(r=>{const n=cleanName(r.item_name);beItemBuy[n]=(beItemBuy[n]||0)+r.total_value;});
+  beSell.forEach(r=>{const n=cleanName(r.item_name);beItemSell[n]=(beItemSell[n]||0)+r.total_value;});
+  const beItems=[...new Set([...Object.keys(beItemBuy),...Object.keys(beItemSell)])];
+  const beRows=beItems.map(i=>({item:i,buy:beItemBuy[i]||0,sell:beItemSell[i]||0})).filter(r=>r.buy+r.sell>0).sort((a,b)=>(b.buy+b.sell)-(a.buy+a.sell)).slice(0,12);
+
+  // ── price spread ──
+  const iPrices={};
+  data.forEach(r=>{const n=cleanName(r.item_name);if(!iPrices[n])iPrices[n]=[];iPrices[n].push(r.price);});
+  const spreadItems=topIV.slice(0,10).map(([n])=>n);
+
+  // ── per-item medians ──
+  const itemMedians={};
+  Object.entries(iPrices).forEach(([item,prices])=>{
+    const s=prices.slice().sort((a,b)=>a-b);
+    itemMedians[item]=s[Math.floor(s.length/2)];
+  });
+
+  // ── item supply concentration (market cornering detection) ──
+  const itemSellerVol={}, itemSellerTxn={};
+  data.forEach(r=>{
+    const n=cleanName(r.item_name);
+    const k=n+'||'+r.seller;
+    itemSellerVol[k]=(itemSellerVol[k]||0)+r.total_value;
+    itemSellerTxn[k]=(itemSellerTxn[k]||0)+1;
+  });
+  // Group by item
+  const itemSellerMap={};
+  Object.keys(itemSellerVol).forEach(k=>{
+    const [item,seller]=k.split('||');
+    if(!itemSellerMap[item])itemSellerMap[item]=[];
+    itemSellerMap[item].push({seller,vol:itemSellerVol[k],txns:itemSellerTxn[k]});
+  });
+  const supplyConc=[];
+  Object.entries(itemSellerMap).forEach(([item,sellers])=>{
+    const med=itemMedians[item]; if(!med||med<MIN_ITEM_GP)return;
+    const totalItemVol=sellers.reduce((s,x)=>s+x.vol,0);
+    const totalTxns=sellers.reduce((s,x)=>s+x.txns,0);
+    if(totalTxns<5||totalItemVol<1e12)return;
+    sellers.sort((a,b)=>b.vol-a.vol);
+    const topSeller=sellers[0];
+    const topShare=topSeller.vol/totalItemVol*100;
+    const numSellers=sellers.length;
+    // Flag: single seller monopoly OR duopoly with heavy concentration
+    if(topShare>=75||numSellers<=2){
+      supplyConc.push({item,topSeller:topSeller.seller,topShare,numSellers,totalItemVol,totalTxns,
+        sellers:sellers.slice(0,3)});
+    }
+  });
+  supplyConc.sort((a,b)=>b.totalItemVol-a.totalItemVol);
+
+  // ── above/below median price outlier detection ──
+  // Build per (player+item) buy and sell price arrays
+  const pibPrices={}, pisPrices={};
+  data.forEach(r=>{
+    const n=cleanName(r.item_name);
+    const bk=r.buyer+'||'+n; if(!pibPrices[bk])pibPrices[bk]=[]; pibPrices[bk].push(r.price);
+    const sk=r.seller+'||'+n; if(!pisPrices[sk])pisPrices[sk]=[]; pisPrices[sk].push(r.price);
+  });
+  const priceOutliers=[];
+  // Buyers consistently paying above median (inflating demand price / supporting high prices)
+  Object.entries(pibPrices).forEach(([key,prices])=>{
+    if(prices.length<3)return;
+    const[player,item]=key.split('||');
+    const med=itemMedians[item]; if(!med||med<MIN_ITEM_GP)return;
+    const avg=prices.reduce((s,v)=>s+v,0)/prices.length;
+    const diff=(avg-med)/med*100;
+    if(diff>25) priceOutliers.push({player,item,role:'buyer',diff,avg,med,txns:prices.length,dir:'above'});
+  });
+  // Buyers consistently paying below median (sniping underpriced listings / merchant arbitrage)
+  Object.entries(pibPrices).forEach(([key,prices])=>{
+    if(prices.length<3)return;
+    const[player,item]=key.split('||');
+    const med=itemMedians[item]; if(!med||med<MIN_ITEM_GP)return;
+    const avg=prices.reduce((s,v)=>s+v,0)/prices.length;
+    const diff=(med-avg)/med*100;
+    if(diff>25) priceOutliers.push({player,item,role:'buyer',diff,avg,med,txns:prices.length,dir:'below'});
+  });
+  // Sellers listing consistently above median (anchoring price ceilings high)
+  Object.entries(pisPrices).forEach(([key,prices])=>{
+    if(prices.length<3)return;
+    const[player,item]=key.split('||');
+    const med=itemMedians[item]; if(!med||med<MIN_ITEM_GP)return;
+    const avg=prices.reduce((s,v)=>s+v,0)/prices.length;
+    const diff=(avg-med)/med*100;
+    if(diff>25) priceOutliers.push({player,item,role:'seller',diff,avg,med,txns:prices.length,dir:'above'});
+  });
+  // Sellers listing consistently below median (dumping / flooding supply)
+  Object.entries(pisPrices).forEach(([key,prices])=>{
+    if(prices.length<3)return;
+    const[player,item]=key.split('||');
+    const med=itemMedians[item]; if(!med||med<MIN_ITEM_GP)return;
+    const avg=prices.reduce((s,v)=>s+v,0)/prices.length;
+    const diff=(med-avg)/med*100;
+    if(diff>25) priceOutliers.push({player,item,role:'seller',diff,avg,med,txns:prices.length,dir:'below'});
+  });
+  priceOutliers.sort((a,b)=>b.diff-a.diff);
+
+  // ── price outlier tables (separate from watchlist) ──
+  // Above-median sellers: selling consistently >25% above item median
+  const aboveSell = Object.entries(pisPrices)
+    .map(([key,prices])=>{
+      const[player,item]=key.split('||');
+      const med=itemMedians[item]; if(!med||prices.length<3)return null;
+      if(med<MIN_ITEM_GP)return null; // skip junk items
+      const avg=prices.reduce((s,v)=>s+v,0)/prices.length;
+      const diff=(avg-med)/med*100;
+      return diff>25&&avg>=1e11?{player,item,avg,med,diff,txns:prices.length}:null;
+    }).filter(Boolean).sort((a,b)=>b.diff-a.diff);
+
+  // Below-median buyers: buying consistently >25% below item median
+  const belowBuy = Object.entries(pibPrices)
+    .map(([key,prices])=>{
+      const[player,item]=key.split('||');
+      const med=itemMedians[item]; if(!med||prices.length<3)return null;
+      if(med<MIN_ITEM_GP)return null; // skip junk items
+      const avg=prices.reduce((s,v)=>s+v,0)/prices.length;
+      const diff=(med-avg)/med*100;
+      return diff>25&&avg>=1e11?{player,item,avg,med,diff,txns:prices.length}:null;
+    }).filter(Boolean).sort((a,b)=>b.diff-a.diff);
+
+  // ── watchlist — exploit & manipulation flags only, grouped by severity ──
+  const wlCritical=[], wlWarning=[], wlInfo=[];
+
+  // CRITICAL: sell-only accounts
+  pureSellers.slice(0,4).forEach(([s,v])=>{
+    wlCritical.push({player:s,tags:['Sell-Only'],detail:`${fmt(v)} in sales, zero purchases on record. Verify item source — possible donator, staff, or exploit account.`});
+  });
+  // CRITICAL / WARNING: extreme same-day flips
+  flips.slice(0,4).forEach(f=>{
+    const arr=f.markup>500?wlCritical:wlWarning;
+    arr.push({player:f.player,tags:['Price Flip',Math.round(f.markup)+'%'],detail:`Bought ${f.item} @ ${fmt(f.buyPrice)}, sold @ ${fmt(f.sellPrice)} same day (${f.date}).`});
+  });
+  // WARNING: wash trades
+  washPairs.slice(0,4).forEach(w=>{
+    wlWarning.push({player:`${w.a} ↔ ${w.b}`,tags:['Wash Trade'],detail:`${w.item} — ${fmt(w.fwd)} forward, ${fmt(w.rev)} reverse on ${w.date}. Possible artificial volume.`});
+  });
+  // INFO: burst buyers
+  bursts.slice(0,4).forEach(b=>{
+    wlInfo.push({player:b.buyer,tags:['Burst Buyer'],detail:`${b.bq.toLocaleString()}× ${cleanName(b.item)} from multiple sellers in <60s. ${fmt(b.bv)} total.`});
+  });
+  // INFO: top buyers/sellers
+  topBuyers.slice(0,3).forEach(([name,val],i)=>{
+    wlInfo.push({player:name,tags:['Top Buyer','#'+(i+1)],detail:`${fmt(val)} spent · ${pct(val/totalVol*100)} of all POS volume · ${bTxns[name]} transactions.`});
+  });
+  topSellers.slice(0,3).forEach(([name,val],i)=>{
+    wlInfo.push({player:name,tags:['Top Seller','#'+(i+1)],detail:`${fmt(val)} earned · ${sTxns[name]} transactions · ${bSpend[name]?'active buyer too — watch for flipping.':'no buy history on record.'}`});
+  });
+  // INFO: new high-volume accounts (merged into watchlist instead of separate section)
+  newAccounts.forEach(a=>{
+    wlInfo.push({player:a.player,tags:['New Account'],
+      detail:`First active in ${latestMonth} · ${a.txns} txns · ${a.spent>0?'spent '+fmt(a.spent):''}${a.spent>0&&a.earned>0?' · ':''}${a.earned>0?'earned '+fmt(a.earned):''}.`});
+  });
+  // INFO: missing IDs
+  const allIds=data.map(r=>Number(r.id));
+  const minId=Math.min(...allIds),maxId=Math.max(...allIds);
+  const missingIds=(maxId-minId+1)-data.length;
+  if(missingIds>200){
+    wlInfo.push({player:'Transaction Log',tags:['ID Gaps'],detail:`${missingIds.toLocaleString()} missing IDs (${((missingIds/(maxId-minId+1))*100).toFixed(1)}% of range). Review deletion logs.`});
+  }
+
+  // ── KPI render ──
+  document.getElementById('k-vol').textContent=fmt(totalVol);
+  document.getElementById('k-vol-sub').textContent=data.length.toLocaleString()+' transactions';
+  document.getElementById('k-txns').textContent=data.length.toLocaleString();
+  document.getElementById('k-txns-sub').textContent=mKeys.length+' months of data';
+  document.getElementById('k-avg').textContent=fmt(avgPrice);
+  document.getElementById('k-conc').textContent=pct(top5Share);
+  document.getElementById('k-conc-sub').textContent='of all spend by top 5 buyers';
+  // Split flag KPI: show Critical / Warning / Info separately
+  document.getElementById('k-crit').textContent=wlCritical.length;
+  document.getElementById('k-warn').textContent=wlWarning.length;
+  document.getElementById('k-info-lbl').textContent=wlInfo.length+' informational';
+  const flagCard=document.getElementById('k-flags-card');
+  if(wlCritical.length>0){flagCard.className='kpi hi-red';}
+  else if(wlWarning.length>0){flagCard.className='kpi hi-orange';}
+  else{flagCard.className='kpi hi-green';}
+  if(hasMoM){
+    renderDelta('k-vol-delta',momVol,'MoM');
+    renderDelta('k-txns-delta',momCount,'MoM');
+    renderDelta('k-avg-delta',momAvg,'MoM');
+  }
+
+  // ── store trend data ──
+  trendData={ labels:mLabels, vols:mVols, counts:mCounts, avgs:mAvgs };
+  renderTrend('count');
+
+  // ── inflation monitor ──
+  // Per-item monthly median price
+  const itemMonthPrice={};
+  data.forEach(r=>{
+    const n=cleanName(r.item_name);
+    const mk=r.time.getFullYear()+'-'+String(r.time.getMonth()+1).padStart(2,'0');
+    if(!itemMonthPrice[n])itemMonthPrice[n]={};
+    if(!itemMonthPrice[n][mk])itemMonthPrice[n][mk]=[];
+    itemMonthPrice[n][mk].push(r.price);
+  });
+  // Calculate MoM price change for top items if 2+ months
+  const priceAppreciation=[];
+  if(hasMoM){
+    const prevM=mKeys[mKeys.length-2], currM=mKeys[mKeys.length-1];
+    topIV.forEach(([name])=>{
+      const prev=itemMonthPrice[name]?.[prevM], curr=itemMonthPrice[name]?.[currM];
+      if(!prev||!curr||prev.length<2||curr.length<2)return;
+      const medP=prev.slice().sort((a,b)=>a-b)[Math.floor(prev.length/2)];
+      const medC=curr.slice().sort((a,b)=>a-b)[Math.floor(curr.length/2)];
+      const chg=(medC-medP)/medP*100;
+      priceAppreciation.push({name,medP,medC,chg,prevM,currM});
+    });
+    priceAppreciation.sort((a,b)=>b.chg-a.chg);
+
+    // Price spikes → escalate to Critical watchlist
+    priceAppreciation.forEach(a=>{
+      const txnTotal=(itemMonthPrice[a.name]?.[prevM]?.length||0)+(itemMonthPrice[a.name]?.[currM]?.length||0);
+      if(a.chg>100&&txnTotal>=10){
+        wlCritical.push({player:'📈 '+a.name,tags:['Price Spike','+'+Math.round(a.chg)+'%'],
+          detail:`Median ${fmt(a.medP)} → ${fmt(a.medC)} (+${a.chg.toFixed(0)}% MoM, ${txnTotal} txns). Likely cornering, manipulation, or new drop. Verify seller list immediately.`});
+      }
+    });
+  }
+
+  // GP injection (pure sellers add items/GP into eco) vs GP sink (buyers spending existing GP)
+  const gpInjected=pureSellers.reduce((s,[,v])=>s+v,0); // items entering eco from outside
+  const gpCirculated=totalVol-gpInjected;               // existing GP changing hands
+  const injectionPct=gpInjected/totalVol*100;
+
+  // Eco health score — tightened thresholds for RSPS economy sensitivity
+  let healthScore=100;
+  let healthSignals=[];
+  // Signal 1: avg price MoM growth (most direct inflation proxy)
+  if(momAvg!==null){
+    if(momAvg>20){healthScore-=40;healthSignals.push({txt:'Avg price up '+momAvg.toFixed(1)+'% MoM — severe',bad:true});}
+    else if(momAvg>10){healthScore-=30;healthSignals.push({txt:'Avg price up '+momAvg.toFixed(1)+'% MoM — elevated',bad:true});}
+    else if(momAvg>5){healthScore-=15;healthSignals.push({txt:'Avg price up '+momAvg.toFixed(1)+'% MoM — watch',bad:true});}
+    else if(momAvg>0){healthSignals.push({txt:'Avg price up '+momAvg.toFixed(1)+'% MoM — stable',bad:false});}
+    else{healthSignals.push({txt:'Avg price flat/falling ('+momAvg.toFixed(1)+'% MoM)',bad:false});}
+  }
+  // Signal 2: buyer concentration
+  if(top5Share>40){healthScore-=25;healthSignals.push({txt:'Top-5 buyers hold '+pct(top5Share)+' of spend — highly concentrated',bad:true});}
+  else if(top5Share>25){healthScore-=12;healthSignals.push({txt:'Top-5 buyer share '+pct(top5Share)+' — moderate concentration',bad:false});}
+  else{healthSignals.push({txt:'Buyer concentration healthy ('+pct(top5Share)+')',bad:false});}
+  // Signal 3: GP injection from sell-only accounts
+  if(injectionPct>30){healthScore-=25;healthSignals.push({txt:pct(injectionPct)+' of volume from sell-only accounts — high injection',bad:true});}
+  else if(injectionPct>15){healthScore-=12;healthSignals.push({txt:pct(injectionPct)+' from sell-only accounts — moderate injection',bad:true});}
+  else{healthSignals.push({txt:'Item injection rate low ('+pct(injectionPct)+')',bad:false});}
+  // Signal 4: item price spikes (cornering / manipulation indicator)
+  if(priceAppreciation.length>0){
+    const spikeItems=priceAppreciation.filter(x=>x.chg>100).length;
+    const risingItems=priceAppreciation.filter(x=>x.chg>15&&x.chg<=100).length;
+    if(spikeItems>0){const pen=Math.min(spikeItems*15,30);healthScore-=pen;healthSignals.push({txt:spikeItems+' item'+(spikeItems>1?'s':'')+' up >100% — possible manipulation',bad:true});}
+    else if(risingItems>4){healthScore-=12;healthSignals.push({txt:risingItems+' items up >15% this month',bad:true});}
+    else if(risingItems>1){healthScore-=5;healthSignals.push({txt:risingItems+' items up >15% this month',bad:false});}
+  }
+  healthScore=Math.max(0,Math.min(100,healthScore));
+  const healthTier=healthScore>=70?'green':healthScore>=45?'yellow':'red';
+  const healthLabel=healthScore>=70?'Stable':healthScore>=45?'Moderate Inflation Risk':'High Inflation Risk';
+
+  // ── notable player profiles ──
+  const profileMap = new Map();
+  // Box Event always first
+  profileMap.set('Box Event',{
+    player:'Box Event', role:'Top Merchant', roleColor:'var(--yellow)',
+    tags:['Merchant'], buyVol:beBuyVol, sellVol:beSellVol,
+    buyTxns:beBuy.length, sellTxns:beSell.length,
+    note:'Server\'s most prolific merchant — buys at floor price across sellers, relists higher. Net GP consumer which is healthy, but price anchoring at scale compresses spreads for casual players.'
+  });
+  // Critical watchlist players
+  wlCritical.forEach(w=>{
+    const n=w.player.includes('↔')?null:w.player;
+    if(!n||n==='Box Event'||profileMap.has(n))return;
+    profileMap.set(n,{player:n,role:w.tags[0]||'Critical Flag',roleColor:'var(--red)',tags:w.tags,
+      buyVol:bSpend[n]||0,sellVol:sRev[n]||0,buyTxns:bTxns[n]||0,sellTxns:sTxns[n]||0,note:w.detail});
+  });
+  // Top warning players
+  wlWarning.slice(0,4).forEach(w=>{
+    const n=w.player.includes('↔')?null:w.player;
+    if(!n||profileMap.has(n))return;
+    profileMap.set(n,{player:n,role:w.tags[0]||'Warning',roleColor:'var(--yellow)',tags:w.tags,
+      buyVol:bSpend[n]||0,sellVol:sRev[n]||0,buyTxns:bTxns[n]||0,sellTxns:sTxns[n]||0,note:w.detail});
+  });
+  // Top pure sellers not already included
+  pureSellers.slice(0,3).forEach(([s,v])=>{
+    if(profileMap.has(s))return;
+    profileMap.set(s,{player:s,role:'Pure Seller',roleColor:'var(--red)',tags:['Sell-Only','GP Injector'],
+      buyVol:0,sellVol:v,buyTxns:0,sellTxns:sTxns[s]||0,
+      note:'Zero purchase history — sells only. Possible donator, staff perk, or RWT source. Verify item origin.'});
+  });
+  const notablePlayers=[...profileMap.values()].sort((a,b)=>(b.buyVol+b.sellVol)-(a.buyVol+a.sellVol));
+
+  // Filter profiled players out of the watchlist — they're covered by player profiles
+  const profiledNames=new Set(notablePlayers.map(p=>p.player));
+  const wlCriticalF=wlCritical.filter(w=>!profiledNames.has(w.player));
+  const wlWarningF=wlWarning.filter(w=>!profiledNames.has(w.player));
+  const wlInfoF=wlInfo.filter(w=>!profiledNames.has(w.player));
+
+  // ── render ──
+  renderItemRankList('list-items-vol', topIV, 'vol');
+  renderItemRankList('list-items-count', topIC, 'count');
+  renderInflationHealth(healthScore,healthTier,healthLabel,healthSignals,gpInjected,gpCirculated,totalVol,injectionPct);
+  renderPriceAppreciation(priceAppreciation,hasMoM,mKeys);
+  renderWatchlist(wlCriticalF,wlWarningF,wlInfoF);
+  renderOutlierTable('tbl-above-sell', aboveSell, 'sell', 'above');
+  renderOutlierTable('tbl-below-buy', belowBuy, 'buy', 'below');
+  renderPlayerProfiles(notablePlayers);
+  renderBETable(beRows);
+  renderSupplyConc(supplyConc);
+  renderPriceSpread(spreadItems,iPrices);
+
+  document.getElementById('loading').style.display='none';
+  document.getElementById('upload-screen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+}
+
+// ── TREND TOGGLE ────────────────────────────────────────────────────────────
+function setTrend(mode,btn){
+  document.querySelectorAll('.tog').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderTrend(mode);
+}
+function renderTrend(mode){
+  const {labels,vols,counts,avgs}=trendData;
+  const isVol=mode==='vol';
+  const barData=isVol?vols:counts;
+  const barLabel=isVol?'GP Volume':'Transactions';
+  mkChart('chart-trend',{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {type:'bar',label:barLabel,data:barData,backgroundColor:'rgba(79,142,247,0.7)',borderRadius:4,yAxisID:'y'},
+        {type:'line',label:'Avg Unit Price',data:avgs,borderColor:'#f97316',backgroundColor:'rgba(249,115,22,0.08)',fill:true,tension:0.4,pointBackgroundColor:'#f97316',yAxisID:'y2',borderWidth:2}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,labels:{color:'#94a3b8',font:{size:10},boxWidth:10,padding:16}},
+        tooltip:{backgroundColor:'#0a0c10',borderColor:'#2a3347',borderWidth:1,titleColor:'#94a3b8',bodyColor:'#e2e8f0',padding:10,callbacks:{
+          label:ctx=>{
+            if(ctx.dataset.yAxisID==='y2') return 'Avg Price: '+fmt(ctx.raw);
+            if(isVol) return 'Volume: '+fmt(ctx.raw);
+            return 'Txns: '+ctx.raw.toLocaleString();
+          }
+        }}
+      },
+      scales:{
+        x:{ticks:{color:'#64748b',font:{size:10}},grid:{color:'rgba(42,51,71,0.5)'}},
+        y:{ticks:{color:'#64748b',font:{size:10},callback:v=>isVol?fmt(v,0):v.toLocaleString()},grid:{color:'rgba(42,51,71,0.5)'},position:'left'},
+        y2:{ticks:{color:'#f97316',font:{size:10},callback:v=>fmt(v,0)},grid:{display:false},position:'right'}
+      }
+    }
+  });
+}
+
+// ── DELTA HELPER ──────────────────────────────────────────────────────────────
+function renderDelta(elId,val,label){
+  const el=document.getElementById(elId);
+  if(!el||val==null)return;
+  const cls=val>5?'delta-up':val<-5?'delta-down':'delta-neu';
+  const arrow=val>0?'▲':'▼';
+  el.innerHTML=`<span class="delta ${cls}">${arrow} ${Math.abs(val).toFixed(1)}% ${label}</span>`;
+}
+
+// ── WATCHLIST (grouped) ───────────────────────────────────────────────────────
+function renderWatchlist(critical, warning, info){
+  const el=document.getElementById('watchlist');
+  const total=critical.length+warning.length+info.length;
+  if(!total){el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px 0">No flags detected this period.</div>';return;}
+
+  const renderGroup=(items,level,icon,label,pillCls)=>{
+    if(!items.length)return'';
+    const rows=items.map(w=>{
+      const tagHtml=w.tags.map(t=>`<span class="pill ${pillCls}">${t}</span>`).join('');
+      return `<div class="wl-item ${level}">
+        <div class="wl-top"><span class="wl-name">${w.player}</span><div class="wl-tags">${tagHtml}</div></div>
+        <div class="wl-detail">${w.detail}</div>
+      </div>`;
+    }).join('');
+    return `<div class="wl-group-hdr"><span>${icon} ${label}</span><span class="wl-group-count">${items.length}</span></div>${rows}`;
+  };
+
+  el.innerHTML=
+    renderGroup(critical,'critical','🔴','Critical — Verify Immediately','p-red')+
+    renderGroup(warning,'warning','🟡','Warning — Monitor Closely','p-yel')+
+    renderGroup(info,'info','ℹ️','Informational','p-blu');
+}
+
+// ── PRICE OUTLIER TABLES ──────────────────────────────────────────────────────
+function renderOutlierTable(id, rows, role, dir){
+  const el=document.getElementById(id);
+  if(!rows.length){
+    el.innerHTML=`<tr><td colspan="5" style="color:var(--muted);padding:12px;font-size:12px">No significant outliers detected (threshold: >25% from median, ≥3 txns).</td></tr>`;
+    return;
+  }
+  const isAbove=dir==='above';
+  const devCol=isAbove?'var(--red)':'var(--accent)';
+  el.innerHTML=
+    `<thead><tr><th>Player</th><th>Item</th><th>${role==='sell'?'Avg Sell':'Avg Buy'}</th><th>Mkt Median</th><th>Deviation</th><th>Txns</th></tr></thead><tbody>`+
+    rows.slice(0,15).map(r=>`<tr>
+      <td class="n">${r.player}</td>
+      <td style="font-size:11px;color:var(--dim);max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${r.item}">${r.item}</td>
+      <td class="v">${fmt(r.avg)}</td>
+      <td class="v" style="color:var(--muted)">${fmt(r.med)}</td>
+      <td class="v"><span class="pill" style="background:${devCol}22;color:${devCol}">${isAbove?'+':'−'}${r.diff.toFixed(0)}%</span></td>
+      <td class="v">${r.txns}</td>
+    </tr>`).join('')+
+    '</tbody>';
+}
+
+// ── NEW ACCOUNTS ──────────────────────────────────────────────────────────────
+function renderNewAccounts(accounts,month){
+  const el=document.getElementById('new-accounts');
+  const [y,m]=month.split('-');
+  const label=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+y;
+  if(!accounts.length){el.innerHTML=`<div style="color:var(--muted);font-size:12px;padding:8px 0">No new high-volume accounts in ${label}.</div>`;return;}
+  el.innerHTML=`<div style="font-size:10px;color:var(--muted);margin-bottom:10px">First-time active accounts in <strong style="color:var(--dim)">${label}</strong> with ≥3 transactions</div>`+
+    accounts.map(a=>`
+      <div class="na-item">
+        <div>
+          <div style="font-size:12px;font-weight:600">${a.player}</div>
+          <div style="font-size:10px;color:var(--muted)">${a.txns} txns · ${a.spent>0?'spent '+fmt(a.spent):''}${a.spent>0&&a.earned>0?' · ':''}${a.earned>0?'earned '+fmt(a.earned):''}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:12px;font-weight:600">${fmt(a.total)}</div>
+          <span class="pill ${a.spent>0&&a.earned>0?'p-pur':a.spent>0?'p-red':'p-grn'}">${a.spent>0&&a.earned>0?'Active Trader':a.spent>0?'Buyer':'Seller'}</span>
+        </div>
+      </div>`).join('');
+}
+
+// ── RANKED ITEM LIST ──────────────────────────────────────────────────────────
+function renderItemRankList(id, items, mode){
+  const el=document.getElementById(id);
+  const maxVal=items[0]?items[0][1]:1;
+  const colors=['#4f8ef7','#7c3aed','#22c55e','#f97316','#eab308','#ef4444','#06b6d4','#a855f7','#84cc16','#f43f5e','#14b8a6','#fb923c'];
+  el.innerHTML=items.map(([name,val],i)=>{
+    const barW=Math.round(val/maxVal*100);
+    const valStr=mode==='vol'?fmt(val):val.toLocaleString();
+    const subStr=mode==='vol'?'':' txns';
+    return `<div class="ir-row">
+      <span class="ir-num">${i+1}</span>
+      <span class="ir-name" title="${name}">${name}</span>
+      <div class="ir-bar-wrap"><div class="ir-bar"><div class="ir-fill" style="width:${barW}%;background:${colors[i%colors.length]}"></div></div></div>
+      <span class="ir-val">${valStr}${subStr}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── INFLATION MONITOR ─────────────────────────────────────────────────────────
+function renderInflationHealth(score,tier,label,signals,injected,circulated,total,injPct){
+  const healthDesc={
+    green:'Economy is broadly stable. Avg price growth is within normal range, item injection is controlled, and wealth is reasonably distributed. Monitor monthly.',
+    yellow:'Moderate inflation pressure detected. One or more signals are trending in a direction that could destabilise the economy if unchecked. Review flagged items.',
+    red:'High inflation risk. Multiple indicators are elevated — unchecked this could force an eco reset. Prioritise intervention on the signals below.'
+  };
+  const sigHtml=signals.map(s=>`<span class="pill ${s.bad?'p-red':'p-grn'}">${s.txt}</span>`).join('');
+  document.getElementById('inf-health-card').innerHTML=`
+    <div class="inf-health ${tier}">
+      <div class="inf-score">${score}</div>
+      <div>
+        <div class="inf-label">${label}</div>
+        <div class="inf-desc">${healthDesc[tier]}</div>
+        <div class="inf-signals">${sigHtml}</div>
+      </div>
+    </div>`;
+
+  const flowBars=[
+    {label:'Circulating GP (player-to-player)',val:circulated,total,color:'var(--accent)'},
+    {label:'Injected GP (sell-only accounts)',val:injected,total,color:injPct>20?'var(--red)':injPct>10?'var(--yellow)':'var(--green)'}
+  ];
+  document.getElementById('gp-flow').innerHTML=flowBars.map(f=>{
+    const w=Math.round(f.val/f.total*100);
+    return `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:11px;color:var(--dim)">${f.label}</span>
+        <span style="font-size:11px;font-weight:600;color:${f.color}">${fmt(f.val)} <span style="color:var(--muted);font-weight:400">(${pct(w)})</span></span>
+      </div>
+      <div class="hbar" style="height:8px"><div class="hbar-fill" style="width:${w}%;background:${f.color}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderPriceAppreciation(items,hasMoM,mKeys){
+  const el=document.getElementById('price-appr');
+  if(!hasMoM||!items.length){
+    el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px 0">Need at least 2 months of data to calculate price appreciation.</div>';
+    return;
+  }
+  const [,pm]=mKeys[mKeys.length-2].split('-');
+  const [,cm]=mKeys[mKeys.length-1].split('-');
+  const mName=m=>['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1];
+  el.innerHTML=`<div style="font-size:10px;color:var(--muted);margin-bottom:10px">${mName(pm)} → ${mName(cm)} · median price change</div>`+
+    items.map(a=>{
+      const isUp=a.chg>0;
+      const isSpike=a.chg>100; // critical threshold
+      const rowBg=isSpike?'background:rgba(239,68,68,.06);border-radius:6px;padding:6px 6px;margin:-2px -6px;':'';
+      return `<div class="appr-row" style="${rowBg}">
+        <div style="display:flex;align-items:center;gap:7px">
+          ${isSpike?'<span title="Price spike — critical">🚨</span>':''}
+          <div>
+            <div style="font-size:12px;font-weight:${isSpike?700:500};color:${isSpike?'var(--red)':'inherit'}">${a.name}</div>
+            <div style="font-size:10px;color:var(--muted)">${fmt(a.medP)} → ${fmt(a.medC)}</div>
+          </div>
+        </div>
+        <span class="pill ${isUp?(isSpike?'p-red':a.chg>20?'p-red':a.chg>10?'p-org':'p-yel'):'p-grn'}" style="font-size:11px">${isUp?'▲':'▼'} ${Math.abs(a.chg).toFixed(1)}%</span>
+      </div>`;
+    }).join('');
+}
+
+// ── PLAYER PROFILES ──────────────────────────────────────────────────────────
+function renderPlayerProfiles(players){
+  const el=document.getElementById('player-profiles');
+  if(!players.length){el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px 0">No notable players identified.</div>';return;}
+  const pillCls={critical:'p-red',warning:'p-yel',info:'p-blu'};
+  el.innerHTML=players.map(p=>{
+    const net=p.buyVol-p.sellVol;
+    const isNetBuyer=net>0;
+    const netColor=isNetBuyer?'var(--red)':'var(--green)';
+    const tagHtml=p.tags.map(t=>`<span class="pill p-org" style="font-size:9px">${t}</span>`).join('');
+    return `<div class="pp-card">
+      <div class="pp-hdr">
+        <div><div class="pp-name">${p.player}</div><div class="pp-role" style="color:${p.roleColor}">${p.role}</div></div>
+        <div class="wl-tags">${tagHtml}</div>
+      </div>
+      <div class="pp-stats">
+        <div><div class="pp-sl">Spent</div><div class="pp-sv" style="color:var(--red)">${fmt(p.buyVol)||'—'}</div><div class="pp-ss">${p.buyTxns} buy txns</div></div>
+        <div><div class="pp-sl">Earned</div><div class="pp-sv" style="color:var(--green)">${fmt(p.sellVol)||'—'}</div><div class="pp-ss">${p.sellTxns} sell txns</div></div>
+        <div><div class="pp-sl">Net</div><div class="pp-sv" style="color:${netColor}">${isNetBuyer?'+':''}${fmt(net)}</div><div class="pp-ss">${isNetBuyer?'net consumer':'net supplier'}</div></div>
+      </div>
+      <div class="pp-note">${p.note}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── SUPPLY CONCENTRATION ─────────────────────────────────────────────────────
+function renderSupplyConc(items){
+  const el=document.getElementById('supply-conc');
+  if(!items.length){
+    el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px 0">No concentrated supply detected — market looks competitive.</div>';
+    return;
+  }
+  el.innerHTML=`<table class="dt"><thead><tr>
+    <th>Item</th><th>Top Seller</th><th>Supply %</th><th>Sellers</th><th>Volume</th><th>Txns</th><th>Risk</th>
+  </tr></thead><tbody>`+
+  items.map(r=>{
+    const isMonopoly=r.numSellers===1;
+    const riskCls=isMonopoly?'p-red':r.topShare>=90?'p-red':r.topShare>=75?'p-yel':'p-org';
+    const riskLbl=isMonopoly?'Monopoly':r.topShare>=90?'Near-Mono':'Concentrated';
+    return `<tr>
+      <td class="n">${r.item}</td>
+      <td style="font-size:11px;color:var(--dim)">${r.topSeller}</td>
+      <td class="v"><strong style="color:${r.topShare>=90?'var(--red)':'var(--yellow)'}">${r.topShare.toFixed(0)}%</strong></td>
+      <td class="v" style="color:var(--muted)">${r.numSellers}</td>
+      <td class="v">${fmt(r.totalItemVol)}</td>
+      <td class="v" style="color:var(--muted)">${r.totalTxns}</td>
+      <td class="v"><span class="pill ${riskCls}">${riskLbl}</span></td>
+    </tr>`;
+  }).join('')+'</tbody>';
+}
+
+function renderBETable(rows){
+  document.getElementById('tbl-be').innerHTML=
+    `<thead><tr><th>Item</th><th>Bought</th><th>Sold</th><th>Net Flow</th></tr></thead><tbody>`+
+    rows.map(r=>{
+      const net=r.sell-r.buy;
+      const netColor=net>0?'var(--green)':net<0?'var(--red)':'var(--muted)';
+      return `<tr><td style="font-size:11px">${r.item}</td><td class="v">${r.buy?fmt(r.buy):'—'}</td><td class="v">${r.sell?fmt(r.sell):'—'}</td>
+        <td class="v" style="color:${netColor}">${net>=0?'+':''}${fmt(net)}</td></tr>`;
+    }).join('')+'</tbody>';
+}
+
+// ── PRICE SPREAD ──────────────────────────────────────────────────────────────
+function renderPriceSpread(items,priceData){
+  // Build enriched list and sort by median price descending
+  const enriched=items.map(name=>{
+    const prices=priceData[name]||[];
+    if(prices.length<2)return null;
+    const sorted=prices.slice().sort((a,b)=>a-b);
+    const min=sorted[0],max=sorted[sorted.length-1],med=sorted[Math.floor(sorted.length/2)];
+    return{name,prices,sorted,min,max,med};
+  }).filter(Boolean).sort((a,b)=>b.med-a.med);
+
+  document.getElementById('price-spread').innerHTML=enriched.map(({name,prices,min,max,med})=>{
+    const spread=(max-min)/med*100;
+    const sCol=spread>100?'var(--red)':spread>40?'var(--yellow)':'var(--green)';
+    const sLbl=spread>100?'HIGH':spread>40?'MED':'LOW';
+    return `<div class="ps-card">
+      <div class="ps-name" title="${name}">${name}</div>
+      <div class="ps-stats">
+        <div><div class="ps-stat-lbl">MIN</div><div class="ps-stat-val" style="color:var(--green)">${fmt(min)}</div></div>
+        <div><div class="ps-stat-lbl">MEDIAN</div><div class="ps-stat-val">${fmt(med)}</div></div>
+        <div><div class="ps-stat-lbl">MAX</div><div class="ps-stat-val" style="color:var(--red)">${fmt(max)}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:9px;color:var(--muted)">${prices.length} txns · ${Math.round(spread)}% spread</span>
+        <span class="pill" style="background:${sCol}22;color:${sCol}">${sLbl} variance</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

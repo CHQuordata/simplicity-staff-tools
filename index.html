@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simplicity RSPS — Staff Tools</title>
+<style>
+  :root {
+    --bg: #0d0f14; --surface: #161b24; --surface2: #1e2635; --border: #2a3347;
+    --accent: #4f8ef7; --green: #22c55e; --yellow: #eab308; --red: #ef4444;
+    --orange: #f97316; --text: #e2e8f0; --muted: #64748b; --dim: #94a3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  /* ── HEADER ── */
+  .hdr {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 18px 32px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .hdr-l { display: flex; align-items: center; gap: 14px; }
+  .logo { font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: -.3px; }
+  .logo span { color: var(--dim); font-weight: 400; font-size: 14px; }
+  .badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 3px 10px; border-radius: 20px; color: var(--dim); font-size: 11px;
+  }
+  .hdr-r { color: var(--muted); font-size: 11px; }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 56px 32px 32px; max-width: 960px; margin: 0 auto;
+  }
+  .hero h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { color: var(--muted); font-size: 14px; max-width: 520px; line-height: 1.6; }
+
+  /* ── GRID ── */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding: 0 32px 48px; max-width: 960px; margin: 0 auto; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 24px; text-decoration: none; color: inherit; display: flex; flex-direction: column;
+    gap: 14px; transition: border-color .2s, background .2s; cursor: pointer;
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--card-accent, var(--accent)); opacity: 0; transition: opacity .2s;
+  }
+  .card:hover { border-color: var(--card-accent, var(--accent)); background: var(--surface2); }
+  .card:hover::before { opacity: 1; }
+  .card-icon { font-size: 28px; line-height: 1; }
+  .card-body { flex: 1; }
+  .card-title { font-size: 15px; font-weight: 700; margin-bottom: 5px; }
+  .card-desc { color: var(--muted); font-size: 12px; line-height: 1.6; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 2px 8px; border-radius: 10px; font-size: 10px; color: var(--dim);
+  }
+  .card-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid var(--border); padding-top: 14px; margin-top: 2px;
+  }
+  .card-cta { font-size: 12px; color: var(--card-accent, var(--accent)); font-weight: 600; }
+  .card-type { font-size: 10px; color: var(--muted); }
+
+  /* ── COMING SOON ── */
+  .card.soon { opacity: .55; cursor: default; }
+  .card.soon:hover { border-color: var(--border); background: var(--surface); }
+  .card.soon::before { display: none; }
+  .soon-pill {
+    position: absolute; top: 14px; right: 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 2px 8px; border-radius: 10px; font-size: 10px; color: var(--muted);
+  }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    max-width: 960px; margin: 0 auto; padding: 0 32px 12px;
+    font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .08em;
+  }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 24px 32px; max-width: 896px; margin-left: auto; margin-right: auto; }
+
+  /* ── FOOTER ── */
+  .footer { text-align: center; padding: 32px; color: var(--muted); font-size: 11px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="logo">Simplicity RSPS <span>/ Staff Tools</span></div>
+    <div class="badge">Internal</div>
+  </div>
+  <div class="hdr-r" id="last-updated">—</div>
+</header>
+
+<div class="hero">
+  <h1>Staff <span>Dashboards</span></h1>
+  <p>Internal tooling for the Simplicity operations team. All dashboards run locally in your browser — no data is stored or sent anywhere.</p>
+</div>
+
+<div class="section-label">Economy &amp; Market</div>
+<div class="grid">
+
+  <a class="card" href="pos-dashboard.html" style="--card-accent: var(--accent)">
+    <div class="card-icon">📈</div>
+    <div class="card-body">
+      <div class="card-title">POS Economy Dashboard</div>
+      <div class="card-desc">Monitor economy health, detect price manipulation, market cornering, and player exploitation via POS trade data.</div>
+    </div>
+    <div class="card-tags">
+      <span class="tag">Economy</span>
+      <span class="tag">Anti-Cheat</span>
+      <span class="tag">CSV Upload</span>
+    </div>
+    <div class="card-footer">
+      <span class="card-cta">Open dashboard →</span>
+      <span class="card-type">Upload CSV</span>
+    </div>
+  </a>
+
+  <a class="card" href="v3stige-dashboard.html" style="--card-accent: var(--orange)">
+    <div class="card-icon">🏆</div>
+    <div class="card-body">
+      <div class="card-title">V3stige Drop Dashboard</div>
+      <div class="card-desc">Track drop rates, loot distribution, and item acquisition patterns for V3stige content.</div>
+    </div>
+    <div class="card-tags">
+      <span class="tag">Drops</span>
+      <span class="tag">Loot</span>
+      <span class="tag">CSV Upload</span>
+    </div>
+    <div class="card-footer">
+      <span class="card-cta">Open dashboard →</span>
+      <span class="card-type">Upload CSV</span>
+    </div>
+  </a>
+
+  <div class="card soon" style="--card-accent: var(--green)">
+    <div class="soon-pill">Coming soon</div>
+    <div class="card-icon">💰</div>
+    <div class="card-body">
+      <div class="card-title">Donation Tracker</div>
+      <div class="card-desc">Track donor spending, benefit claims, and GP injection rates from donations into the economy.</div>
+    </div>
+    <div class="card-tags">
+      <span class="tag">Economy</span>
+      <span class="tag">Donations</span>
+    </div>
+    <div class="card-footer">
+      <span class="card-cta" style="color:var(--muted)">Planned</span>
+      <span class="card-type">—</span>
+    </div>
+  </div>
+
+</div>
+
+<hr class="divider">
+<div class="section-label">Player Management</div>
+<div class="grid">
+
+  <div class="card soon">
+    <div class="soon-pill">Coming soon</div>
+    <div class="card-icon">🚨</div>
+    <div class="card-body">
+      <div class="card-title">Exploit Monitor</div>
+      <div class="card-desc">Flag XP rate anomalies, item dupe patterns, and skill gain outliers against server-side baselines.</div>
+    </div>
+    <div class="card-tags">
+      <span class="tag">Anti-Cheat</span>
+      <span class="tag">XP</span>
+      <span class="tag">Integrity</span>
+    </div>
+    <div class="card-footer">
+      <span class="card-cta" style="color:var(--muted)">Planned</span>
+      <span class="card-type">—</span>
+    </div>
+  </div>
+
+  <div class="card soon">
+    <div class="soon-pill">Coming soon</div>
+    <div class="card-icon">📋</div>
+    <div class="card-body">
+      <div class="card-title">Punishment Log</div>
+      <div class="card-desc">Searchable log of bans, mutes, and warnings with staff attribution and appeal status.</div>
+    </div>
+    <div class="card-tags">
+      <span class="tag">Moderation</span>
+      <span class="tag">Audit</span>
+    </div>
+    <div class="card-footer">
+      <span class="card-cta" style="color:var(--muted)">Planned</span>
+      <span class="card-type">—</span>
+    </div>
+  </div>
+
+</div>
+
+<footer class="footer">
+  Simplicity RSPS — Internal Staff Tools &nbsp;·&nbsp; All dashboards are client-side only. No data leaves your browser.
+</footer>
+
+<script>
+  // Show today's date in header
+  document.getElementById('last-updated').textContent =
+    'Updated ' + new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+</script>
+
+</body>
+</html>
