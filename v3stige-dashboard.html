@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>V3stige — Drop Report Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
   :root {
     --bg:       #0d0f14;
@@ -133,9 +134,61 @@
   /* misc */
   .green { color: var(--green); }
   .gold  { color: var(--accent2); }
+
+  /* ── Upload Screen ── */
+  #upload-screen {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 40px;
+  }
+  .u-logo { font-size: 22px; font-weight: 800; color: var(--accent); margin-bottom: 4px; }
+  .u-sub  { color: var(--muted); font-size: 13px; margin-bottom: 36px; }
+  .u-box  {
+    border: 2px dashed var(--border); border-radius: 14px; padding: 52px 72px;
+    text-align: center; cursor: pointer; background: var(--card); max-width: 420px;
+    width: 100%; transition: all .2s;
+  }
+  .u-box:hover, .u-box.over { border-color: var(--accent); background: #1a1d30; }
+  .u-icon { font-size: 36px; margin-bottom: 14px; }
+  .u-box h2 { font-size: 15px; margin-bottom: 6px; }
+  .u-box p  { color: var(--muted); font-size: 12px; }
+  .u-btn {
+    margin-top: 20px; background: var(--accent); color: #fff; border: none;
+    padding: 9px 26px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .u-btn:hover { opacity: .88; }
+  #file-input { display: none; }
+
+  /* ── Dashboard hidden until loaded ── */
+  #dashboard { display: none; }
+
+  /* ── Header reload button ── */
+  .rbtn {
+    background: rgba(255,255,255,.06); border: 1px solid var(--border);
+    color: var(--muted); padding: 5px 13px; border-radius: 6px;
+    cursor: pointer; font-size: 11px; transition: all .2s;
+  }
+  .rbtn:hover { border-color: var(--accent); color: var(--accent); }
+  .file-lbl { color: var(--muted); font-size: 11px; }
 </style>
 </head>
 <body>
+
+<!-- ── Upload Screen ── -->
+<div id="upload-screen">
+  <div class="u-logo">V3stige</div>
+  <div class="u-sub">Simplicity RSPS — Drop Report Dashboard</div>
+  <div class="u-box" id="drop-zone" onclick="document.getElementById('file-input').click()">
+    <div class="u-icon">📂</div>
+    <h2>Upload Drop Report CSV</h2>
+    <p>Drag & drop your CSV file here, or click to browse</p>
+    <p style="margin-top:8px;font-size:11px;color:#4a556a">Expected columns: npc, kills, item, qty, qs</p>
+    <button class="u-btn" onclick="event.stopPropagation();document.getElementById('file-input').click()">Choose File</button>
+  </div>
+  <input type="file" id="file-input" accept=".csv">
+</div>
+
+<!-- ── Dashboard (hidden until CSV loaded) ── -->
+<div id="dashboard">
 
 <header>
   <div class="avatar">V</div>
@@ -143,7 +196,11 @@
     <h1>V3stige</h1>
     <p>Simplicity RSPS — Drop Report</p>
   </div>
-  <div class="badge">All-Time Data</div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+    <span class="file-lbl" id="file-lbl"></span>
+    <button class="rbtn" onclick="resetToUpload()">⟳ Load New File</button>
+    <div class="badge">All-Time Data</div>
+  </div>
 </header>
 
 <main>
@@ -197,12 +254,62 @@
   </section>
 
 </main>
+</div><!-- /#dashboard -->
 
 <script>
 // ═══════════════════════════════════════════════════
-// RAW DATA
+// FILE UPLOAD HANDLING
 // ═══════════════════════════════════════════════════
-const rawDrops = [
+let killsChartInst = null, valueChartInst = null;
+
+function resetToUpload(){
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('upload-screen').style.display='flex';
+  document.getElementById('file-input').value='';
+}
+
+function handleFile(file){
+  if(!file) return;
+  Papa.parse(file,{
+    header:true, skipEmptyLines:true,
+    complete(res){
+      const rows = res.data.map(r=>({
+        npc:  (r.npc||r.NPC||'').trim().toUpperCase(),
+        kills: +r.kills||0,
+        item: (r.item||r.Item||'').trim(),
+        qty:  +r.qty||0,
+        qs:   +r.qs||0,
+      })).filter(r=>r.npc&&r.item);
+      if(!rows.length){ alert('No valid rows found. Check column names: npc, kills, item, qty, qs'); return; }
+      document.getElementById('upload-screen').style.display='none';
+      document.getElementById('dashboard').style.display='block';
+      document.getElementById('file-lbl').textContent=file.name;
+      initDashboard(rows);
+    },
+    error(){ alert('Could not parse CSV. Make sure it is a valid file.'); }
+  });
+}
+
+const fileInput = document.getElementById('file-input');
+fileInput.addEventListener('change', e=>handleFile(e.target.files[0]));
+
+const dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('over');});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('over'));
+dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('over');handleFile(e.dataTransfer.files[0]);});
+
+// ═══════════════════════════════════════════════════
+// DASHBOARD INIT
+// ═══════════════════════════════════════════════════
+function initDashboard(rawDrops){
+  // Destroy previous charts if reloading
+  if(killsChartInst){ killsChartInst.destroy(); killsChartInst=null; }
+  if(valueChartInst){ valueChartInst.destroy(); valueChartInst=null; }
+
+// ═══════════════════════════════════════════════════
+// HARDCODED DEMO DATA (used only if you open the file directly without uploading)
+// ═══════════════════════════════════════════════════
+const _rawDrops_UNUSED = [
   // ANCIENT CUSTODIAN (145 kills)
   { npc:"ANCIENT CUSTODIAN",   kills:145, item:"$50 Scroll",               qty:2,  qs:300  },
   { npc:"ANCIENT CUSTODIAN",   kills:145, item:"Sacred clay helm",          qty:2,  qs:190  },
@@ -370,9 +477,14 @@ const rawDrops = [
   { npc:"TORTUGAN",            kills:165, item:"Sagittarian boots",         qty:1,  qs:6    },
 ];
 
+]; // end _rawDrops_UNUSED
+
 // ═══════════════════════════════════════════════════
 // AGGREGATE DATA
 // ═══════════════════════════════════════════════════
+// Clear previous render
+['stats-grid','boss-grid','drops-table'].forEach(id=>document.getElementById(id).innerHTML='');
+
 const bossMap = {};
 rawDrops.forEach(d => {
   if (!bossMap[d.npc]) bossMap[d.npc] = { kills: d.kills, totalQS: 0 };
@@ -449,7 +561,7 @@ const chartDefaults = {
   }
 };
 
-new Chart(document.getElementById('killsChart'), {
+killsChartInst = new Chart(document.getElementById('killsChart'), {
   type: 'bar',
   data: {
     labels: chartLabels,
@@ -469,7 +581,7 @@ new Chart(document.getElementById('killsChart'), {
 
 const sortedVal = [...bosses].sort((a,b) => b.totalQS - a.totalQS);
 const valLabels = sortedVal.map(b => b.name.split(' ').map(w => w[0]+w.slice(1).toLowerCase()).join(' '));
-new Chart(document.getElementById('valueChart'), {
+valueChartInst = new Chart(document.getElementById('valueChart'), {
   type: 'bar',
   data: {
     labels: valLabels,
@@ -527,6 +639,8 @@ top20.forEach((d, i) => {
       <td><div class="val-bar-wrap"><div class="val-bar" style="width:${barW}px;background:var(--accent)"></div></div></td>
     </tr>`;
 });
+
+} // end initDashboard
 </script>
 </body>
 </html>
