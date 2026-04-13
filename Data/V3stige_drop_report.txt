@@ -1,0 +1,250 @@
+Drop report for user: V3stige
+--------------------------------------------------
+                                                         count  total_qs_price
+npc_name           drop_count name                                            
+ANCIENT CUSTODIAN  349        $50 Scroll                     4           600.0
+                              Ruby Box                      14           504.0
+                              Emerald Box                   14           434.0
+                              Sanguinesti staff              3           300.0
+                              Sacred clay helm               3           285.0
+                              Sacred clay platelegs          3           285.0
+                              Flame gloves (e)              11           275.0
+                              Sapphire Box                  17           255.0
+                              Crystal Box                    3           210.0
+                              Onyx Box                       3           165.0
+                              Scythe of Vitur X              2           160.0
+                              Scythe of Vitur XI             1           150.0
+                              Infinity Box                  41           123.0
+                              Sacred clay platebody          1            95.0
+                              Demonic spirit shield          8            80.0
+                              Ring of Bosses                 2            80.0
+                              $10 Scroll                     2            70.0
+                              Ancestral robe bottom          6            60.0
+                              Ancestral hat                  5            50.0
+                              Sagittarian boots              6            36.0
+                              Sagittarian coif               6            36.0
+                              Sagittarian body               4            24.0
+                              Sagittarian vambraces          3            18.0
+                              Sagittarian chaps              2            12.0
+                              Ancestral robe top             1            10.0
+                              @or2@Mythical Supreme box     24             0.0
+                              @red@Owner Box                 2             0.0
+                              Demonic Owner Box              3             0.0
+                              E-Slayer Key (i)              33             0.0
+                              Immortal Casket               26             0.0
+                              Immortal Key                  42             0.0
+                              Lil' Custodian                 1             0.0
+                              Mythical Box                  30             0.0
+                              Slayer Casket (d)             23             0.0
+BLOOD STAR         2          Ruby Box                       1            36.0
+                              Sapphire Box                   1            15.0
+BRYOPHYTA          373        Ruby Box                      25           900.0
+                              $100 Scroll                    2           700.0
+                              Emerald Box                   16           496.0
+                              $50 Scroll                     3           450.0
+                              Sapphire Box                  22           330.0
+                              Flame gloves (e)               8           200.0
+                              Sacred clay helm               2           190.0
+                              Sacred clay platebody          2           190.0
+                              Sacred clay platelegs          2           190.0
+                              Ring of Bosses                 4           160.0
+                              Scythe of Vitur X              2           160.0
+                              Demonic spirit shield         14           140.0
+                              Infinity Box                  39           117.0
+                              $10 Scroll                     3           105.0
+                              Sanguinesti staff              1           100.0
+                              Crystal Box                    1            70.0
+                              $20 Scroll                     1            60.0
+                              Onyx Box                       1            55.0
+                              Ancestral robe bottom          5            50.0
+                              Sagittarian vambraces          7            42.0
+                              Ancestral hat                  4            40.0
+                              Sagittarian body               6            36.0
+                              Sagittarian coif               5            30.0
+                              Sagittarian chaps              4            24.0
+                              Ancestral robe top             2            20.0
+                              Sagittarian boots              3            18.0
+                              @or2@Mythical Supreme box     26             0.0
+                              @red@Owner Box                 3             0.0
+                              E-Slayer Key (i)              36             0.0
+                              E-Slayer lamp (i)              1             0.0
+                              Immortal Casket               23             0.0
+                              Immortal Key                  34             0.0
+                              Lil' Bryo                      2             0.0
+                              Mythical Box                  29             0.0
+                              Slayer Casket (d)             35             0.0
+DEMONIC ENT        354        $100 Scroll                    2           700.0
+                              Ruby Box                      11           396.0
+                              Emerald Box                   12           372.0
+                              Sanguinesti staff              3           300.0
+                              Scythe of Vitur XI             2           300.0
+                              Sacred clay platebody          3           285.0
+                              Scythe of Vitur X              3           240.0
+                              Sacred clay helm               2           190.0
+                              Sanguinesti staff X            1           180.0
+                              Sapphire Box                  12           180.0
+                              $50 Scroll                     1           150.0
+                              $10 Scroll                     4           140.0
+                              Flame gloves (e)               5           125.0
+                              Demonic spirit shield         11           110.0
+                              Onyx Box                       2           110.0
+                              Ancestral hat                 10           100.0
+                              Infinity Box                  32            96.0
+                              Sacred clay platelegs          1            95.0
+                              Ring of Bosses                 2            80.0
+                              Crystal Box                    1            70.0
+                              Sagittarian boots              9            54.0
+                              Ancestral robe bottom          5            50.0
+                              Ancestral robe top             5            50.0
+                              Sagittarian vambraces          5            30.0
+                              Sagittarian body               4            24.0
+                              Sagittarian coif               4            24.0
+                              Sagittarian chaps              2            12.0
+                              @or2@Mythical Supreme box     45             0.0
+                              @red@Owner Box                 1             0.0
+                              Demonic Owner Box              2             0.0
+                              E-Slayer Key (i)              26             0.0
+                              E-Slayer lamp (i)              3             0.0
+                              Immortal Casket               34             0.0
+                              Immortal Key                  32             0.0
+                              Mythical Box                  30             0.0
+                              Slayer Casket (d)             27             0.0
+DUST NAGUA         230        $100 Scroll                    2           700.0
+                              Ruby Box                      11           396.0
+                              Scythe of Vitur XI             2           300.0
+                              Sacred clay helm               3           285.0
+                              Sapphire Box                  14           210.0
+                              Sanguinesti staff              2           200.0
+                              Sacred clay platelegs          2           190.0
+                              $50 Scroll                     1           150.0
+                              Emerald Box                    4           124.0
+                              $10 Scroll                     3           105.0
+                              Scythe of Vitur X              1            80.0
+                              Crystal Box                    1            70.0
+                              Demonic spirit shield          7            70.0
+                              Infinity Box                  21            63.0
+                              $20 Scroll                     1            60.0
+                              Onyx Box                       1            55.0
+                              Sagittarian body               6            36.0
+                              Ancestral robe bottom          3            30.0
+                              Flame gloves (e)               1            25.0
+                              Sagittarian boots              3            18.0
+                              Sagittarian chaps              2            12.0
+                              Sagittarian vambraces          2            12.0
+                              Ancestral hat                  1            10.0
+                              Ancestral robe top             1            10.0
+                              Sagittarian coif               1             6.0
+                              @or2@Mythical Supreme box     20             0.0
+                              @red@Owner Box                 2             0.0
+                              Demonic Owner Box              2             0.0
+                              E-Slayer Key (i)              15             0.0
+                              Immortal Casket               16             0.0
+                              Immortal Key                  31             0.0
+                              Mythical Box                  24             0.0
+                              Slayer Casket (d)             24             0.0
+FOREST GUARDIAN    208        Sacred clay platelegs          4           380.0
+                              Emerald Box                   11           341.0
+                              Ruby Box                       9           324.0
+                              Scythe of Vitur XI             2           300.0
+                              Flame gloves (e)              10           250.0
+                              Sapphire Box                  13           195.0
+                              Sanguinesti staff              1           100.0
+                              Sacred clay helm               1            95.0
+                              Ring of Bosses                 2            80.0
+                              Scythe of Vitur X              1            80.0
+                              Crystal Box                    1            70.0
+                              Demonic spirit shield          7            70.0
+                              $20 Scroll                     1            60.0
+                              Onyx Box                       1            55.0
+                              Infinity Box                  18            54.0
+                              Ancestral robe top             3            30.0
+                              Sagittarian body               5            30.0
+                              Sagittarian chaps              5            30.0
+                              Sagittarian coif               5            30.0
+                              Sagittarian vambraces          4            24.0
+                              Ancestral hat                  2            20.0
+                              Ancestral robe bottom          2            20.0
+                              @or2@Mythical Supreme box     16             0.0
+                              @red@Owner Box                 1             0.0
+                              Demonic Owner Box              1             0.0
+                              E-Slayer Key (i)              10             0.0
+                              E-Slayer lamp (i)              2             0.0
+                              Immortal Casket               13             0.0
+                              Immortal Key                  15             0.0
+                              Lil' Guardian                  1             0.0
+                              Mythical Box                  20             0.0
+                              Slayer Casket (d)             21             0.0
+GEMSTONE CRAB      2          Sapphire Box                   1            15.0
+                              @or2@Mythical Supreme box      1             0.0
+GENERAL SHREDFLESH 17         Superior Box                   8            24.0
+                              E-Slayer Key (c)               2             0.0
+                              E-Slayer Key (i)               1             0.0
+                              E-Slayer key                   5             0.0
+                              Slayer Casket (d)              1             0.0
+IMMORTAL DARKFROST 9          Onyx Box                       1            55.0
+                              Ruby Box                       1            36.0
+                              Dynamite Box                   1             0.0
+                              Easterbird Key                 1             0.0
+                              Immortal Key                   1             0.0
+                              Mythical Box                   3             0.0
+                              Occult necklace                1             0.0
+LITHIL             1          Scythe of Vitur X              1            80.0
+NAGUA              31         Ruby Box                       2            72.0
+                              Onyx Box                       1            55.0
+                              Emerald Box                    1            31.0
+                              Superior Box                  10            30.0
+                              Flame gloves (e)               1            25.0
+                              Demonic spirit shield          2            20.0
+                              Justiciar chestguard           1            12.0
+                              Ancestral robe bottom          1            10.0
+                              Ancestral robe top             1            10.0
+                              Virtus robe legs               1             3.0
+                              E-Slayer Key (c)               1             0.0
+                              E-Slayer Key (i)               1             0.0
+                              E-Slayer key                   6             0.0
+                              Lil' Nagua                     1             0.0
+                              Slayer Casket (d)              1             0.0
+STORMBRINGER       14         Crystal Box                    2           140.0
+                              Ruby Box                       1            36.0
+                              Superior Box                   6            18.0
+                              Ancestral robe top             1            10.0
+                              Demonic spirit shield          1            10.0
+                              Torva platelegs                1             3.0
+                              E-Slayer Key (c)               1             0.0
+                              Slayer Casket (d)              1             0.0
+TORTUGAN           409        $100 Scroll                    3          1050.0
+                              Ruby Box                      23           828.0
+                              Emerald Box                   23           713.0
+                              Scythe of Vitur XI             3           450.0
+                              $50 Scroll                     2           300.0
+                              Scythe of Vitur X              3           240.0
+                              Flame gloves (e)               9           225.0
+                              Sapphire Box                  15           225.0
+                              Onyx Box                       3           165.0
+                              Crystal Box                    2           140.0
+                              $10 Scroll                     3           105.0
+                              Infinity Box                  34           102.0
+                              Sanguinesti staff              1           100.0
+                              Sacred clay helm               1            95.0
+                              Sacred clay platebody          1            95.0
+                              Sacred clay platelegs          1            95.0
+                              Demonic spirit shield          6            60.0
+                              Ancestral hat                  5            50.0
+                              Ancestral robe bottom          5            50.0
+                              Ancestral robe top             5            50.0
+                              Ring of Bosses                 1            40.0
+                              Sagittarian chaps              6            36.0
+                              Sagittarian coif               4            24.0
+                              Sagittarian vambraces          4            24.0
+                              Sagittarian body               3            18.0
+                              Sagittarian boots              2            12.0
+                              @or2@Mythical Supreme box     31             0.0
+                              @red@Owner Box                 5             0.0
+                              Demonic Owner Box              2             0.0
+                              E-Slayer Key (i)              42             0.0
+                              E-Slayer lamp (i)              4             0.0
+                              Immortal Casket               29             0.0
+                              Immortal Key                  37             0.0
+                              Lil' Tortuga                   2             0.0
+                              Mythical Box                  39             0.0
+                              Slayer Casket (d)             50             0.0

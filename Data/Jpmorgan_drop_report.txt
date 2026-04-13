@@ -1,0 +1,77 @@
+Drop report for user: Jpmorgan
+--------------------------------------------------
+                                                           count  total_qs_price
+npc_name             drop_count name                                            
+AMBASSADOR DROGO     1          @or2@Mythical Supreme box      1             0.0
+ANCIENT GUARDIAN     1          Infinity Box                   1             3.0
+DREADWING            270        Drogo Loco box                 2          1400.0
+                                Ruby Box                      29          1044.0
+                                Emerald Box                   26           806.0
+                                Sapphire Box                  32           480.0
+                                Onyx Box                       7           385.0
+                                Fire twisted bow               3           210.0
+                                Sacred clay helm               2           190.0
+                                Crystal Box                    2           140.0
+                                Demonic box                    2           120.0
+                                Justiciar chestguard          10           120.0
+                                Ancestral robe bottom         10           100.0
+                                Infinity Box                  33            99.0
+                                Ancestral hat                  9            90.0
+                                Ancestral robe top             9            90.0
+                                Justiciar legguards            7            84.0
+                                Scythe of Vitur X              1            80.0
+                                Flame gloves (e)               3            75.0
+                                Justiciar faceguard            6            72.0
+                                Demonic spirit shield          4            40.0
+                                Twisted bow                    1            30.0
+                                Torva full helm                6            18.0
+                                Virtus robe legs               6            18.0
+                                Virtus robe top                5            15.0
+                                Torva platebody                4            12.0
+                                Torva platelegs                2             6.0
+                                Virtus mask                    1             3.0
+                                @or2@Mythical Supreme box     18             0.0
+                                Dynamite Box                  10             0.0
+                                Executive key                  2             0.0
+                                Mythical Box                  16             0.0
+                                Scythe of Vitur                2             0.0
+EASTERBIRD           3          Ruby Box                       1            36.0
+                                Easterbird Key                 2             0.0
+GIANT GEYSER (MULTI) 1          E-Slayer lamp                  1             0.0
+INFERNAL DEMON       3          Ruby Box                       1            36.0
+                                Sapphire Box                   1            15.0
+                                E-Slayer Key (c)               1             0.0
+KING EASTERBIRD      4          Easterbird Key                 3             0.0
+                                Lil' Bird                      1             0.0
+NYMO                 12         Onyx Box                       1            55.0
+                                Ruby Box                       1            36.0
+                                Emerald Box                    1            31.0
+                                Sapphire Box                   1            15.0
+                                Easterbird Key                 7             0.0
+                                Echo key                       1             0.0
+SOL HEREDIT          1          Crystal Box                    1            70.0
+SOLAK                1          Mystery Donation Scroll        1           250.0
+WATER ELEMENTAL LORD 397        Infernal Box                  16          4000.0
+                                $100 Scroll                    9          3150.0
+                                Mystery Donation Scroll        7          1750.0
+                                Crystal Box                   13           910.0
+                                Ruby Box                      17           612.0
+                                Sapphire Box                  38           570.0
+                                Demonic box                    9           540.0
+                                Superior Box                 131           393.0
+                                Emerald Box                   12           372.0
+                                Dark twisted bow               7           350.0
+                                Onyx Box                       6           330.0
+                                Scythe of Vitur X              4           320.0
+                                Ancestral robe bottom         20           200.0
+                                Ancestral hat                 19           190.0
+                                Twisted bow                    6           180.0
+                                Ancestral robe top            14           140.0
+                                Virtus robe legs              15            45.0
+                                Torva platelegs               12            36.0
+                                Virtus robe top               11            33.0
+                                Torva full helm                9            27.0
+                                Torva platebody                9            27.0
+                                Virtus mask                    8            24.0
+                                Scythe of Vitur                5             0.0
+ZOMBIE PIRATE        2          Sapphire Box                   2            30.0
