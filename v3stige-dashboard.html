@@ -134,6 +134,7 @@
   /* misc */
   .green { color: var(--green); }
   .gold  { color: var(--accent2); }
+  .sources-cell { line-height: 2; }
 
   /* ── Upload Screen ── */
   #upload-screen {
@@ -220,7 +221,7 @@
         <canvas id="killsChart" height="260"></canvas>
       </div>
       <div class="chart-card">
-        <h3>Total QS Value per Boss</h3>
+        <h3>Top Items by QS Value</h3>
         <canvas id="valueChart" height="260"></canvas>
       </div>
     </div>
@@ -232,18 +233,18 @@
     <div class="boss-grid" id="boss-grid"></div>
   </section>
 
-  <!-- ── Top Drops ── -->
+  <!-- ── Item Summary ── -->
   <section>
-    <h2 class="section-title">Top 20 Highest-Value Drops</h2>
+    <h2 class="section-title">Item Summary</h2>
     <div class="table-card">
-      <h3>Sorted by total QS earned · all bosses</h3>
+      <h3>Grouped by item · sorted by total QS earned</h3>
       <table>
         <thead>
           <tr>
             <th>#</th>
             <th>Item</th>
-            <th>Source</th>
-            <th>Qty</th>
+            <th>Dropped By</th>
+            <th>Total Qty</th>
             <th>Total QS</th>
             <th></th>
           </tr>
@@ -485,6 +486,8 @@ const _rawDrops_UNUSED = [
 // Clear previous render
 ['stats-grid','boss-grid','drops-table'].forEach(id=>document.getElementById(id).innerHTML='');
 
+const toTitle = s => s.split(' ').map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
+
 const bossMap = {};
 rawDrops.forEach(d => {
   if (!bossMap[d.npc]) bossMap[d.npc] = { kills: d.kills, totalQS: 0 };
@@ -494,6 +497,20 @@ const bosses = Object.entries(bossMap).map(([name, v]) => ({
   name, kills: v.kills, totalQS: v.totalQS,
   qsPerKill: +(v.totalQS / v.kills).toFixed(2)
 }));
+
+const itemMap = {};
+rawDrops.forEach(d => {
+  if (!itemMap[d.item]) itemMap[d.item] = { totalQS: 0, totalQty: 0, sources: {} };
+  itemMap[d.item].totalQS  += d.qs;
+  itemMap[d.item].totalQty += d.qty;
+  itemMap[d.item].sources[d.npc] = (itemMap[d.item].sources[d.npc] || 0) + d.qty;
+});
+const items = Object.entries(itemMap)
+  .map(([name, v]) => ({
+    name, totalQS: v.totalQS, totalQty: v.totalQty,
+    sources: Object.entries(v.sources).map(([npc, qty]) => ({ npc, qty })).sort((a,b) => b.qty - a.qty)
+  }))
+  .sort((a, b) => b.totalQS - a.totalQS);
 const totalKills = bosses.reduce((s, b) => s + b.kills, 0);
 const totalQS    = bosses.reduce((s, b) => s + b.totalQS, 0);
 const uniqueNPCs = bosses.length;
@@ -579,16 +596,15 @@ killsChartInst = new Chart(document.getElementById('killsChart'), {
   }}
 });
 
-const sortedVal = [...bosses].sort((a,b) => b.totalQS - a.totalQS);
-const valLabels = sortedVal.map(b => b.name.split(' ').map(w => w[0]+w.slice(1).toLowerCase()).join(' '));
+const topItemsChart = items.filter(i => i.totalQS > 0).slice(0, 10);
 valueChartInst = new Chart(document.getElementById('valueChart'), {
   type: 'bar',
   data: {
-    labels: valLabels,
+    labels: topItemsChart.map(i => i.name),
     datasets: [{
-      data: sortedVal.map(b => b.totalQS),
-      backgroundColor: sortedVal.map((_, i) => palette[i % palette.length] + 'cc'),
-      borderColor:     sortedVal.map((_, i) => palette[i % palette.length]),
+      data: topItemsChart.map(i => i.totalQS),
+      backgroundColor: topItemsChart.map((_, i) => palette[i % palette.length] + 'cc'),
+      borderColor:     topItemsChart.map((_, i) => palette[i % palette.length]),
       borderWidth: 1.5, borderRadius: 5,
     }]
   },
@@ -618,24 +634,27 @@ const bossGrid = document.getElementById('boss-grid');
 });
 
 // ═══════════════════════════════════════════════════
-// TOP DROPS TABLE
+// ITEM SUMMARY TABLE
 // ═══════════════════════════════════════════════════
-const top20 = [...rawDrops].filter(d => d.qs > 0).sort((a,b) => b.qs - a.qs).slice(0, 20);
-const maxVal = top20[0].qs;
+const topItems = items.filter(i => i.totalQS > 0);
+const maxVal = topItems[0]?.totalQS || 1;
 const tbody = document.getElementById('drops-table');
-top20.forEach((d, i) => {
+topItems.slice(0, 30).forEach((item, i) => {
   const rank = i === 0 ? `<span class="rank gold">#1</span>`
              : i === 1 ? `<span class="rank silver">#2</span>`
              : i === 2 ? `<span class="rank bronze">#3</span>`
              : `<span class="rank">#${i+1}</span>`;
-  const barW = Math.round(d.qs / maxVal * 120);
+  const barW = Math.round(item.totalQS / maxVal * 120);
+  const sources = item.sources
+    .map(s => `<span class="npc-tag">${toTitle(s.npc)} ×${s.qty}</span>`)
+    .join(' ');
   tbody.innerHTML += `
     <tr>
       <td>${rank}</td>
-      <td><span class="item-pill">${d.item}</span></td>
-      <td><span class="npc-tag">${d.npc}</span></td>
-      <td style="color:var(--muted)">${d.qty}×</td>
-      <td style="font-weight:700;color:var(--accent2)">${d.qs.toLocaleString()} QS</td>
+      <td><span class="item-pill">${item.name}</span></td>
+      <td class="sources-cell">${sources}</td>
+      <td style="color:var(--muted)">${item.totalQty}×</td>
+      <td style="font-weight:700;color:var(--accent2)">${item.totalQS.toLocaleString()} QS</td>
       <td><div class="val-bar-wrap"><div class="val-bar" style="width:${barW}px;background:var(--accent)"></div></div></td>
     </tr>`;
 });
