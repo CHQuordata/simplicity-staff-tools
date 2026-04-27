@@ -1,0 +1,1910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Immortal Perks — Visualizer</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --gold: #f0b429;
+      --gold-light: #ffd166;
+      --bg: #0f0f13;
+      --surface: #1a1a22;
+      --surface2: #23232f;
+      --border: #2e2e3e;
+      --text: #e8e8f0;
+      --muted: #888899;
+      --green: #4ade80;
+      --blue: #60a5fa;
+      --purple: #a78bfa;
+      --red: #f87171;
+      --orange: #fb923c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 28px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* Page header */
+    .page-header {
+      margin-bottom: 20px;
+    }
+    .page-header h1 { font-size: 1.1rem; color: var(--muted); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
+
+    /* Perk switcher */
+    .perk-switcher {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .perk-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      border-radius: 9px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      transition: all .15s;
+      text-align: left;
+      flex: 1;
+      min-width: 220px;
+    }
+    .perk-btn:hover { border-color: var(--gold); }
+    .perk-btn.active {
+      border-color: var(--gold);
+      background: linear-gradient(135deg,#1e1600,#2c2000);
+      box-shadow: 0 0 18px #f0b42920;
+    }
+    .perk-icon {
+      width: 44px; height: 44px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      border: 1.5px solid;
+    }
+    .perk-icon.xp  { background: linear-gradient(135deg,#2a1a00,#5a3800); border-color: var(--gold); box-shadow: 0 0 10px #f0b42933; }
+    .perk-icon.dmg { background: linear-gradient(135deg,#001a2a,#003858); border-color: var(--blue);  box-shadow: 0 0 10px #60a5fa33; }
+    .perk-info .name { font-size: .95rem; font-weight: 700; color: var(--gold-light); }
+    .perk-info .desc { font-size: .75rem; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+
+    /* Perk sections */
+    .perk-section { display: none; }
+    .perk-section.active { display: block; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab {
+      padding: 9px 18px;
+      border-radius: 6px 6px 0 0;
+      border: 1px solid transparent;
+      border-bottom: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: .85rem;
+      cursor: pointer;
+      transition: all .15s;
+      position: relative; bottom: -1px;
+    }
+    .tab:hover { color: var(--gold-light); }
+    .tab.active {
+      background: var(--surface);
+      border-color: var(--border);
+      border-bottom-color: var(--surface);
+      color: var(--gold-light);
+      font-weight: 600;
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Controls */
+    .controls { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 20px; align-items: flex-end; }
+    .ctrl-group { display: flex; flex-direction: column; gap: 5px; }
+    .ctrl-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+    .btn-row { display: flex; gap: 5px; flex-wrap: wrap; }
+    .btn {
+      padding: 6px 13px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: .8rem;
+      cursor: pointer;
+      transition: all .15s;
+      font-weight: 500;
+    }
+    .btn:hover { border-color: var(--gold); color: var(--gold-light); }
+    .btn.active {
+      background: linear-gradient(135deg,#3a2800,#5a3e00);
+      border-color: var(--gold);
+      color: var(--gold-light);
+      box-shadow: 0 0 8px #f0b42928;
+    }
+    select {
+      padding: 7px 12px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: .85rem;
+      cursor: pointer;
+      outline: none;
+    }
+    select:focus { border-color: var(--gold); }
+
+    /* Cards */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 22px; margin-bottom: 16px; }
+    .card h2 { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 16px; }
+    .chart-wrap    { position: relative; height: 320px; }
+    .chart-wrap-sm { position: relative; height: 240px; }
+
+    /* Stat row */
+    .stat-row { display: grid; grid-template-columns: repeat(auto-fit,minmax(145px,1fr)); gap: 10px; margin-bottom: 16px; }
+    .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 13px 15px; }
+    .stat .lbl { font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 3px; }
+    .stat .val { font-size: 1.2rem; font-weight: 700; color: var(--gold-light); }
+    .stat .sub { font-size: .72rem; color: var(--green); margin-top: 2px; }
+    .stat.highlight { border-color: var(--gold); background: linear-gradient(135deg,#1e1600,#2a1e00); }
+
+    /* Delta box */
+    .delta-box { display: grid; grid-template-columns: 1fr auto 1fr; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+    .delta-side { padding: 20px; text-align: center; }
+    .delta-side.a { border-right: 1px solid var(--border); }
+    .delta-side.b { border-left:  1px solid var(--border); }
+    .delta-mid { display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 16px 12px; background: var(--surface); gap: 4px; }
+    .delta-side .level-name { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+    .delta-side .pct  { font-size: 1.7rem; font-weight: 800; }
+    .delta-side.a .pct { color: var(--blue); }
+    .delta-side.b .pct { color: var(--gold-light); }
+    .delta-side .xp-val { font-size: .9rem; color: var(--text); margin-top: 2px; }
+    .delta-mid .arrow    { font-size: 1.4rem; color: var(--green); }
+    .delta-mid .gain-val { font-size: 1.1rem; font-weight: 700; color: var(--green); }
+    .delta-mid .gain     { font-size: .72rem; color: var(--muted); text-align: center; }
+
+    /* Kills grid table */
+    .kills-grid { display: grid; grid-template-columns: auto 1fr 1fr 1fr; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: .85rem; }
+    .kg-header > div, .kg-row > div { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    .kg-header > div { background: var(--surface2); color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; font-weight: 600; }
+    .kg-header { display: contents; }
+    .kg-row    { display: contents; }
+    .kg-row:last-child > div { border-bottom: none; }
+    .kg-row > div:first-child { color: var(--muted); }
+
+    /* Level pills */
+    .level-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+    .pill { padding: 5px 12px; border-radius: 20px; border: 1.5px solid; font-size: .78rem; font-weight: 600; cursor: pointer; opacity: .32; transition: opacity .15s; }
+    .pill.active { opacity: 1; }
+
+    /* Divider between perk sections */
+    .section-label {
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--muted);
+      margin-bottom: 8px;
+      padding-left: 2px;
+    }
+
+    /* Incremental bar label */
+    /* Cost inputs */
+    .cost-block { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:14px; }
+    .cost-block .perk-name { font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; }
+    .cost-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:7px; }
+    .cost-row:last-child { margin-bottom:0; }
+    .cost-row label { font-size:.78rem; color:var(--muted); flex:1; }
+    .cost-input {
+      width:72px; padding:5px 8px; border-radius:4px;
+      border:1px solid var(--border); background:var(--bg);
+      color:var(--text); font-size:.82rem; text-align:right;
+      outline:none; transition:border-color .15s;
+    }
+    .cost-input:focus { border-color:var(--gold); }
+
+    /* Advisor table */
+    .adv-table { width:100%; border-collapse:collapse; font-size:.85rem; }
+    .adv-table thead th { padding:9px 14px; text-align:left; color:var(--muted); font-size:.7rem; text-transform:uppercase; letter-spacing:.07em; border-bottom:1px solid var(--border); background:var(--surface2); }
+    .adv-table tbody tr { border-bottom:1px solid var(--border); transition:background .1s; }
+    .adv-table tbody tr:last-child { border-bottom:none; }
+    .adv-table tbody tr:hover { background:var(--surface2); }
+    .adv-table td { padding:11px 14px; vertical-align:middle; }
+    .rank-badge { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; font-weight:800; font-size:.82rem; }
+    .eff-bar-wrap { background:var(--surface2); border-radius:4px; height:8px; min-width:80px; overflow:hidden; }
+    .eff-bar { height:100%; border-radius:4px; transition:width .3s; }
+    .cur-lvl-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .cur-lvl-row label { font-size:.8rem; color:var(--text); flex:1; }
+    .cur-lvl-select { padding:5px 10px; border-radius:5px; border:1px solid var(--border); background:var(--surface2); color:var(--text); font-size:.8rem; cursor:pointer; outline:none; }
+    .cur-lvl-select:focus { border-color:var(--gold); }
+
+    .incr-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: .7rem;
+      font-weight: 700;
+      background: #16381655;
+      color: var(--green);
+      border: 1px solid #4ade8044;
+      margin-left: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Immortal Slayer — Perk Visualizer</h1>
+</div>
+
+<!-- Perk Switcher -->
+<div class="perk-switcher">
+  <button class="perk-btn active" data-perk="hyper">
+    <div class="perk-icon xp">⚡</div>
+    <div class="perk-info">
+      <div class="name">Hyper Boost</div>
+      <div class="desc">+2.5% XP on Immortal Elite tasks<br>Max +5% · 5 upgrades</div>
+    </div>
+  </button>
+  <button class="perk-btn" data-perk="angelic">
+    <div class="perk-icon dmg">🔱</div>
+    <div class="perk-info">
+      <div class="name">Angelic Blast</div>
+      <div class="desc">7.5% chance · 100 dmg on proc<br>Max 350 dmg · 5 upgrades</div>
+    </div>
+  </button>
+  <button class="perk-btn" data-perk="immortal">
+    <div class="perk-icon" style="background:linear-gradient(135deg,#1a0000,#3d0000);border-color:var(--red);box-shadow:0 0 10px #f8717133;">⚔️</div>
+    <div class="perk-info">
+      <div class="name">Immortal Hit</div>
+      <div class="desc">1% chance · extra hit across full AoE<br>Max 3% · 2 upgrades · scales with targets</div>
+    </div>
+  </button>
+  <button class="perk-btn" data-perk="astral">
+    <div class="perk-icon" style="background:linear-gradient(135deg,#0d0020,#2a0060);border-color:#a78bfa;box-shadow:0 0 10px #a78bfa33;">🌌</div>
+    <div class="perk-info">
+      <div class="name">Astral Bosses</div>
+      <div class="desc">1/1000 chance · Astral Boss contract<br>Max 1/800 · 4 upgrades</div>
+    </div>
+  </button>
+  <button class="perk-btn" data-perk="pointvalue">
+    <div class="perk-icon" style="background:linear-gradient(135deg,#001a10,#003828);border-color:#4ade80;box-shadow:0 0 10px #4ade8033;">⚖️</div>
+    <div class="perk-info">
+      <div class="name">Point Value</div>
+      <div class="desc">Cross-perk efficiency · enter upgrade costs<br>Compare bang-per-point across all perks</div>
+    </div>
+  </button>
+</div>
+
+<!-- ╔══════════════════════════════════════════╗
+     ║  PERK 1 — HYPER BOOST                   ║
+     ╚══════════════════════════════════════════╝ -->
+<div class="perk-section active" id="perk-hyper">
+  <div class="tabs" id="hyperTabs">
+    <button class="tab active" data-tab="h-stacked">Stacked Bars</button>
+    <button class="tab" data-tab="h-compare">Level Comparison</button>
+    <button class="tab" data-tab="h-cumulative">Cumulative over Kills</button>
+  </div>
+
+  <!-- H: Stacked Bars -->
+  <div class="panel active" id="tab-h-stacked">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Kill Multiplier</div>
+        <div class="btn-row" id="hStackedKillToggle">
+          <button class="btn active" data-kills="1">Per Kill</button>
+          <button class="btn" data-kills="10">10</button>
+          <button class="btn" data-kills="100">100</button>
+          <button class="btn" data-kills="1000">1,000</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">View</div>
+        <div class="btn-row">
+          <button class="btn active" id="hToggleBase">Stacked (Base + Bonus)</button>
+        </div>
+      </div>
+    </div>
+    <div id="hStackedStats" class="stat-row"></div>
+    <div class="card">
+      <h2 id="hStackedTitle">Total XP per Kill — Base + Bonus stacked</h2>
+      <div class="chart-wrap"><canvas id="hStackedChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- H: Compare -->
+  <div class="panel" id="tab-h-compare">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">From Level</div>
+        <select id="hCmpA">
+          <option value="0">Level 0 — +2.5% (Unlock)</option>
+          <option value="1">Level 1 — +3.0%</option>
+          <option value="2">Level 2 — +3.5%</option>
+          <option value="3" selected>Level 3 — +4.0%</option>
+          <option value="4">Level 4 — +4.5%</option>
+          <option value="5">Level 5 — +5.0% (Max)</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">To Level</div>
+        <select id="hCmpB">
+          <option value="0">Level 0 — +2.5% (Unlock)</option>
+          <option value="1">Level 1 — +3.0%</option>
+          <option value="2">Level 2 — +3.5%</option>
+          <option value="3">Level 3 — +4.0%</option>
+          <option value="4">Level 4 — +4.5%</option>
+          <option value="5" selected>Level 5 — +5.0% (Max)</option>
+        </select>
+      </div>
+    </div>
+    <div id="hDeltaBox" class="delta-box"></div>
+    <div class="kills-grid" id="hKillsGrid"></div>
+    <div style="margin-top:16px;">
+      <div class="card">
+        <h2>Bonus XP per Kill — All Levels</h2>
+        <div class="chart-wrap-sm"><canvas id="hCmpChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- H: Cumulative -->
+  <div class="panel" id="tab-h-cumulative">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Max Kills</div>
+        <div class="btn-row" id="hCumKillToggle">
+          <button class="btn" data-max="100">100</button>
+          <button class="btn active" data-max="500">500</button>
+          <button class="btn" data-max="1000">1,000</button>
+          <button class="btn" data-max="5000">5,000</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Show</div>
+        <div class="btn-row" id="hCumModeToggle">
+          <button class="btn active" data-mode="bonus">Cumulative Bonus XP</button>
+          <button class="btn" data-mode="total">Cumulative Total XP</button>
+        </div>
+      </div>
+    </div>
+    <div class="level-pills" id="hCumPills"></div>
+    <div class="card">
+      <h2 id="hCumTitle">Cumulative Bonus XP over Kills</h2>
+      <div class="chart-wrap"><canvas id="hCumChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════╗
+     ║  PERK 2 — ANGELIC BLAST                 ║
+     ╚══════════════════════════════════════════╝ -->
+<div class="perk-section" id="perk-angelic">
+  <div class="tabs" id="angelicTabs">
+    <button class="tab active" data-tab="a-levels">Damage per Level</button>
+    <button class="tab" data-tab="a-compare">Level Comparison</button>
+    <button class="tab" data-tab="a-cumulative">Cumulative over Hits</button>
+  </div>
+
+  <!-- A: Damage per Level -->
+  <div class="panel active" id="tab-a-levels">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Hit Count</div>
+        <div class="btn-row" id="aHitToggle">
+          <button class="btn active" data-hits="1">Per Hit</button>
+          <button class="btn" data-hits="100">100 Hits</button>
+          <button class="btn" data-hits="500">500 Hits</button>
+          <button class="btn" data-hits="1000">1,000 Hits</button>
+          <button class="btn" data-hits="5000">5,000 Hits</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Chart Mode</div>
+        <div class="btn-row" id="aDmgModeToggle">
+          <button class="btn active" data-dmode="expected">Expected Avg Dmg</button>
+          <button class="btn" data-dmode="proc">Proc Dmg (on trigger)</button>
+          <button class="btn" data-dmode="both">Both</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="aLevelStats" class="stat-row"></div>
+
+    <div class="card">
+      <h2 id="aLevelTitle">Expected Avg Damage per Hit by Perk Level (7.5% proc chance)</h2>
+      <div class="chart-wrap"><canvas id="aLevelChart"></canvas></div>
+    </div>
+
+    <!-- Incremental table -->
+    <div class="card" style="padding: 0; overflow:hidden;">
+      <table style="width:100%; border-collapse:collapse; font-size:.85rem;">
+        <thead>
+          <tr style="background:var(--surface2);">
+            <th style="padding:10px 16px; text-align:left; color:var(--muted); font-size:.7rem; text-transform:uppercase; letter-spacing:.07em; border-bottom:1px solid var(--border);">Perk Level</th>
+            <th style="padding:10px 16px; text-align:left; color:var(--muted); font-size:.7rem; text-transform:uppercase; letter-spacing:.07em; border-bottom:1px solid var(--border);">Proc Dmg</th>
+            <th style="padding:10px 16px; text-align:left; color:var(--muted); font-size:.7rem; text-transform:uppercase; letter-spacing:.07em; border-bottom:1px solid var(--border);">Avg Dmg/Hit</th>
+            <th style="padding:10px 16px; text-align:left; color:var(--muted); font-size:.7rem; text-transform:uppercase; letter-spacing:.07em; border-bottom:1px solid var(--border);">↑ vs Prev</th>
+            <th style="padding:10px 16px; text-align:left; color:var(--muted); font-size:.7rem; text-transform:uppercase; letter-spacing:.07em; border-bottom:1px solid var(--border);">Expected / 1k Hits</th>
+          </tr>
+        </thead>
+        <tbody id="aTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- A: Compare -->
+  <div class="panel" id="tab-a-compare">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">From Level</div>
+        <select id="aCmpA">
+          <option value="0">Level 0 — 100 dmg (Unlock)</option>
+          <option value="1">Level 1 — 150 dmg</option>
+          <option value="2">Level 2 — 200 dmg</option>
+          <option value="3" selected>Level 3 — 250 dmg</option>
+          <option value="4">Level 4 — 300 dmg</option>
+          <option value="5">Level 5 — 350 dmg (Max)</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">To Level</div>
+        <select id="aCmpB">
+          <option value="0">Level 0 — 100 dmg (Unlock)</option>
+          <option value="1">Level 1 — 150 dmg</option>
+          <option value="2">Level 2 — 200 dmg</option>
+          <option value="3">Level 3 — 250 dmg</option>
+          <option value="4">Level 4 — 300 dmg</option>
+          <option value="5" selected>Level 5 — 350 dmg (Max)</option>
+        </select>
+      </div>
+    </div>
+    <div id="aDeltaBox" class="delta-box"></div>
+    <div class="kills-grid" id="aHitsGrid"></div>
+    <div style="margin-top:16px;">
+      <div class="card">
+        <h2>Expected Avg Damage per Hit — All Levels</h2>
+        <div class="chart-wrap-sm"><canvas id="aCmpChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- A: Cumulative -->
+  <div class="panel" id="tab-a-cumulative">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Max Hits</div>
+        <div class="btn-row" id="aCumHitToggle">
+          <button class="btn" data-max="500">500</button>
+          <button class="btn active" data-max="2000">2,000</button>
+          <button class="btn" data-max="5000">5,000</button>
+          <button class="btn" data-max="10000">10,000</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Show</div>
+        <div class="btn-row" id="aCumModeToggle">
+          <button class="btn active" data-mode="expected">Expected Total Dmg</button>
+          <button class="btn" data-mode="procs">Expected Procs</button>
+        </div>
+      </div>
+    </div>
+    <div class="level-pills" id="aCumPills"></div>
+    <div class="card">
+      <h2 id="aCumTitle">Cumulative Expected Damage over Hits</h2>
+      <div class="chart-wrap"><canvas id="aCumChart"></canvas></div>
+    </div>
+    <div class="stat-row" id="aCumStats"></div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════╗
+     ║  PERK 3 — IMMORTAL HIT                  ║
+     ╚══════════════════════════════════════════╝ -->
+<div class="perk-section" id="perk-immortal">
+  <div class="tabs" id="immortalTabs">
+    <button class="tab active" data-tab="i-levels">Proc Rate per Level</button>
+    <button class="tab" data-tab="i-aoe">AoE Scaling</button>
+    <button class="tab" data-tab="i-cumulative">Cumulative over Hits</button>
+  </div>
+
+  <!-- I: Proc Rate per Level -->
+  <div class="panel active" id="tab-i-levels">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Targets in AoE</div>
+        <div class="btn-row" id="iTargetToggle">
+          <button class="btn active" data-targets="1">1</button>
+          <button class="btn" data-targets="2">2</button>
+          <button class="btn" data-targets="3">3</button>
+          <button class="btn" data-targets="4">4</button>
+          <button class="btn" data-targets="5">5</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Hit Count</div>
+        <div class="btn-row" id="iHitToggle">
+          <button class="btn active" data-hits="100">100 Hits</button>
+          <button class="btn" data-hits="500">500</button>
+          <button class="btn" data-hits="1000">1,000</button>
+          <button class="btn" data-hits="5000">5,000</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="iLevelStats" class="stat-row"></div>
+
+    <div class="card">
+      <h2 id="iLevelTitle">Expected Extra Hits over 100 hits · 1 Target · by Perk Level</h2>
+      <div class="chart-wrap"><canvas id="iLevelChart"></canvas></div>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;font-size:.85rem;">
+        <thead>
+          <tr style="background:var(--surface2);">
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Perk Level</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Proc Chance</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">↑ vs Prev</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Extra Hits / 100</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Extra Hits / 1k</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">/ 1k (×<span id="iTableTargetLabel">1</span> targets)</th>
+          </tr>
+        </thead>
+        <tbody id="iTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- I: AoE Scaling -->
+  <div class="panel" id="tab-i-aoe">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Hit Count</div>
+        <div class="btn-row" id="iAoeHitToggle">
+          <button class="btn" data-hits="100">100 Hits</button>
+          <button class="btn active" data-hits="1000">1,000 Hits</button>
+          <button class="btn" data-hits="5000">5,000 Hits</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AoE heatmap-style grid -->
+    <div class="card">
+      <h2 id="iAoeTitle">Extra Hits over 1,000 hits — Perk Level vs Targets in AoE</h2>
+      <div style="overflow-x:auto;">
+        <table id="iAoeTable" style="width:100%;border-collapse:collapse;font-size:.88rem;margin-top:4px;"></table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Extra Hits by Target Count — Grouped by Perk Level</h2>
+      <div class="chart-wrap"><canvas id="iAoeChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- I: Cumulative -->
+  <div class="panel" id="tab-i-cumulative">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Max Hits</div>
+        <div class="btn-row" id="iCumHitToggle">
+          <button class="btn" data-max="500">500</button>
+          <button class="btn active" data-max="2000">2,000</button>
+          <button class="btn" data-max="5000">5,000</button>
+          <button class="btn" data-max="10000">10,000</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Targets in AoE</div>
+        <div class="btn-row" id="iCumTargetToggle">
+          <button class="btn active" data-targets="1">1 Target</button>
+          <button class="btn" data-targets="2">2 Targets</button>
+          <button class="btn" data-targets="3">3 Targets</button>
+          <button class="btn" data-targets="5">5 Targets</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="level-pills" id="iCumPills"></div>
+
+    <div class="card">
+      <h2 id="iCumTitle">Cumulative Extra Hits over 2,000 hits · 1 Target</h2>
+      <div class="chart-wrap"><canvas id="iCumChart"></canvas></div>
+    </div>
+
+    <div class="stat-row" id="iCumStats"></div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════╗
+     ║  PERK 4 — ASTRAL BOSSES                 ║
+     ╚══════════════════════════════════════════╝ -->
+<div class="perk-section" id="perk-astral">
+  <div class="tabs" id="astralTabs">
+    <button class="tab active" data-tab="ab-levels">Contract Rate per Level</button>
+    <button class="tab" data-tab="ab-compare">Level Comparison</button>
+    <button class="tab" data-tab="ab-probability">Probability Curve</button>
+  </div>
+
+  <!-- AB: Rate per Level -->
+  <div class="panel active" id="tab-ab-levels">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Kill Count</div>
+        <div class="btn-row" id="abTaskToggle">
+          <button class="btn" data-tasks="10000">10k</button>
+          <button class="btn" data-tasks="50000">50k</button>
+          <button class="btn active" data-tasks="100000">100k</button>
+          <button class="btn" data-tasks="500000">500k</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Avg Kills per Task</div>
+        <div class="btn-row" id="abKptToggle">
+          <button class="btn" data-kpt="50">50</button>
+          <button class="btn" data-kpt="75">75</button>
+          <button class="btn active" data-kpt="100">100</button>
+          <button class="btn" data-kpt="150">150</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Chart View</div>
+        <div class="btn-row" id="abViewToggle">
+          <button class="btn active" data-view="contracts">Expected Contracts</button>
+          <button class="btn" data-view="tasks">Avg Kills Between</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="abLevelStats" class="stat-row"></div>
+
+    <div class="card">
+      <h2 id="abLevelTitle">Expected Contracts per 1,000 Tasks by Perk Level</h2>
+      <div class="chart-wrap"><canvas id="abLevelChart"></canvas></div>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;font-size:.85rem;">
+        <thead>
+          <tr style="background:var(--surface2);">
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Perk Level</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Chance / Task</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Avg Kills / Contract</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">↑ vs Prev</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);" id="abCol1k">Contracts / 10k Kills</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);" id="abCol10k">Contracts / 100k Kills</th>
+          </tr>
+        </thead>
+        <tbody id="abTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- AB: Compare -->
+  <div class="panel" id="tab-ab-compare">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">From Level</div>
+        <select id="abCmpA">
+          <option value="0" selected>No Perk — 0% (impossible)</option>
+          <option value="1">Unlock — 1/1000</option>
+          <option value="2">Upgrade 1 — 1/950</option>
+          <option value="3">Upgrade 2 — 1/900</option>
+          <option value="4">Upgrade 3 — 1/850</option>
+          <option value="5">Upgrade 4 — 1/800 (Max)</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">To Level</div>
+        <select id="abCmpB">
+          <option value="0">No Perk — 0% (impossible)</option>
+          <option value="1">Unlock — 1/1000</option>
+          <option value="2">Upgrade 1 — 1/950</option>
+          <option value="3">Upgrade 2 — 1/900</option>
+          <option value="4">Upgrade 3 — 1/850</option>
+          <option value="5" selected>Upgrade 4 — 1/800 (Max)</option>
+        </select>
+      </div>
+    </div>
+    <div id="abDeltaBox" class="delta-box"></div>
+    <div class="kills-grid" id="abTasksGrid"></div>
+    <div style="margin-top:16px;">
+      <div class="card">
+        <h2>Expected Contracts per 1,000 Tasks — All Levels</h2>
+        <div class="chart-wrap-sm"><canvas id="abCmpChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AB: Probability Curve -->
+  <div class="panel" id="tab-ab-probability">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Max Kills on X Axis</div>
+        <div class="btn-row" id="abProbTaskToggle">
+          <button class="btn" data-max="5000">5k</button>
+          <button class="btn active" data-max="10000">10k</button>
+          <button class="btn" data-max="25000">25k</button>
+          <button class="btn" data-max="50000">50k</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Avg Kills per Task</div>
+        <div class="btn-row" id="abProbKptToggle">
+          <button class="btn" data-kpt="50">50</button>
+          <button class="btn" data-kpt="75">75</button>
+          <button class="btn active" data-kpt="100">100</button>
+          <button class="btn" data-kpt="150">150</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Show</div>
+        <div class="btn-row" id="abProbModeToggle">
+          <button class="btn active" data-mode="prob">P(≥1 Contract)</button>
+          <button class="btn" data-mode="expected">Expected Contracts</button>
+        </div>
+      </div>
+    </div>
+    <div class="level-pills" id="abProbPills"></div>
+    <div class="card">
+      <h2 id="abProbTitle">Probability of receiving ≥1 Astral Boss Contract over N Tasks</h2>
+      <div class="chart-wrap"><canvas id="abProbChart"></canvas></div>
+    </div>
+    <div class="stat-row" id="abProbStats"></div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════╗
+     ║  STANDALONE — POINT VALUE               ║
+     ╚══════════════════════════════════════════╝ -->
+<div class="perk-section" id="perk-pointvalue">
+
+  <!-- STEP 1: Current Levels + Costs -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+
+    <div class="card" style="margin-bottom:0">
+      <h2>Your Current Perk Levels</h2>
+      <p style="font-size:.75rem;color:var(--muted);margin-bottom:14px;">Set where you are now — the advisor shows only your next available upgrade.</p>
+      <div id="currentLevelGrid" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:0">
+      <h2>Point Costs per Upgrade Step</h2>
+      <p style="font-size:.75rem;color:var(--muted);margin-bottom:14px;">Enter the cost in points for each step. Leave 0 if unknown.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="costInputGrid"></div>
+    </div>
+
+  </div>
+
+  <!-- STEP 2: Next Upgrade Advisor -->
+  <div class="card" style="border-color:#4ade8044;background:linear-gradient(135deg,#0a1a0a,#111a11);">
+    <h2 style="color:var(--green)">⚡ Next Upgrade Advisor — Ranked by Efficiency</h2>
+    <p style="font-size:.75rem;color:var(--muted);margin-bottom:16px;">
+      Metric: <strong style="color:var(--gold-light)">points per 1% improvement</strong> in each perk's own metric. Lower = better value. Units differ between perks — use this to compare relative efficiency, not absolute power.
+    </p>
+    <div id="advisorTable"></div>
+  </div>
+
+  <!-- STEP 3: Charts -->
+  <div class="card">
+    <h2 id="abMargTitle">Astral Bosses — Marginal Contracts per 100k Kills per Point Spent</h2>
+    <div style="margin-bottom:10px;font-size:.78rem;color:var(--muted)">
+      <span style="color:var(--purple);font-weight:600">Unlock</span> gives the entire base value. Each subsequent upgrade is marginal by comparison.
+    </div>
+    <div class="chart-wrap-sm"><canvas id="abMargChart"></canvas></div>
+  </div>
+
+  <div class="card">
+    <h2>Cross-Perk Efficiency — Marginal Gain per Point (relative to each perk's own unlock)</h2>
+    <div style="margin-bottom:10px;font-size:.78rem;color:var(--muted)">
+      Each perk's <strong style="color:var(--gold-light)">Unlock = 1.0 baseline</strong>. Upgrades shown as a fraction of that. Higher bar = better value per point.
+    </div>
+    <div class="chart-wrap"><canvas id="crossPerkChart"></canvas></div>
+  </div>
+
+  <div class="stat-row" id="pvSummaryCards"></div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════
+   SHARED
+   ════════════════════════════════════════════ */
+const fmt   = n => Number.isInteger(n) ? n.toLocaleString() : n.toFixed(2);
+const fmtXP = n => {
+  if (n >= 1e9) return (n/1e9).toFixed(2)+'B';
+  if (n >= 1e6) return (n/1e6).toFixed(2)+'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
+  return Math.round(n).toLocaleString();
+};
+
+const COLORS = ['#818cf8','#60a5fa','#34d399','#facc15','#fb923c','#f0b429'];
+
+function makeChart(id, type, opts={}) {
+  return new Chart(document.getElementById(id).getContext('2d'), {
+    type,
+    data: { labels: [], datasets: [] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 220 },
+      plugins: {
+        legend: { display: opts.legend ?? false, labels: { color: '#888899', font: { size:11 } } },
+        tooltip: { callbacks: { label: c => ' ' + fmt(c.parsed.y) + (opts.unit ?? '') } }
+      },
+      scales: {
+        x: { stacked: opts.stacked??false, ticks:{ color:'#888899', maxTicksLimit:10 }, grid:{ color:'#2e2e3e' }, title: opts.xTitle ? { display:true, text:opts.xTitle, color:'#888899' } : undefined },
+        y: { stacked: opts.stacked??false, ticks:{ color:'#888899', callback: opts.yFmt ?? (v=>v) }, grid:{ color:'#2e2e3e' }, title: opts.yTitle ? { display:true, text:opts.yTitle, color:'#888899' } : undefined }
+      }
+    }
+  });
+}
+
+function tabGroup(tabsId, prefix) {
+  document.getElementById(tabsId).addEventListener('click', e => {
+    const t = e.target.closest('.tab'); if (!t) return;
+    document.querySelectorAll(`#${tabsId} .tab`).forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    const sec = document.getElementById('perk-' + prefix) || document.getElementById('perk-hyper');
+    sec.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+  });
+}
+tabGroup('hyperTabs',   'hyper');
+tabGroup('angelicTabs', 'angelic');
+
+document.querySelectorAll('.perk-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.perk-btn').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.perk-section').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('perk-' + b.dataset.perk).classList.add('active');
+  });
+});
+
+function buildPoints(max, steps=80) {
+  const pts=[];
+  for (let i=0;i<=steps;i++) pts.push(Math.round(i*max/steps));
+  return pts;
+}
+
+/* ════════════════════════════════════════════
+   HYPER BOOST DATA
+   ════════════════════════════════════════════ */
+const BASE_XP = 150000;
+const H_LEVELS = [
+  { label:'Lvl 0 (Unlock)', short:'L0', pct:2.5  },
+  { label:'Level 1',        short:'L1', pct:3.0  },
+  { label:'Level 2',        short:'L2', pct:3.5  },
+  { label:'Level 3',        short:'L3', pct:4.0  },
+  { label:'Level 4',        short:'L4', pct:4.5  },
+  { label:'Level 5 (Max)',  short:'L5', pct:5.0  },
+];
+const hBonusXP = (pct,k=1) => BASE_XP*(pct/100)*k;
+const hTotalXP = (pct,k=1) => BASE_XP*(1+pct/100)*k;
+const H_KILL_STEPS = [1,10,50,100,500,1000];
+
+/* ── H: Stacked ── */
+let hStackedKills = 1, hShowBase = true;
+const hStackedChart = makeChart('hStackedChart','bar',{ stacked:true, legend:true, unit:' XP', yFmt: v=>fmtXP(v) });
+
+function updateHStacked() {
+  const k = hStackedKills;
+  const datasets = [];
+  if (hShowBase) {
+    datasets.push({ label:'Base XP', data: H_LEVELS.map(()=>BASE_XP*k), backgroundColor:'#2e2e3e', borderColor:'#3e3e52', borderWidth:1 });
+  }
+  datasets.push({
+    label:'Bonus XP',
+    data: H_LEVELS.map(l=>hBonusXP(l.pct,k)),
+    backgroundColor: COLORS.map(c=>c+'cc'), borderColor: COLORS, borderWidth:1.5,
+    borderRadius: hShowBase?0:5,
+  });
+  hStackedChart.data.labels   = H_LEVELS.map(l=>l.label);
+  hStackedChart.data.datasets = datasets;
+  hStackedChart.options.scales.x.stacked = hShowBase;
+  hStackedChart.options.scales.y.stacked = hShowBase;
+  hStackedChart.update();
+  const kl = k===1?'per kill':`over ${k.toLocaleString()} kills`;
+  document.getElementById('hStackedTitle').textContent = hShowBase
+    ? `Total XP ${kl} — Base (dark) + Bonus (color) stacked`
+    : `Bonus XP ${kl} by Perk Level`;
+  document.getElementById('hStackedStats').innerHTML = H_LEVELS.map((l,i)=>`
+    <div class="stat${i===5?' highlight':''}">
+      <div class="lbl">${l.label}</div>
+      <div class="val" style="color:${COLORS[i]}">+${fmtXP(hBonusXP(l.pct,k))}</div>
+      <div class="sub">+${l.pct.toFixed(1)}%${i>0?' · +'+fmtXP(hBonusXP(.5,k))+' vs prev':''}</div>
+    </div>`).join('');
+}
+document.getElementById('hStackedKillToggle').addEventListener('click',e=>{
+  const b=e.target.closest('[data-kills]'); if(!b) return;
+  hStackedKills=parseInt(b.dataset.kills);
+  document.querySelectorAll('#hStackedKillToggle .btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); updateHStacked();
+});
+document.getElementById('hToggleBase').addEventListener('click',e=>{
+  hShowBase=!hShowBase;
+  e.target.textContent = hShowBase?'Stacked (Base + Bonus)':'Bonus Only';
+  e.target.classList.toggle('active',hShowBase); updateHStacked();
+});
+document.getElementById('hToggleBase').classList.add('active');
+updateHStacked();
+
+/* ── H: Compare ── */
+const hCmpChart = makeChart('hCmpChart','bar',{ unit:' XP/kill', yFmt:v=>fmtXP(v), legend:true });
+function updateHCompare() {
+  const ai=parseInt(document.getElementById('hCmpA').value);
+  const bi=parseInt(document.getElementById('hCmpB').value);
+  const la=H_LEVELS[ai], lb=H_LEVELS[bi];
+  const diff=hBonusXP(lb.pct)-hBonusXP(la.pct); const sign=diff>=0?'+':'';
+  document.getElementById('hDeltaBox').innerHTML=`
+    <div class="delta-side a"><div class="level-name">${la.label}</div><div class="pct">+${la.pct.toFixed(1)}%</div><div class="xp-val">+${fmtXP(hBonusXP(la.pct))} XP/kill</div></div>
+    <div class="delta-mid"><div class="arrow">→</div><div class="gain-val">${sign}${fmtXP(diff)}</div><div class="gain">XP / kill difference</div></div>
+    <div class="delta-side b"><div class="level-name">${lb.label}</div><div class="pct">+${lb.pct.toFixed(1)}%</div><div class="xp-val">+${fmtXP(hBonusXP(lb.pct))} XP/kill</div></div>`;
+  document.getElementById('hKillsGrid').innerHTML=`
+    <div class="kg-header"><div>Kills</div><div style="color:${COLORS[ai]}">${la.short} Bonus</div><div style="color:${COLORS[bi]}">${lb.short} Bonus</div><div style="color:var(--green)">Diff</div></div>
+    ${H_KILL_STEPS.map(k=>`<div class="kg-row"><div>${k.toLocaleString()}</div><div style="color:${COLORS[ai]};font-weight:600">+${fmtXP(hBonusXP(la.pct,k))}</div><div style="color:${COLORS[bi]};font-weight:600">+${fmtXP(hBonusXP(lb.pct,k))}</div><div style="color:var(--green);font-weight:600">${sign}${fmtXP(diff*k)}</div></div>`).join('')}`;
+  hCmpChart.data.labels=H_LEVELS.map(l=>l.short);
+  hCmpChart.data.datasets=[
+    { label:la.label, data:H_LEVELS.map((_,i)=>i===ai?hBonusXP(la.pct):null), backgroundColor:COLORS[ai]+'cc', borderColor:COLORS[ai], borderWidth:2, borderRadius:5 },
+    { label:lb.label, data:H_LEVELS.map((_,i)=>i===bi?hBonusXP(lb.pct):null), backgroundColor:COLORS[bi]+'cc', borderColor:COLORS[bi], borderWidth:2, borderRadius:5 },
+    { label:'Other',  data:H_LEVELS.map((_,i)=>(i!==ai&&i!==bi)?hBonusXP(H_LEVELS[i].pct):null), backgroundColor:'#3e3e52', borderColor:'#555568', borderWidth:1, borderRadius:5 },
+  ];
+  hCmpChart.update();
+}
+document.getElementById('hCmpA').addEventListener('change',updateHCompare);
+document.getElementById('hCmpB').addEventListener('change',updateHCompare);
+updateHCompare();
+
+/* ── H: Cumulative ── */
+let hCumMax=500, hCumMode='bonus', hCumActive=[0,1,2,3,4,5];
+const hCumChart = makeChart('hCumChart','line',{ legend:true, unit:' XP', yFmt:v=>fmtXP(v), xTitle:'Kills', yTitle:'XP' });
+const hCumPillsEl=document.getElementById('hCumPills');
+H_LEVELS.forEach((l,i)=>{
+  const p=document.createElement('div'); p.className='pill active';
+  p.textContent=l.label; p.style.borderColor=COLORS[i]; p.style.color=COLORS[i]; p.dataset.idx=i;
+  p.addEventListener('click',()=>{ if(hCumActive.includes(i)){if(hCumActive.length===1)return; hCumActive=hCumActive.filter(x=>x!==i); p.classList.remove('active');}else{hCumActive.push(i);p.classList.add('active');} updateHCumulative(); });
+  hCumPillsEl.appendChild(p);
+});
+function updateHCumulative(){
+  const pts=buildPoints(hCumMax);
+  hCumChart.data.labels=pts;
+  hCumChart.data.datasets=H_LEVELS.map((l,i)=>({
+    label:l.label, hidden:!hCumActive.includes(i),
+    data:hCumActive.includes(i)?pts.map(k=>hCumMode==='bonus'?hBonusXP(l.pct,k):hTotalXP(l.pct,k)):[],
+    borderColor:COLORS[i], backgroundColor:COLORS[i]+'18', borderWidth:2.5, pointRadius:0, tension:.3, fill:false
+  }));
+  hCumChart.update();
+  document.getElementById('hCumTitle').textContent=`${hCumMode==='bonus'?'Cumulative Bonus XP':'Cumulative Total XP'} over ${hCumMax.toLocaleString()} kills`;
+}
+document.getElementById('hCumKillToggle').addEventListener('click',e=>{
+  const b=e.target.closest('[data-max]'); if(!b)return;
+  hCumMax=parseInt(b.dataset.max);
+  document.querySelectorAll('#hCumKillToggle .btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); updateHCumulative();
+});
+document.getElementById('hCumModeToggle').addEventListener('click',e=>{
+  const b=e.target.closest('[data-mode]'); if(!b)return;
+  hCumMode=b.dataset.mode;
+  document.querySelectorAll('#hCumModeToggle .btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); updateHCumulative();
+});
+updateHCumulative();
+
+/* ════════════════════════════════════════════
+   ANGELIC BLAST DATA
+   ════════════════════════════════════════════ */
+const A_PROC_CHANCE = 0.075;  // 7.5%
+const A_LEVELS = [
+  { label:'Lvl 0 (Unlock)', short:'L0', dmg:100  },
+  { label:'Level 1',        short:'L1', dmg:150  },
+  { label:'Level 2',        short:'L2', dmg:200  },
+  { label:'Level 3',        short:'L3', dmg:250  },
+  { label:'Level 4',        short:'L4', dmg:300  },
+  { label:'Level 5 (Max)',  short:'L5', dmg:350  },
+];
+const A_HIT_STEPS = [1,100,500,1000,5000,10000];
+const aExpected = (dmg, hits=1) => A_PROC_CHANCE * dmg * hits;
+const aProcs    = (hits)        => A_PROC_CHANCE * hits;
+
+const A_COLORS = ['#818cf8','#60a5fa','#34d399','#facc15','#fb923c','#f0b429'];
+
+/* ── A: Damage per Level ── */
+let aHits=1, aDmgMode='expected';
+const aLevelChart = makeChart('aLevelChart','bar',{ legend:true, unit:' dmg', yFmt:v=>fmt(v) });
+
+function updateALevels() {
+  const h=aHits;
+  const showExp  = aDmgMode==='expected'||aDmgMode==='both';
+  const showProc = aDmgMode==='proc'    ||aDmgMode==='both';
+  const datasets=[];
+  if(showExp) datasets.push({
+    label:'Expected Avg Dmg (7.5% proc)',
+    data: A_LEVELS.map(l=>aExpected(l.dmg,h)),
+    backgroundColor: A_COLORS.map(c=>c+'cc'), borderColor:A_COLORS, borderWidth:1.5, borderRadius:5,
+  });
+  if(showProc) datasets.push({
+    label:'Proc Dmg (on trigger)',
+    data: A_LEVELS.map(l=>l.dmg*h),
+    backgroundColor: A_COLORS.map(c=>c+'44'), borderColor:A_COLORS, borderWidth:1.5, borderRadius:5,
+    borderDash:[5,3],
+  });
+  aLevelChart.data.labels=A_LEVELS.map(l=>l.label);
+  aLevelChart.data.datasets=datasets;
+  aLevelChart.options.plugins.legend.display = aDmgMode==='both';
+  aLevelChart.update();
+  const hl=h===1?'per hit':`over ${h.toLocaleString()} hits`;
+  const modeStr={expected:'Expected Avg Damage',proc:'Proc Damage (on trigger)',both:'Expected vs Proc Damage'}[aDmgMode];
+  document.getElementById('aLevelTitle').textContent=`${modeStr} ${hl} by Perk Level (7.5% proc chance)`;
+
+  // Stat cards
+  document.getElementById('aLevelStats').innerHTML=A_LEVELS.map((l,i)=>`
+    <div class="stat${i===5?' highlight':''}">
+      <div class="lbl">${l.label}</div>
+      <div class="val" style="color:${A_COLORS[i]}">${fmt(aExpected(l.dmg,h))}</div>
+      <div class="sub">proc: ${l.dmg*h} dmg${i>0?` · +${fmt(aExpected(50,h))} vs prev`:''}</div>
+    </div>`).join('');
+
+  // Table
+  document.getElementById('aTable').innerHTML=A_LEVELS.map((l,i)=>`
+    <tr style="border-bottom:1px solid var(--border)${i===5?'; background:linear-gradient(135deg,#1e1600,#2a1e00)':''}">
+      <td style="padding:11px 16px; font-weight:600; color:${A_COLORS[i]}">${l.label}</td>
+      <td style="padding:11px 16px; color:var(--gold-light); font-weight:700">${l.dmg}</td>
+      <td style="padding:11px 16px; color:var(--green); font-weight:600">${fmt(aExpected(l.dmg))}</td>
+      <td style="padding:11px 16px; color:var(--blue)">${i===0?'—':`<span style="color:var(--green)">+50 proc</span> <span style="color:var(--muted)">/ +${fmt(aExpected(50))} avg/hit</span>`}</td>
+      <td style="padding:11px 16px; color:var(--text)">${fmt(aExpected(l.dmg,1000))}</td>
+    </tr>`).join('');
+}
+document.getElementById('aHitToggle').addEventListener('click',e=>{
+  const b=e.target.closest('[data-hits]'); if(!b)return;
+  aHits=parseInt(b.dataset.hits);
+  document.querySelectorAll('#aHitToggle .btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); updateALevels();
+});
+document.getElementById('aDmgModeToggle').addEventListener('click',e=>{
+  const b=e.target.closest('[data-dmode]'); if(!b)return;
+  aDmgMode=b.dataset.dmode;
+  document.querySelectorAll('#aDmgModeToggle .btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); updateALevels();
+});
+updateALevels();
+
+/* ── A: Compare ── */
+const aCmpChart = makeChart('aCmpChart','bar',{ unit:' avg dmg/hit', yFmt:v=>fmt(v), legend:true });
+function updateACompare(){
+  const ai=parseInt(document.getElementById('aCmpA').value);
+  const bi=parseInt(document.getElementById('aCmpB').value);
+  const la=A_LEVELS[ai], lb=A_LEVELS[bi];
+  const diffProc=lb.dmg-la.dmg; const diffExp=aExpected(lb.dmg)-aExpected(la.dmg);
+  const sign=diffProc>=0?'+':'';
+  document.getElementById('aDeltaBox').innerHTML=`
+    <div class="delta-side a"><div class="level-name">${la.label}</div><div class="pct">${la.dmg} dmg</div><div class="xp-val">${fmt(aExpected(la.dmg))} avg dmg/hit</div></div>
+    <div class="delta-mid"><div class="arrow">→</div><div class="gain-val">${sign}${diffProc} proc dmg</div><div class="gain">${sign}${fmt(diffExp)} avg dmg/hit</div></div>
+    <div class="delta-side b"><div class="level-name">${lb.label}</div><div class="pct">${lb.dmg} dmg</div><div class="xp-val">${fmt(aExpected(lb.dmg))} avg dmg/hit</div></div>`;
+  document.getElementById('aHitsGrid').innerHTML=`
+    <div class="kg-header"><div>Hits</div><div style="color:${A_COLORS[ai]}">${la.short} Exp Dmg</div><div style="color:${A_COLORS[bi]}">${lb.short} Exp Dmg</div><div style="color:var(--green)">Diff</div></div>
+    ${A_HIT_STEPS.map(h=>`<div class="kg-row"><div>${h.toLocaleString()}</div><div style="color:${A_COLORS[ai]};font-weight:600">${fmt(aExpected(la.dmg,h))}</div><div style="color:${A_COLORS[bi]};font-weight:600">${fmt(aExpected(lb.dmg,h))}</div><div style="color:var(--green);font-weight:600">${sign}${fmt(diffExp*h)}</div></div>`).join('')}`;
+  aCmpChart.data.labels=A_LEVELS.map(l=>l.short);
+  aCmpChart.data.datasets=[
+    { label:la.label, data:A_LEVELS.map((_,i)=>i===ai?aExpected(la.dmg):null), backgroundColor:A_COLORS[ai]+'cc', borderColor:A_COLORS[ai], borderWidth:2, borderRadius:5 },
+    { label:lb.label, data:A_LEVELS.map((_,i)=>i===bi?aExpected(lb.dmg):null), backgroundColor:A_COLORS[bi]+'cc', borderColor:A_COLORS[bi], borderWidth:2, borderRadius:5 },
+    { label:'Other',  data:A_LEVELS.map((_,i)=>(i!==ai&&i!==bi)?aExpected(A_LEVELS[i].dmg):null), backgroundColor:'#3e3e52', borderColor:'#555568', borderWidth:1, borderRadius:5 },
+  ];
+  aCmpChart.update();
+}
+document.getElementById('aCmpA').addEventListener('change',updateACompare);
+document.getElementById('aCmpB').addEventListener('change',updateACompare);
+updateACompare();
+
+/* ── A: Cumulative ── */
+let aCumMax=2000, aCumMode='expected', aCumActive=[0,1,2,3,4,5];
+const aCumChart=makeChart('aCumChart','line',{legend:true,unit:' dmg',yFmt:v=>fmtXP(v),xTitle:'Hits',yTitle:'Damage'});
+const aCumPillsEl=document.getElementById('aCumPills');
+A_LEVELS.forEach((l,i)=>{
+  const p=document.createElement('div'); p.className='pill active';
+  p.textContent=l.label; p.style.borderColor=A_COLORS[i]; p.style.color=A_COLORS[i]; p.dataset.idx=i;
+  p.addEventListener('click',()=>{ if(aCumActive.includes(i)){if(aCumActive.length===1)return; aCumActive=aCumActive.filter(x=>x!==i); p.classList.remove('active');}else{aCumActive.push(i);p.classList.add('active');} updateACumulative(); });
+  aCumPillsEl.appendChild(p);
+});
+function updateACumulative(){
+  const pts=buildPoints(aCumMax);
+  aCumChart.data.labels=pts;
+  aCumChart.data.datasets=A_LEVELS.map((l,i)=>({
+    label:l.label, hidden:!aCumActive.includes(i),
+    data:aCumActive.includes(i)?pts.map(h=>aCumMode==='expected'?aExpected(l.dmg,h):aProcs(h)):[],
+    borderColor:A_COLORS[i], backgroundColor:A_COLORS[i]+'18', borderWidth:2.5, pointRadius:0, tension:.3, fill:false
+  }));
+  aCumChart.update();
+  document.getElementById('aCumTitle').textContent=
+    aCumMode==='expected'
+      ? `Cumulative Expected Damage over ${aCumMax.toLocaleString()} hits`
+      : `Expected Procs over ${aCumMax.toLocaleString()} hits (level-independent)`;
+  document.getElementById('aCumStats').innerHTML=`
+    <div class="stat"><div class="lbl">Avg hits per proc</div><div class="val">~${fmt(1/A_PROC_CHANCE)}</div><div class="sub">7.5% trigger rate</div></div>
+    <div class="stat"><div class="lbl">Procs per 100 hits</div><div class="val">${fmt(aProcs(100))}</div><div class="sub">expected</div></div>
+    <div class="stat"><div class="lbl">L0 dmg / 1k hits</div><div class="val">${fmt(aExpected(100,1000))}</div><div class="sub">100 dmg proc</div></div>
+    <div class="stat highlight"><div class="lbl">L5 dmg / 1k hits</div><div class="val">${fmt(aExpected(350,1000))}</div><div class="sub">350 dmg proc · max</div></div>
+  `;
+}
+document.getElementById('aCumHitToggle').addEventListener('click',e=>{
+  const b=e.target.closest('[data-max]'); if(!b)return;
+  aCumMax=parseInt(b.dataset.max);
+  document.querySelectorAll('#aCumHitToggle .btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); updateACumulative();
+});
+document.getElementById('aCumModeToggle').addEventListener('click',e=>{
+  const b=e.target.closest('[data-mode]'); if(!b)return;
+  aCumMode=b.dataset.mode;
+  document.querySelectorAll('#aCumModeToggle .btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); updateACumulative();
+});
+updateACumulative();
+
+/* ════════════════════════════════════════════
+   ASTRAL BOSSES DATA
+   ════════════════════════════════════════════ */
+tabGroup('immortalTabs', 'immortal');
+
+const I_LEVELS = [
+  { label:'Lvl 0 (Unlock)', short:'L0', chance:0.01 },
+  { label:'Level 1',        short:'L1', chance:0.02 },
+  { label:'Level 2 (Max)',  short:'L2', chance:0.03 },
+];
+const I_COLORS  = ['#f87171','#fb923c','#fbbf24'];
+const I_TGT_COLORS = ['#818cf8','#60a5fa','#34d399','#facc15','#f0b429'];
+const I_HIT_STEPS = [100, 500, 1000, 5000, 10000];
+
+const iExtraHits = (chance, hits, targets=1) => chance * hits * targets;
+
+/* ── I: Proc Rate per Level ── */
+let iHits = 100, iTargets = 1;
+const iLevelChart = makeChart('iLevelChart','bar',{ unit:' extra hits', yFmt:v=>fmt(v), legend:false });
+
+function updateILevels() {
+  const h = iHits, t = iTargets;
+  iLevelChart.data.labels   = I_LEVELS.map(l => l.label);
+  iLevelChart.data.datasets = [{
+    label: 'Extra Hits',
+    data:  I_LEVELS.map(l => iExtraHits(l.chance, h, t)),
+    backgroundColor: I_COLORS.map(c => c+'cc'),
+    borderColor: I_COLORS,
+    borderWidth: 2,
+    borderRadius: 6,
+  }];
+  iLevelChart.update();
+
+  const hl = h.toLocaleString(), tl = t > 1 ? `${t} targets` : '1 target';
+  document.getElementById('iLevelTitle').textContent =
+    `Expected Extra Hits over ${hl} hits · ${tl} · by Perk Level`;
+  document.getElementById('iTableTargetLabel').textContent = t;
+
+  document.getElementById('iLevelStats').innerHTML = I_LEVELS.map((l,i) => `
+    <div class="stat${i===2?' highlight':''}">
+      <div class="lbl">${l.label}</div>
+      <div class="val" style="color:${I_COLORS[i]}">${fmt(iExtraHits(l.chance,h,t))}</div>
+      <div class="sub">${(l.chance*100).toFixed(0)}% chance · ${tl}</div>
+    </div>`).join('') + `
+    <div class="stat">
+      <div class="lbl">L0→Max gain</div>
+      <div class="val" style="color:var(--green)">+${fmt(iExtraHits(0.02,h,t))}</div>
+      <div class="sub">extra hits over ${hl} hits</div>
+    </div>`;
+
+  document.getElementById('iTable').innerHTML = I_LEVELS.map((l,i) => `
+    <tr style="border-bottom:1px solid var(--border)${i===2?';background:linear-gradient(135deg,#1a0000,#2a0a00)':''}">
+      <td style="padding:11px 16px;font-weight:600;color:${I_COLORS[i]}">${l.label}</td>
+      <td style="padding:11px 16px;color:var(--gold-light);font-weight:700">${(l.chance*100).toFixed(0)}%</td>
+      <td style="padding:11px 16px;color:var(--blue)">${i===0?'—':`<span style="color:var(--green)">+1%</span>`}</td>
+      <td style="padding:11px 16px;color:var(--green);font-weight:600">${fmt(iExtraHits(l.chance,100,1))}</td>
+      <td style="padding:11px 16px;color:var(--text)">${fmt(iExtraHits(l.chance,1000,1))}</td>
+      <td style="padding:11px 16px;color:var(--orange);font-weight:600">${fmt(iExtraHits(l.chance,1000,t))}</td>
+    </tr>`).join('');
+}
+
+document.getElementById('iTargetToggle').addEventListener('click', e => {
+  const b = e.target.closest('[data-targets]'); if (!b) return;
+  iTargets = parseInt(b.dataset.targets);
+  document.querySelectorAll('#iTargetToggle .btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active'); updateILevels();
+});
+document.getElementById('iHitToggle').addEventListener('click', e => {
+  const b = e.target.closest('[data-hits]'); if (!b) return;
+  iHits = parseInt(b.dataset.hits);
+  document.querySelectorAll('#iHitToggle .btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active'); updateILevels();
+});
+updateILevels();
+
+/* ── I: AoE Scaling ── */
+let iAoeHits = 1000;
+const iAoeChart = makeChart('iAoeChart','bar',{ unit:' extra hits', yFmt:v=>fmt(v), legend:true });
+
+function updateIAoe() {
+  const h = iAoeHits;
+  const targets = [1,2,3,4,5];
+
+  // Heatmap table
+  const maxVal = iExtraHits(0.03, h, 5);
+  const cellBg = val => {
+    const ratio = val / maxVal;
+    const r = Math.round(30  + ratio * 170);
+    const g = Math.round(10  + ratio * 60);
+    const b = Math.round(10  + ratio * 10);
+    return `rgb(${r},${g},${b})`;
+  };
+  document.getElementById('iAoeTitle').textContent =
+    `Extra Hits over ${h.toLocaleString()} hits — Perk Level vs Targets in AoE`;
+  document.getElementById('iAoeTable').innerHTML = `
+    <thead>
+      <tr style="background:var(--surface2)">
+        <th style="padding:10px 14px;text-align:left;color:var(--muted);font-size:.75rem;border-bottom:1px solid var(--border)">Perk Level</th>
+        ${targets.map(t=>`<th style="padding:10px 18px;color:var(--muted);font-size:.75rem;border-bottom:1px solid var(--border);text-align:center">${t} Target${t>1?'s':''}</th>`).join('')}
+      </tr>
+    </thead>
+    <tbody>
+      ${I_LEVELS.map((l,i)=>`
+        <tr>
+          <td style="padding:11px 14px;font-weight:600;color:${I_COLORS[i]};border-bottom:1px solid var(--border)">${l.label} (${(l.chance*100).toFixed(0)}%)</td>
+          ${targets.map(t=>{
+            const v = iExtraHits(l.chance,h,t);
+            return `<td style="padding:11px 18px;text-align:center;font-weight:700;background:${cellBg(v)};color:#fff;border-bottom:1px solid #1a0a0a">${fmt(v)}</td>`;
+          }).join('')}
+        </tr>`).join('')}
+    </tbody>`;
+
+  // Grouped bar chart — one group per perk level, bars = targets
+  iAoeChart.data.labels = I_LEVELS.map(l => l.label);
+  iAoeChart.data.datasets = targets.map((t,ti) => ({
+    label: `${t} Target${t>1?'s':''}`,
+    data: I_LEVELS.map(l => iExtraHits(l.chance, h, t)),
+    backgroundColor: I_TGT_COLORS[ti]+'bb',
+    borderColor:     I_TGT_COLORS[ti],
+    borderWidth: 1.5,
+    borderRadius: 4,
+  }));
+  iAoeChart.options.plugins.legend.display = true;
+  iAoeChart.update();
+}
+
+document.getElementById('iAoeHitToggle').addEventListener('click', e => {
+  const b = e.target.closest('[data-hits]'); if (!b) return;
+  iAoeHits = parseInt(b.dataset.hits);
+  document.querySelectorAll('#iAoeHitToggle .btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active'); updateIAoe();
+});
+updateIAoe();
+
+/* ── I: Cumulative ── */
+let iCumMax = 2000, iCumTargets = 1, iCumActive = [0,1,2];
+const iCumChart = makeChart('iCumChart','line',{
+  legend:true, unit:' extra hits',
+  yFmt: v => fmt(v), xTitle:'Hits', yTitle:'Extra Hits'
+});
+const iCumPillsEl = document.getElementById('iCumPills');
+I_LEVELS.forEach((l,i) => {
+  const p = document.createElement('div'); p.className='pill active';
+  p.textContent = l.label;
+  p.style.borderColor = I_COLORS[i]; p.style.color = I_COLORS[i]; p.dataset.idx = i;
+  p.addEventListener('click', () => {
+    if (iCumActive.includes(i)) { if(iCumActive.length===1) return; iCumActive=iCumActive.filter(x=>x!==i); p.classList.remove('active'); }
+    else { iCumActive.push(i); p.classList.add('active'); }
+    updateICumulative();
+  });
+  iCumPillsEl.appendChild(p);
+});
+
+function updateICumulative() {
+  const pts = buildPoints(iCumMax);
+  const t   = iCumTargets;
+  iCumChart.data.labels   = pts;
+  iCumChart.data.datasets = I_LEVELS.map((l,i) => ({
+    label: l.label, hidden: !iCumActive.includes(i),
+    data: iCumActive.includes(i) ? pts.map(h => iExtraHits(l.chance, h, t)) : [],
+    borderColor: I_COLORS[i], backgroundColor: I_COLORS[i]+'18',
+    borderWidth: 2.5, pointRadius: 0, tension: 0.3, fill: false,
+  }));
+  iCumChart.update();
+  const tl = t > 1 ? `${t} Targets` : '1 Target';
+  document.getElementById('iCumTitle').textContent =
+    `Cumulative Extra Hits over ${iCumMax.toLocaleString()} hits · ${tl}`;
+
+  document.getElementById('iCumStats').innerHTML = `
+    <div class="stat"><div class="lbl">L0 / 1k hits / 1 target</div><div class="val" style="color:${I_COLORS[0]}">${fmt(iExtraHits(0.01,1000,1))}</div><div class="sub">1% chance</div></div>
+    <div class="stat"><div class="lbl">L2 / 1k hits / 1 target</div><div class="val" style="color:${I_COLORS[2]}">${fmt(iExtraHits(0.03,1000,1))}</div><div class="sub">3% chance (max)</div></div>
+    <div class="stat"><div class="lbl">L2 / 1k hits / ${t} target${t>1?'s':''}</div><div class="val" style="color:var(--green)">${fmt(iExtraHits(0.03,1000,t))}</div><div class="sub">AoE multiplied</div></div>
+    <div class="stat highlight"><div class="lbl">L2 / 5k hits / ${t} target${t>1?'s':''}</div><div class="val">${fmt(iExtraHits(0.03,5000,t))}</div><div class="sub">full grind value</div></div>
+  `;
+}
+
+document.getElementById('iCumHitToggle').addEventListener('click', e => {
+  const b = e.target.closest('[data-max]'); if (!b) return;
+  iCumMax = parseInt(b.dataset.max);
+  document.querySelectorAll('#iCumHitToggle .btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active'); updateICumulative();
+});
+document.getElementById('iCumTargetToggle').addEventListener('click', e => {
+  const b = e.target.closest('[data-targets]'); if (!b) return;
+  iCumTargets = parseInt(b.dataset.targets);
+  document.querySelectorAll('#iCumTargetToggle .btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active'); updateICumulative();
+});
+updateICumulative();
+
+/* ════════════════════════════════════════════
+   ASTRAL BOSSES DATA
+   ════════════════════════════════════════════ */
+tabGroup('astralTabs', 'astral');
+
+// Index 0 = no perk (0% chance — mechanic doesn't exist)
+// Index 1 = unlocked (1/1000), indices 2-5 = upgrades 1-4
+const AB_LEVELS = [
+  { label:'No Perk',        short:'None', denom:null },
+  { label:'Unlock (1/1000)',short:'Unlk', denom:1000 },
+  { label:'Upgrade 1',      short:'U1',   denom:950  },
+  { label:'Upgrade 2',      short:'U2',   denom:900  },
+  { label:'Upgrade 3',      short:'U3',   denom:850  },
+  { label:'Upgrade 4 (Max)',short:'Max',  denom:800  },
+];
+const AB_COLORS   = ['#3e3e52','#c084fc','#a78bfa','#818cf8','#60a5fa','#38bdf8'];
+const AB_KILL_STEPS = [1000, 5000, 10000, 50000, 100000, 200000];
+
+const abChance        = l => l.denom === null ? 0 : 1 / l.denom;
+// kills → tasks = kills / kpt; expected contracts = chance * tasks
+const abExpected      = (l, kills, kpt) => abChance(l) * (kills / kpt);
+// probability of ≥1 contract over N kills (N/kpt tasks)
+const abProbAtLeast1  = (l, kills, kpt) => l.denom === null ? 0 : 1 - Math.pow(1 - abChance(l), kills / kpt);
+// kills needed for 50% / 90% chance
+const abKillsFor50pct = (l, kpt) => l.denom === null ? Infinity : Math.ceil(Math.log(0.5) / Math.log(1 - abChance(l))) * kpt;
+const abKillsFor90pct = (l, kpt) => l.denom === null ? Infinity : Math.ceil(Math.log(0.1) / Math.log(1 - abChance(l))) * kpt;
+
+/* ── AB: Rate per Level ── */
+let abKills = 100000, abKpt = 100, abView = 'contracts';
+const abLevelChart = makeChart('abLevelChart','bar',{ unit:'', yFmt:v=>fmt(v), legend:false });
+
+function updateABLevels() {
+  const k = abKills, kpt = abKpt;
+  const data = abView === 'contracts'
+    ? AB_LEVELS.map(l => abExpected(l, k, kpt))
+    : AB_LEVELS.map(l => l.denom === null ? 0 : l.denom * kpt);   // avg kills between contracts
+
+  abLevelChart.data.labels = AB_LEVELS.map(l => l.label);
+  abLevelChart.data.datasets = [{
+    label: abView === 'contracts' ? 'Expected Contracts' : 'Avg Kills / Contract',
+    data,
+    backgroundColor: AB_COLORS.map(c => c+'cc'),
+    borderColor: AB_COLORS,
+    borderWidth: 2,
+    borderRadius: 6,
+  }];
+  abLevelChart.options.plugins.tooltip.callbacks.label =
+    abView === 'contracts'
+      ? c => ` ${fmt(c.parsed.y)} contracts`
+      : c => ` 1 contract per ${fmt(c.parsed.y)} kills`;
+  abLevelChart.update();
+
+  const kl = k.toLocaleString();
+  document.getElementById('abLevelTitle').textContent = abView === 'contracts'
+    ? `Expected Contracts over ${kl} Kills (${kpt} kills/task) by Perk Level`
+    : `Avg Kills Between Contracts (${kpt} kills/task) by Perk Level`;
+
+  document.getElementById('abLevelStats').innerHTML = AB_LEVELS.map((l,i) => `
+    <div class="stat${i===5?' highlight':''}${i===0?' style="opacity:.55"':''}">
+      <div class="lbl">${l.label}</div>
+      <div class="val" style="color:${AB_COLORS[i]}">${l.denom ? '1/'+l.denom+' / task' : '—'}</div>
+      <div class="sub">${l.denom ? fmt(abExpected(l,k,kpt))+' contracts per '+kl+' kills' : 'Mechanic locked'}</div>
+    </div>`).join('') + `
+    <div class="stat">
+      <div class="lbl">Unlock → Max gain</div>
+      <div class="val" style="color:var(--green)">−${(200*kpt).toLocaleString()} kills</div>
+      <div class="sub">avg kills saved per contract (at ${kpt}/task)</div>
+    </div>`;
+
+  // fixed reference columns: 10k and 100k kills
+  const ref1 = 10000, ref2 = 100000;
+  if (document.getElementById('abCol1k'))  document.getElementById('abCol1k').textContent  = `Contracts / ${(ref1).toLocaleString()} Kills`;
+  if (document.getElementById('abCol10k')) document.getElementById('abCol10k').textContent = `Contracts / ${(ref2).toLocaleString()} Kills`;
+
+  document.getElementById('abTable').innerHTML = AB_LEVELS.map((l,i) => {
+    const prev = i > 0 ? AB_LEVELS[i-1] : null;
+    const noPerk = l.denom === null;
+    const killsSaved = (!noPerk && prev && prev.denom) ? (prev.denom - l.denom) * kpt : null;
+    const avgKills = noPerk ? null : l.denom * kpt;
+    return `<tr style="border-bottom:1px solid var(--border)${i===5?';background:linear-gradient(135deg,#0d0020,#1a0040)':''}${noPerk?';opacity:.5':''}">
+      <td style="padding:11px 16px;font-weight:600;color:${AB_COLORS[i]}">${l.label}</td>
+      <td style="padding:11px 16px;color:var(--gold-light);font-weight:700">${noPerk ? '<span style="color:var(--red)">Impossible</span>' : '1/'+l.denom+' per task'}</td>
+      <td style="padding:11px 16px;color:var(--text)">${noPerk ? '∞' : avgKills.toLocaleString()+' kills'}</td>
+      <td style="padding:11px 16px">${i===0 ? '—' : i===1 ? '<span style="color:var(--purple);font-weight:700">Unlocks mechanic</span>' : killsSaved ? `<span style="color:var(--green)">−${killsSaved.toLocaleString()} kills/contract</span>` : '—'}</td>
+      <td style="padding:11px 16px;color:var(--green);font-weight:600">${noPerk ? '0' : fmt(abExpected(l,ref1,kpt))}</td>
+      <td style="padding:11px 16px;color:var(--text)">${noPerk ? '0' : fmt(abExpected(l,ref2,kpt))}</td>
+    </tr>`;
+  }).join('');
+}
+
+document.getElementById('abTaskToggle').addEventListener('click', e => {
+  const b = e.target.closest('[data-tasks]'); if (!b) return;
+  abKills = parseInt(b.dataset.tasks);
+  document.querySelectorAll('#abTaskToggle .btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active'); updateABLevels();
+});
+document.getElementById('abKptToggle').addEventListener('click', e => {
+  const b = e.target.closest('[data-kpt]'); if (!b) return;
+  abKpt = parseInt(b.dataset.kpt);
+  document.querySelectorAll('#abKptToggle .btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active'); updateABLevels(); updateABCompare(); updateABProb();
+});
+document.getElementById('abViewToggle').addEventListener('click', e => {
+  const b = e.target.closest('[data-view]'); if (!b) return;
+  abView = b.dataset.view;
+  document.querySelectorAll('#abViewToggle .btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active'); updateABLevels();
+});
+updateABLevels();
+
+/* ── AB: Compare ── */
+const abCmpChart = makeChart('abCmpChart','bar',{ unit:' contracts', yFmt:v=>fmt(v), legend:true });
+function updateABCompare() {
+  const ai = parseInt(document.getElementById('abCmpA').value);
+  const bi = parseInt(document.getElementById('abCmpB').value);
+  const la = AB_LEVELS[ai], lb = AB_LEVELS[bi];
+  const kpt = abKpt;
+  const refKills = 10000;
+  const diff10k = abExpected(lb,refKills,kpt) - abExpected(la,refKills,kpt);
+  const killsSaved = (la.denom && lb.denom) ? (la.denom - lb.denom) * kpt : null;
+  const sign = diff10k >= 0 ? '+' : '';
+
+  const aChanceStr = la.denom ? `1/${la.denom} / task` : '0%';
+  const bChanceStr = lb.denom ? `1/${lb.denom} / task` : '0%';
+  const aSubStr    = la.denom ? `~${(la.denom*kpt).toLocaleString()} kills / contract` : 'Mechanic locked';
+  const bSubStr    = lb.denom ? `~${(lb.denom*kpt).toLocaleString()} kills / contract` : 'Mechanic locked';
+  const midGain    = la.denom === null
+    ? '<div class="gain-val" style="color:var(--purple)">Unlocks</div><div class="gain">mechanic entirely</div>'
+    : `<div class="gain-val">${killsSaved >= 0 ? '−' : '+'}${Math.abs(killsSaved).toLocaleString()} kills</div>
+       <div class="gain">avg kills saved / contract</div>
+       <div class="gain" style="margin-top:4px;color:var(--green)">${sign}${fmt(diff10k)} contracts / 10k kills</div>`;
+
+  document.getElementById('abDeltaBox').innerHTML = `
+    <div class="delta-side a">
+      <div class="level-name">${la.label}</div>
+      <div class="pct" ${la.denom ? '' : 'style="color:var(--red);font-size:1.2rem"'}>${aChanceStr}</div>
+      <div class="xp-val">${aSubStr}</div>
+    </div>
+    <div class="delta-mid"><div class="arrow">→</div>${midGain}</div>
+    <div class="delta-side b">
+      <div class="level-name">${lb.label}</div>
+      <div class="pct">${bChanceStr}</div>
+      <div class="xp-val">${bSubStr}</div>
+    </div>`;
+
+  document.getElementById('abTasksGrid').innerHTML = `
+    <div class="kg-header">
+      <div>Kills</div>
+      <div style="color:${AB_COLORS[ai]}">${la.short} Contracts</div>
+      <div style="color:${AB_COLORS[bi]}">${lb.short} Contracts</div>
+      <div style="color:var(--green)">Diff</div>
+    </div>
+    ${AB_KILL_STEPS.map(k => `
+      <div class="kg-row">
+        <div>${k.toLocaleString()}</div>
+        <div style="color:${AB_COLORS[ai]};font-weight:600">${fmt(abExpected(la,k,kpt))}</div>
+        <div style="color:${AB_COLORS[bi]};font-weight:600">${fmt(abExpected(lb,k,kpt))}</div>
+        <div style="color:var(--green);font-weight:600">${sign}${fmt(abExpected(lb,k,kpt)-abExpected(la,k,kpt))}</div>
+      </div>`).join('')}`;
+
+  abCmpChart.data.labels = AB_LEVELS.map(l => l.short);
+  abCmpChart.data.datasets = [
+    { label:la.label, data:AB_LEVELS.map((_,i)=>i===ai?abExpected(la,refKills,kpt):null), backgroundColor:AB_COLORS[ai]+'cc', borderColor:AB_COLORS[ai], borderWidth:2, borderRadius:5 },
+    { label:lb.label, data:AB_LEVELS.map((_,i)=>i===bi?abExpected(lb,refKills,kpt):null), backgroundColor:AB_COLORS[bi]+'cc', borderColor:AB_COLORS[bi], borderWidth:2, borderRadius:5 },
+    { label:'Other',  data:AB_LEVELS.map((_,i)=>(i!==ai&&i!==bi)?abExpected(AB_LEVELS[i],refKills,kpt):null), backgroundColor:'#3e3e52', borderColor:'#555568', borderWidth:1, borderRadius:5 },
+  ];
+  abCmpChart.options.plugins.legend.display = true;
+  abCmpChart.update();
+}
+document.getElementById('abCmpA').addEventListener('change', updateABCompare);
+document.getElementById('abCmpB').addEventListener('change', updateABCompare);
+updateABCompare();
+
+/* ── AB: Probability Curve ── */
+let abProbMax = 10000, abProbMode = 'prob', abProbKpt = 100, abProbActive = [0,1,2,3,4,5];
+const abProbChart = makeChart('abProbChart','line',{
+  legend:true, unit:'', xTitle:'Kills', yTitle:'Probability'
+});
+
+const abProbPillsEl = document.getElementById('abProbPills');
+AB_LEVELS.forEach((l,i) => {
+  const p = document.createElement('div'); p.className='pill active';
+  p.textContent = l.label;
+  p.style.borderColor = AB_COLORS[i]; p.style.color = AB_COLORS[i]; p.dataset.idx = i;
+  p.addEventListener('click', () => {
+    if (abProbActive.includes(i)) { if(abProbActive.length===1) return; abProbActive=abProbActive.filter(x=>x!==i); p.classList.remove('active'); }
+    else { abProbActive.push(i); p.classList.add('active'); }
+    updateABProb();
+  });
+  abProbPillsEl.appendChild(p);
+});
+
+function updateABProb() {
+  const kpt = abProbKpt;
+  const pts  = buildPoints(abProbMax, 120);
+  abProbChart.data.labels = pts;
+  abProbChart.data.datasets = AB_LEVELS.map((l,i) => ({
+    label: l.denom ? `${l.label} (1/${l.denom}/task)` : `${l.label} (impossible)`,
+    hidden: !abProbActive.includes(i),
+    data: abProbActive.includes(i)
+      ? pts.map(k => abProbMode === 'prob' ? abProbAtLeast1(l,k,kpt) : abExpected(l,k,kpt))
+      : [],
+    borderColor: AB_COLORS[i], backgroundColor: AB_COLORS[i]+'18',
+    borderWidth: i===0?1.5:2.5, borderDash: i===0?[4,4]:[], pointRadius: 0, tension: 0.3, fill: false,
+  }));
+  abProbChart.options.scales.y.ticks.callback =
+    abProbMode === 'prob' ? v => (v*100).toFixed(0)+'%' : v => fmt(v);
+  abProbChart.options.scales.y.max = abProbMode === 'prob' ? 1 : undefined;
+  abProbChart.options.plugins.tooltip.callbacks.label =
+    abProbMode === 'prob'
+      ? c => ` ${c.dataset.label}: ${(c.parsed.y*100).toFixed(2)}%`
+      : c => ` ${c.dataset.label}: ${fmt(c.parsed.y)} contracts`;
+  abProbChart.update();
+
+  const kl = abProbMax.toLocaleString();
+  document.getElementById('abProbTitle').textContent = abProbMode === 'prob'
+    ? `P(≥1 Astral Contract) over ${kl} kills · ${kpt} kills/task`
+    : `Expected Contracts over ${kl} kills · ${kpt} kills/task`;
+
+  document.getElementById('abProbStats').innerHTML = AB_LEVELS.map((l,i) => {
+    const k50 = abKillsFor50pct(l, kpt);
+    const k90 = abKillsFor90pct(l, kpt);
+    const noPerk = l.denom === null;
+    return `<div class="stat${i===5?' highlight':''}${noPerk?' style="opacity:.5"':''}">
+      <div class="lbl">${l.label}</div>
+      <div class="val" style="color:${AB_COLORS[i]}">${noPerk ? 'N/A' : k50.toLocaleString()}</div>
+      <div class="sub">${noPerk ? 'No contract possible' : `kills for 50% · 90% by ~${k90.toLocaleString()}`}</div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('abProbTaskToggle').addEventListener('click', e => {
+  const b = e.target.closest('[data-max]'); if (!b) return;
+  abProbMax = parseInt(b.dataset.max);
+  document.querySelectorAll('#abProbTaskToggle .btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active'); updateABProb();
+});
+document.getElementById('abProbKptToggle').addEventListener('click', e => {
+  const b = e.target.closest('[data-kpt]'); if (!b) return;
+  abProbKpt = parseInt(b.dataset.kpt);
+  document.querySelectorAll('#abProbKptToggle .btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active'); updateABProb();
+});
+document.getElementById('abProbModeToggle').addEventListener('click', e => {
+  const b = e.target.closest('[data-mode]'); if (!b) return;
+  abProbMode = b.dataset.mode;
+  document.querySelectorAll('#abProbModeToggle .btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active'); updateABProb();
+});
+updateABProb();
+
+/* ════════════════════════════════════════════
+   POINT VALUE TAB
+   ════════════════════════════════════════════ */
+
+// Default point costs — user editable
+const PV_COSTS = {
+  hyper:   { label:'Hyper Boost',    color:'#f0b429', steps:['Unlock','Upgrade 1','Upgrade 2','Upgrade 3','Upgrade 4','Upgrade 5 (Max)'], vals:[100000,150000,200000,250000,300000,350000] },
+  angelic: { label:'Angelic Blast',  color:'#60a5fa', steps:['Unlock','Upgrade 1','Upgrade 2','Upgrade 3','Upgrade 4','Upgrade 5 (Max)'], vals:[50000,100000,150000,200000,250000,300000] },
+  immortal:{ label:'Immortal Hit',   color:'#f87171', steps:['Unlock','Upgrade 1','Upgrade 2 (Max)'], vals:[100000,150000,200000] },
+  astral:  { label:'Astral Bosses',  color:'#a78bfa', steps:['Unlock','Upgrade 1','Upgrade 2','Upgrade 3','Upgrade 4 (Max)'], vals:[50000,100000,150000,200000,250000] },
+};
+
+// Current level state (index into each perk's steps array, -1 = not unlocked)
+const PV_CUR = { hyper: -1, angelic: -1, immortal: -1, astral: -1 };
+
+// ── localStorage persistence ──
+function loadState() {
+  try {
+    const raw = localStorage.getItem('simplicity_perks_v2');
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    if (state.costs) {
+      Object.entries(state.costs).forEach(([k, vals]) => {
+        if (PV_COSTS[k]) PV_COSTS[k].vals = vals.map(v => parseFloat(v) || 0);
+      });
+    }
+    if (state.cur) {
+      Object.entries(state.cur).forEach(([k, v]) => {
+        if (k in PV_CUR) PV_CUR[k] = parseInt(v);
+      });
+    }
+  } catch(e) {}
+}
+function saveState() {
+  const state = {
+    costs: Object.fromEntries(Object.entries(PV_COSTS).map(([k,v]) => [k, v.vals])),
+    cur: { ...PV_CUR },
+  };
+  try { localStorage.setItem('simplicity_perks_v2', JSON.stringify(state)); } catch(e) {}
+}
+loadState();
+
+// Marginal gain per step for each perk (in perk-specific units, per 1 point)
+// Astral: marginal contracts per 100k kills (at current abKpt=100)
+function abMarginalGains() {
+  const ref = 100000, kpt = abKpt;
+  return [
+    abExpected(AB_LEVELS[1], ref, kpt),                                    // unlock (from 0)
+    abExpected(AB_LEVELS[2], ref, kpt) - abExpected(AB_LEVELS[1], ref, kpt),
+    abExpected(AB_LEVELS[3], ref, kpt) - abExpected(AB_LEVELS[2], ref, kpt),
+    abExpected(AB_LEVELS[4], ref, kpt) - abExpected(AB_LEVELS[3], ref, kpt),
+    abExpected(AB_LEVELS[5], ref, kpt) - abExpected(AB_LEVELS[4], ref, kpt),
+  ];
+}
+// Hyper Boost: marginal bonus XP per kill
+const hMargGains = [
+  hBonusXP(2.5),        // unlock (from 0)
+  hBonusXP(0.5), hBonusXP(0.5), hBonusXP(0.5), hBonusXP(0.5), hBonusXP(0.5),
+];
+// Angelic Blast: marginal avg damage per hit
+const aMargGains = [
+  aExpected(100),       // unlock (from 0)
+  aExpected(50), aExpected(50), aExpected(50), aExpected(50), aExpected(50),
+];
+// Immortal Hit: marginal extra hits per 100 hits (1 target)
+const iMargGains = [
+  iExtraHits(0.01, 100, 1),
+  iExtraHits(0.01, 100, 1),
+  iExtraHits(0.01, 100, 1),
+];
+
+// Accumulated metric value at a given level index (-1 = not unlocked)
+function accumMetric(gains, levelIdx) {
+  if (levelIdx < 0) return 0;
+  return gains.slice(0, levelIdx + 1).reduce((a, b) => a + b, 0);
+}
+
+// Per-perk metadata for advisor
+function getPerkDefs() {
+  const abG = abMarginalGains();
+  return [
+    { key:'hyper',   label:'Hyper Boost',   color:'#f0b429', gains: hMargGains, unit:'XP/kill bonus',        unitFmt: v => fmtXP(v) },
+    { key:'angelic', label:'Angelic Blast',  color:'#60a5fa', gains: aMargGains, unit:'avg dmg/hit',          unitFmt: v => v.toFixed(3) },
+    { key:'immortal',label:'Immortal Hit',   color:'#f87171', gains: iMargGains, unit:'extra hits/100',       unitFmt: v => v.toFixed(2) },
+    { key:'astral',  label:'Astral Bosses',  color:'#a78bfa', gains: abG,        unit:'contracts/100k kills', unitFmt: v => v.toFixed(4) },
+  ];
+}
+
+// Build current-level selectors
+function buildCurrentLevelSelectors() {
+  const grid = document.getElementById('currentLevelGrid');
+  grid.innerHTML = '';
+  Object.entries(PV_COSTS).forEach(([key, perk]) => {
+    const row = document.createElement('div');
+    row.className = 'cur-lvl-row';
+    const options = ['<option value="-1">Not unlocked</option>',
+      ...perk.steps.map((s,i) => `<option value="${i}">${s}</option>`)
+    ].join('');
+    row.innerHTML = `
+      <label style="color:${perk.color};font-weight:600">${perk.label}</label>
+      <select class="cur-lvl-select" data-perk="${key}">
+        ${options}
+      </select>`;
+    grid.appendChild(row);
+  });
+  grid.querySelectorAll('.cur-lvl-select').forEach(sel => {
+    sel.value = PV_CUR[sel.dataset.perk];   // restore saved level
+    sel.addEventListener('change', () => {
+      PV_CUR[sel.dataset.perk] = parseInt(sel.value);
+      saveState(); updateAdvisor();
+    });
+  });
+}
+buildCurrentLevelSelectors();
+
+// Build cost input UI
+function buildCostInputs() {
+  const grid = document.getElementById('costInputGrid');
+  grid.innerHTML = '';
+  Object.entries(PV_COSTS).forEach(([key, perk]) => {
+    const block = document.createElement('div');
+    block.className = 'cost-block';
+    block.innerHTML = `<div class="perk-name" style="color:${perk.color}">${perk.label}</div>` +
+      perk.steps.map((s,i) => `
+        <div class="cost-row">
+          <label>${s}</label>
+          <input class="cost-input" type="number" min="0" step="1"
+            data-perk="${key}" data-idx="${i}" value="${perk.vals[i] || ''}" placeholder="pts">
+        </div>`).join('');
+    grid.appendChild(block);
+  });
+  grid.querySelectorAll('.cost-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      PV_COSTS[inp.dataset.perk].vals[parseInt(inp.dataset.idx)] = parseFloat(inp.value) || 0;
+      saveState(); updateAdvisor(); updatePVCharts();
+    });
+  });
+}
+buildCostInputs();
+
+// ── Advisor ──
+function updateAdvisor() {
+  const defs = getPerkDefs();
+  const candidates = [];
+
+  defs.forEach(p => {
+    const curIdx = PV_CUR[p.key];             // -1 = locked
+    const nextIdx = curIdx + 1;               // index into gains[] and costs[]
+    if (nextIdx >= p.gains.length) return;    // already maxed
+
+    const cost       = PV_COSTS[p.key].vals[nextIdx];
+    const gain       = p.gains[nextIdx];
+    const curMetric  = accumMetric(p.gains, curIdx);
+    const isUnlock   = curIdx === -1;
+
+    // % improvement in perk metric
+    const pctImprovement = isUnlock || curMetric === 0 ? null : (gain / curMetric) * 100;
+    // points per 1% improvement (null if unlock or no cost)
+    const ptsPer1pct = (pctImprovement !== null && cost > 0) ? cost / pctImprovement : null;
+
+    candidates.push({
+      ...p,
+      nextIdx, cost, gain, curMetric, isUnlock, pctImprovement, ptsPer1pct,
+      stepName: PV_COSTS[p.key].steps[nextIdx],
+    });
+  });
+
+  // Sort: unlocks first (they create the mechanic), then by ptsPer1pct asc (lower = better), unknowns last
+  candidates.sort((a, b) => {
+    if (a.isUnlock !== b.isUnlock) return a.isUnlock ? -1 : 1;
+    if (a.ptsPer1pct === null && b.ptsPer1pct === null) return 0;
+    if (a.ptsPer1pct === null) return 1;
+    if (b.ptsPer1pct === null) return -1;
+    return a.ptsPer1pct - b.ptsPer1pct;
+  });
+
+  const medals = ['🥇','🥈','🥉'];
+  const maxPts = Math.max(...candidates.map(c => c.ptsPer1pct || 0), 1);
+
+  if (candidates.length === 0) {
+    document.getElementById('advisorTable').innerHTML =
+      '<p style="color:var(--green);text-align:center;padding:16px">All perks maxed — nothing left to upgrade!</p>';
+    return;
+  }
+
+  document.getElementById('advisorTable').innerHTML = `
+    <table class="adv-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Perk</th>
+          <th>Next Step</th>
+          <th>Cost</th>
+          <th>You Gain</th>
+          <th>% Improvement</th>
+          <th>Pts / 1% Gain</th>
+          <th>Efficiency</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${candidates.map((c, rank) => {
+          const medal = medals[rank] ?? `#${rank+1}`;
+          const badgeBg = rank===0?'#3a2800':rank===1?'#1a1a00':rank===2?'#001a0a':'#1a1a22';
+          const costStr = c.cost > 0 ? `${c.cost} pts` : '<span style="color:var(--muted)">?</span>';
+          const gainStr = `+${c.unitFmt(c.gain)} <span style="color:var(--muted);font-size:.72rem">${c.unit}</span>`;
+          const pctStr  = c.isUnlock
+            ? '<span style="color:var(--purple);font-weight:700">Unlocks mechanic</span>'
+            : c.pctImprovement !== null
+              ? `<span style="color:var(--green);font-weight:600">+${c.pctImprovement.toFixed(1)}%</span>`
+              : '<span style="color:var(--muted)">—</span>';
+          const effStr  = c.isUnlock
+            ? '<span style="color:var(--purple)">∞ value</span>'
+            : c.ptsPer1pct !== null
+              ? `<strong style="color:var(--gold-light)">${c.ptsPer1pct.toFixed(2)}</strong>`
+              : '<span style="color:var(--muted)">enter cost</span>';
+          const barW = c.ptsPer1pct !== null ? Math.max(4, (1 - c.ptsPer1pct/maxPts)*100) : 0;
+          const barColor = rank===0?'#4ade80':rank===1?'#facc15':'#60a5fa';
+          return `<tr>
+            <td><span class="rank-badge" style="background:${badgeBg};color:${c.color}">${medal}</span></td>
+            <td><span style="color:${c.color};font-weight:700">${c.label}</span></td>
+            <td style="color:var(--muted)">${c.stepName}</td>
+            <td>${costStr}</td>
+            <td>${gainStr}</td>
+            <td>${pctStr}</td>
+            <td>${effStr}</td>
+            <td><div class="eff-bar-wrap"><div class="eff-bar" style="width:${barW}%;background:${barColor}"></div></div></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+updateAdvisor();
+
+const abMargChart   = makeChart('abMargChart',   'bar', { unit:' contracts/100k/pt', yFmt:v=>v.toFixed(4), legend:false });
+const crossPerkChart = makeChart('crossPerkChart','bar', { legend:true, unit:'× unlock value' });
+
+function updatePVCharts() {
+  const abGains = abMarginalGains();
+  const abCosts = PV_COSTS.astral.vals;
+
+  // ── AB marginal chart ──
+  const abPerPt = abGains.map((g,i) => abCosts[i] > 0 ? g / abCosts[i] : null);
+  abMargChart.data.labels   = PV_COSTS.astral.steps;
+  abMargChart.data.datasets = [{
+    label: 'Contracts per 100k kills per point',
+    data:  abPerPt,
+    backgroundColor: ['#c084fc','#a78bfa','#818cf8','#60a5fa','#38bdf8'].map(c=>c+'cc'),
+    borderColor:     ['#c084fc','#a78bfa','#818cf8','#60a5fa','#38bdf8'],
+    borderWidth: 2, borderRadius: 6,
+  }];
+  abMargChart.options.plugins.tooltip.callbacks.label =
+    c => c.parsed.y === null ? ' (no cost entered)' : ` ${c.parsed.y.toFixed(5)} contracts/100k/pt`;
+  abMargChart.update();
+
+  // ── Cross-perk efficiency ──
+  // For each perk: ratio = (gain[i]/cost[i]) / (gain[0]/cost[0])
+  // = value per point at step i, relative to that perk's own unlock value per point
+  function relEfficiency(gains, costs) {
+    const unlockPPt = costs[0] > 0 ? gains[0] / costs[0] : null;
+    return gains.map((g,i) => {
+      if (costs[i] <= 0 || unlockPPt === null) return null;
+      return (g / costs[i]) / unlockPPt;
+    });
+  }
+
+  const perks = [
+    { label:'Astral Bosses',  color:'#a78bfa', gains: abGains,    costs: PV_COSTS.astral.vals   },
+    { label:'Hyper Boost',    color:'#f0b429', gains: hMargGains,  costs: PV_COSTS.hyper.vals    },
+    { label:'Angelic Blast',  color:'#60a5fa', gains: aMargGains,  costs: PV_COSTS.angelic.vals  },
+    { label:'Immortal Hit',   color:'#f87171', gains: iMargGains,  costs: PV_COSTS.immortal.vals },
+  ];
+
+  // X axis: upgrade step index (0=unlock, 1=u1, ...)
+  const maxSteps = Math.max(...perks.map(p => p.gains.length));
+  const stepLabels = Array.from({length: maxSteps}, (_,i) => i===0?'Unlock':`Upgrade ${i}`);
+
+  crossPerkChart.data.labels = stepLabels;
+  crossPerkChart.data.datasets = perks.map(p => {
+    const eff = relEfficiency(p.gains, p.costs);
+    // pad shorter perks with null
+    const padded = [...eff, ...Array(maxSteps - eff.length).fill(null)];
+    return {
+      label: p.label,
+      data:  padded,
+      backgroundColor: p.color+'99',
+      borderColor:     p.color,
+      borderWidth: 2, borderRadius: 4,
+    };
+  });
+  crossPerkChart.options.plugins.legend.display = true;
+  crossPerkChart.options.plugins.tooltip.callbacks.label =
+    c => c.parsed.y === null
+      ? ` ${c.dataset.label}: enter costs above`
+      : ` ${c.dataset.label}: ${c.parsed.y.toFixed(3)}× unlock value/pt`;
+  // Draw a reference line at y=1 (unlock baseline)
+  crossPerkChart.options.plugins.annotation = undefined;
+  crossPerkChart.update();
+
+  // ── Summary cards ──
+  const allHaveCosts = perks.every(p => p.costs[0] > 0);
+  document.getElementById('pvSummaryCards').innerHTML = perks.map(p => {
+    const unlockPPt = p.costs[0] > 0 ? p.gains[0] / p.costs[0] : null;
+    const upgradesPPt = p.gains.slice(1).map((g,i) => p.costs[i+1] > 0 ? g/p.costs[i+1] : null).filter(v=>v!==null);
+    const avgUpgradePPt = upgradesPPt.length ? upgradesPPt.reduce((a,b)=>a+b,0)/upgradesPPt.length : null;
+    const ratio = (unlockPPt && avgUpgradePPt) ? avgUpgradePPt/unlockPPt : null;
+    return `<div class="stat" style="border-color:${p.color}44">
+      <div class="lbl" style="color:${p.color}">${p.label}</div>
+      <div class="val" style="color:${p.color}">${ratio !== null ? (ratio*100).toFixed(1)+'%' : '—'}</div>
+      <div class="sub">${ratio !== null ? 'avg upgrade value vs unlock' : 'enter point costs above'}</div>
+    </div>`;
+  }).join('');
+}
+updatePVCharts();
+</script>
+</body>
+</html>
