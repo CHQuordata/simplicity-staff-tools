@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Update Log Analyzer — Simplicity RSPS</title>
+<style>
+  :root {
+    --bg: #0d0f14; --surface: #161b24; --surface2: #1e2635; --border: #2a3347;
+    --accent: #4f8ef7; --green: #22c55e; --yellow: #eab308; --red: #ef4444;
+    --orange: #f97316; --text: #e2e8f0; --muted: #64748b; --dim: #94a3b8;
+    --purple: #a855f7; --pink: #ec4899;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  /* HEADER */
+  .hdr { background: var(--surface); border-bottom: 1px solid var(--border); padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; }
+  .hdr-l { display: flex; align-items: center; gap: 14px; }
+  .logo { font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: -.3px; }
+  .logo span { color: var(--dim); font-weight: 400; font-size: 14px; }
+  .badge { background: var(--surface2); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; color: var(--dim); font-size: 11px; }
+  .back-btn { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; text-decoration: none; border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; transition: color .2s, border-color .2s; }
+  .back-btn:hover { color: var(--text); border-color: var(--accent); }
+
+  /* MAIN */
+  .main { max-width: 1100px; margin: 0 auto; padding: 32px; }
+
+  /* HERO */
+  .hero { margin-bottom: 28px; }
+  .hero h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { color: var(--muted); font-size: 13px; line-height: 1.6; max-width: 560px; }
+
+  /* INPUT CARD */
+  .input-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+  .input-lbl { font-size: 11px; font-weight: 600; color: var(--dim); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; display: block; }
+  .input-row { display: flex; gap: 12px; align-items: flex-start; }
+  textarea {
+    flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-family: 'Segoe UI', monospace; font-size: 12px; padding: 12px;
+    resize: vertical; min-height: 150px; outline: none; transition: border-color .2s; line-height: 1.5;
+  }
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--muted); }
+  .input-actions { display: flex; flex-direction: column; gap: 8px; min-width: 120px; }
+
+  /* BUTTONS */
+  .btn { padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; transition: opacity .2s, background .2s; white-space: nowrap; width: 100%; text-align: center; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { opacity: .85; }
+  .btn-ghost { background: var(--surface2); border: 1px solid var(--border); color: var(--dim); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+  .btn-sm { padding: 6px 12px; font-size: 11px; border-radius: 6px; }
+
+  /* SUMMARY BAR */
+  .summary-bar { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .stat-val { font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 5px; }
+  .stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+
+  /* TOOLBAR */
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .filter-row { display: flex; flex-wrap: wrap; gap: 7px; flex: 1; }
+  .filter-btn { padding: 4px 13px; border-radius: 20px; font-size: 11px; font-weight: 600; border: 1px solid var(--border); background: var(--surface); color: var(--dim); cursor: pointer; transition: all .2s; }
+  .filter-btn:hover { color: var(--text); }
+  .filter-btn.active { border-color: var(--btn-color, var(--accent)); color: var(--btn-color, var(--accent)); background: var(--surface2); }
+  .toolbar-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+  /* SECTIONS GRID */
+  .sections-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+
+  /* SECTION CARD */
+  .sec-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; position: relative; transition: border-color .2s;
+  }
+  .sec-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--c, var(--accent)); opacity: .7; transition: opacity .2s; }
+  .sec-card:hover { border-color: var(--c, var(--border)); }
+  .sec-card:hover::before { opacity: 1; }
+  .sec-head { display: flex; align-items: center; gap: 10px; padding: 15px 16px 13px; cursor: pointer; user-select: none; }
+  .sec-icon { font-size: 20px; line-height: 1; flex-shrink: 0; }
+  .sec-meta { flex: 1; min-width: 0; }
+  .sec-name { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+  .sec-type { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+  .sec-count { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 2px 9px; font-size: 11px; font-weight: 700; color: var(--dim); flex-shrink: 0; }
+  .chevron { color: var(--muted); font-size: 10px; transition: transform .25s; flex-shrink: 0; margin-left: 4px; }
+  .sec-card.open .chevron { transform: rotate(180deg); }
+
+  /* SECTION BODY */
+  .sec-body { display: none; border-top: 1px solid var(--border); padding: 12px 16px 14px; }
+  .sec-card.open .sec-body { display: block; }
+  .sec-body ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .sec-body li { font-size: 12px; color: var(--dim); line-height: 1.55; padding-left: 16px; position: relative; word-break: break-word; }
+  .sec-body li::before { content: '—'; position: absolute; left: 0; color: var(--muted); font-size: 11px; top: 1px; }
+
+  /* COPY TOAST */
+  .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 8px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 999; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 64px 32px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="logo">Simplicity RSPS <span>/ Staff Tools</span></div>
+    <div class="badge">Internal</div>
+  </div>
+  <a href="index.html" class="back-btn">← Back to Staff Tools</a>
+</header>
+
+<div class="main">
+  <div class="hero">
+    <h1>Update Log <span>Analyzer</span></h1>
+    <p>Paste a raw forum update post (BBCode from the forum editor) to instantly generate a structured, scannable summary grouped by section type.</p>
+  </div>
+
+  <div class="input-card">
+    <label class="input-lbl">Paste Forum Post — BBCode or plain text</label>
+    <div class="input-row">
+      <textarea id="raw-input" placeholder="Paste the raw BBCode from the forum editor here...&#10;&#10;The parser handles [b], [list], [*], [img], [color], [center] etc. &#10;All caps section headers are auto-detected."></textarea>
+      <div class="input-actions">
+        <button class="btn btn-primary" onclick="analyze()">Analyze →</button>
+        <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="results" class="hidden">
+    <div id="summary-bar" class="summary-bar"></div>
+    <div class="toolbar">
+      <div id="filter-row" class="filter-row"></div>
+      <div class="toolbar-actions">
+        <button class="btn btn-ghost btn-sm" onclick="toggleAll(true)">Expand All</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleAll(false)">Collapse All</button>
+        <button class="btn btn-ghost btn-sm" onclick="copySummary()">Copy Summary</button>
+      </div>
+    </div>
+    <div id="sections-grid" class="sections-grid"></div>
+  </div>
+
+  <div id="empty-state" class="empty">
+    <div class="empty-icon">📋</div>
+    Paste an update forum post above and click <strong>Analyze</strong> to generate a structured summary.
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ── SECTION TYPE DEFINITIONS ──────────────────────────────────────────────────
+const TYPES = [
+  { key:'fixes',    label:'Bug Fixes',    icon:'🔧', color:'#ef4444', keywords:['FIX','BUG','PATCH','RESOLV','CORRECT','PREVENT','ELIMINAT'] },
+  { key:'changes',  label:'Changes',      icon:'⚖️', color:'#eab308', keywords:['CHANGE','QOL','QUALITY','REBALANC','TWEAK','ADJUST','REVAMP','REWORK','BUFF','NERF','TUNING'] },
+  { key:'boss',     label:'Boss Rework',  icon:'👑', color:'#a855f7', keywords:['OVERHAUL','NEX','NIGHTMARE','CORPOREAL','HYDRA','CERBERUS','ZULRAH','VORKATH','WHISPERER','LEVIATHAN','DUKE','VARDORVIS','GROTESQUE','ABYSSAL','KRAKEN','THERMONUCLEAR','PHANTOM','SCURRIUS','KALPHITE','CHAOS','DAGANNOTH','SARACHNIS','DERANGED'] },
+  { key:'slayer',   label:'Elite Slayer', icon:'⚔️', color:'#f0b429', keywords:['SLAYER','ES5','ES4','ES3','ES2','ES1','IMMORTAL','ASTRAL','SACRIFICE'] },
+  { key:'content',  label:'New Content',  icon:'📦', color:'#22c55e', keywords:['CONTENT','ADDITION','NEW ITEM','NEW PET','NEW BOSS','DROP TABLE','OPEN-ALL','OPEN ALL'] },
+  { key:'client',   label:'Client / UI',  icon:'🖥️', color:'#4f8ef7', keywords:['CLIENT','AUDIO','SOUND','MUSIC','INTERFACE','LOGIN','VISUAL','BANK INTERFACE','SETTINGS','RESIZEABLE','RESIZABLE'] },
+  { key:'donation', label:'Donation',     icon:'💎', color:'#ec4899', keywords:['DONATION','STORE','ORB','PREMIUM'] },
+  { key:'feature',  label:'Feature',      icon:'✨', color:'#4f8ef7', keywords:[] },
+];
+
+function getType(name) {
+  const u = name.toUpperCase();
+  for (const t of TYPES) {
+    if (t.key === 'feature') continue;
+    if (t.keywords.some(k => u.includes(k))) return t;
+  }
+  return TYPES.find(t => t.key === 'feature');
+}
+
+// ── BBCode PARSER ─────────────────────────────────────────────────────────────
+function stripBBCode(text) {
+  // Kill [img] blocks entirely
+  text = text.replace(/\[img[^\]]*\][\s\S]*?\[\/img\]/gi, '');
+  text = text.replace(/\[video[^\]]*\][\s\S]*?\[\/video\]/gi, '');
+  text = text.replace(/\[attach[^\]]*\][\s\S]*?\[\/attach\]/gi, '');
+  // [url=...]link text[/url] → link text
+  text = text.replace(/\[url=[^\]]*\]([\s\S]*?)\[\/url\]/gi, '$1');
+  text = text.replace(/\[url\]([\s\S]*?)\[\/url\]/gi, '$1');
+  // Lists → newlines with dashes
+  text = text.replace(/\[list[^\]]*\]/gi, '\n');
+  text = text.replace(/\[\/list\]/gi, '\n');
+  text = text.replace(/\[\*\]/gi, '\n- ');
+  // [hr] dividers → blank line
+  text = text.replace(/\[hr\]/gi, '\n');
+  // Strip all remaining tags, keep inner text
+  text = text.replace(/\[[^\]]+\]/g, '');
+  // Normalize whitespace
+  text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  text = text.replace(/\n{3,}/g, '\n\n');
+  return text.trim();
+}
+
+function isHeader(line) {
+  const t = line.trim();
+  if (!t || t.length < 2 || t.length > 90) return false;
+  // Skip list items
+  if (/^[-—–•*►]\s/.test(t)) return false;
+  // Must have some letters
+  const letters = (t.match(/[a-zA-Z]/g) || []);
+  if (letters.length < 3) return false;
+  // Uppercase ratio >= 70%
+  const uppers = (t.match(/[A-Z]/g) || []).length;
+  const ratio = uppers / letters.length;
+  if (ratio < 0.7) return false;
+  // Should be few words (headers aren't sentences)
+  const words = t.split(/\s+/).filter(w => /[a-zA-Z]/.test(w));
+  if (words.length > 10) return false;
+  return true;
+}
+
+function cleanHeader(line) {
+  // Strip leading emoji / special chars, trim
+  return line.trim().replace(/^[\u{1F000}-\u{1FFFF}☀-⛿✀-➿\s]+/gu, '').trim();
+}
+
+function parsePost(raw) {
+  const text = stripBBCode(raw);
+  const lines = text.split('\n');
+  const sections = [];
+  let cur = null;
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    if (isHeader(line)) {
+      const name = cleanHeader(line) || line.trim();
+      if (name.length >= 2) {
+        cur = { name, items: [] };
+        sections.push(cur);
+      }
+    } else if (cur) {
+      const item = line.replace(/^[-—–•*►]+\s*/, '').trim();
+      if (item.length > 1) cur.items.push(item);
+    }
+  }
+
+  return sections.filter(s => s.name.length > 1);
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let parsed = [];
+let activeFilter = 'all';
+
+// ── ANALYZE ───────────────────────────────────────────────────────────────────
+function analyze() {
+  const raw = document.getElementById('raw-input').value.trim();
+  if (!raw) return;
+
+  parsed = parsePost(raw);
+
+  if (!parsed.length) {
+    showToast('No sections detected — check the pasted content.');
+    return;
+  }
+
+  document.getElementById('empty-state').classList.add('hidden');
+  document.getElementById('results').classList.remove('hidden');
+
+  activeFilter = 'all';
+  renderSummary();
+  renderFilters();
+  renderSections();
+}
+
+// ── RENDER: SUMMARY ───────────────────────────────────────────────────────────
+function renderSummary() {
+  const totalItems = parsed.reduce((s, sec) => s + sec.items.length, 0);
+  const fixes = parsed.find(s => getType(s.name).key === 'fixes');
+  const bossSecs = parsed.filter(s => getType(s.name).key === 'boss');
+
+  const stats = [
+    { val: parsed.length,   lbl: 'Sections',    color: 'var(--accent)' },
+    { val: totalItems,       lbl: 'Total Items', color: 'var(--green)' },
+    { val: fixes ? fixes.items.length : 0, lbl: 'Bug Fixes', color: 'var(--red)' },
+    { val: bossSecs.length,  lbl: 'Boss Reworks', color: 'var(--purple)' },
+  ];
+
+  document.getElementById('summary-bar').innerHTML = stats.map(s =>
+    `<div class="stat">
+      <div class="stat-val" style="color:${s.color}">${s.val}</div>
+      <div class="stat-lbl">${s.lbl}</div>
+    </div>`
+  ).join('');
+}
+
+// ── RENDER: FILTERS ───────────────────────────────────────────────────────────
+function renderFilters() {
+  const counts = {};
+  parsed.forEach(s => { const k = getType(s.name).key; counts[k] = (counts[k]||0)+1; });
+
+  let html = `<button class="filter-btn active" style="--btn-color:var(--accent)" onclick="setFilter('all',this)">All (${parsed.length})</button>`;
+  for (const t of TYPES) {
+    if (!counts[t.key]) continue;
+    html += `<button class="filter-btn" style="--btn-color:${t.color}" onclick="setFilter('${t.key}',this)">${t.icon} ${t.label} (${counts[t.key]})</button>`;
+  }
+  document.getElementById('filter-row').innerHTML = html;
+}
+
+function setFilter(key, btn) {
+  activeFilter = key;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSections();
+}
+
+// ── RENDER: SECTION CARDS ─────────────────────────────────────────────────────
+function renderSections() {
+  const list = activeFilter === 'all' ? parsed : parsed.filter(s => getType(s.name).key === activeFilter);
+  const grid = document.getElementById('sections-grid');
+
+  if (!list.length) {
+    grid.innerHTML = '<p style="color:var(--muted);font-size:13px;grid-column:1/-1;text-align:center;padding:32px">No sections match this filter.</p>';
+    return;
+  }
+
+  grid.innerHTML = list.map(sec => {
+    const t = getType(sec.name);
+    const items = sec.items.length
+      ? sec.items.map(i => `<li>${esc(i)}</li>`).join('')
+      : '<li style="color:var(--muted)">No items listed.</li>';
+    return `
+      <div class="sec-card" style="--c:${t.color}" onclick="toggleCard(this)">
+        <div class="sec-head">
+          <span class="sec-icon">${t.icon}</span>
+          <div class="sec-meta">
+            <div class="sec-name">${esc(sec.name)}</div>
+            <div class="sec-type">${t.label}</div>
+          </div>
+          <span class="sec-count">${sec.items.length}</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="sec-body"><ul>${items}</ul></div>
+      </div>`;
+  }).join('');
+}
+
+function toggleCard(card) { card.classList.toggle('open'); }
+
+function toggleAll(open) {
+  document.querySelectorAll('.sec-card').forEach(c => c.classList.toggle('open', open));
+}
+
+// ── COPY SUMMARY ──────────────────────────────────────────────────────────────
+function copySummary() {
+  if (!parsed.length) return;
+  const total = parsed.reduce((s, sec) => s + sec.items.length, 0);
+  const fixes = parsed.find(s => getType(s.name).key === 'fixes');
+
+  let out = `UPDATE SUMMARY\n`;
+  out += `${'─'.repeat(50)}\n`;
+  out += `${parsed.length} sections  •  ${total} total items`;
+  if (fixes) out += `  •  ${fixes.items.length} bug fixes`;
+  out += `\n${'─'.repeat(50)}\n\n`;
+
+  // Group by type
+  const groups = {};
+  parsed.forEach(s => {
+    const t = getType(s.name);
+    if (!groups[t.key]) groups[t.key] = { t, secs: [] };
+    groups[t.key].secs.push(s);
+  });
+
+  for (const { t, secs } of Object.values(groups)) {
+    out += `${t.icon}  ${t.label.toUpperCase()}\n`;
+    secs.forEach(s => {
+      out += `  ▸ ${s.name} (${s.items.length} items)\n`;
+      s.items.slice(0, 3).forEach(i => { out += `      — ${i}\n`; });
+      if (s.items.length > 3) out += `      … and ${s.items.length - 3} more\n`;
+    });
+    out += '\n';
+  }
+
+  navigator.clipboard.writeText(out.trim()).then(() => showToast('Summary copied to clipboard!'));
+}
+
+// ── UTIL ──────────────────────────────────────────────────────────────────────
+function clearAll() {
+  document.getElementById('raw-input').value = '';
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('empty-state').classList.remove('hidden');
+  parsed = [];
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
