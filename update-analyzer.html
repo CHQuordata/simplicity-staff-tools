@@ -207,6 +207,35 @@ function getType(name) {
   return TYPES.find(t => t.key === 'other');
 }
 
+// ── SUB-HEADER DETECTION ──────────────────────────────────────────────────────
+// All-caps text that looks like a header but is actually a sub-header or table
+// column name inside a section. These should NOT start a new section.
+
+const SUBHEADER_WORDS = new Set([
+  'ICON','PRICE','NAME','ITEM','COST','TYPE','RANK','TIER','LEVEL','RATE',
+  'REWARD','REQUIREMENT','DESCRIPTION','OBJECTIVE','DAMAGE','EFFECT','BONUS',
+  'VALUE','DATE','TOKEN','STAT','NOTE','TOTAL','AMOUNT','MIN','MAX','MIN EXP',
+  'MAX EXP','HEADER','TABLE','COLUMN',
+]);
+
+function isSubHeader(text) {
+  const t = text.trim();
+  const upper = t.toUpperCase();
+  // Single word that's a known table column name
+  if (SUBHEADER_WORDS.has(upper)) return true;
+  // "ITEM NAME", "ITEM PRICE" etc — two words where first is ITEM
+  if (/^ITEM\s+\w+$/i.test(upper)) return true;
+  // Ends with PHASE, STAGE, ROUND, STEP, WAVE
+  if (/\b(PHASE|STAGE|ROUND|STEP|WAVE|MODE)$/i.test(t)) return true;
+  // Starts with THE / A / AN (sub-descriptions)
+  if (/^(THE|WHAT|HOW|WHY|WHEN)\b/i.test(t)) return true;
+  // Ends with a question mark
+  if (t.endsWith('?')) return true;
+  // Thank-you / sign-off lines
+  if (/thank\s+you/i.test(t)) return true;
+  return false;
+}
+
 // ── TABS ──────────────────────────────────────────────────────────────────────
 function switchTab(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -379,13 +408,10 @@ function linesToSections(lines) {
     const text = line.text?.trim();
     if (!text) continue;
 
-    // Bold/heading that looks like a header → new section
-    if ((line.type === 'bold' || line.type === 'heading') && isHeaderText(text)) {
+    // Bold/heading that looks like a section header
+    if ((line.type === 'bold' || line.type === 'heading') && isHeaderText(text) && !isSubHeader(text)) {
       const name = cleanHeaderText(text) || text;
-      if (name.length >= 2) {
-        cur = { name, items: [] };
-        sections.push(cur);
-      }
+      if (name.length >= 2) { cur = { name, items: [] }; sections.push(cur); }
       continue;
     }
 
@@ -396,24 +422,28 @@ function linesToSections(lines) {
       continue;
     }
 
-    // Plain text — could be a header (all caps) or an item
-    if (line.type === 'text' && isHeaderText(text)) {
+    // Plain all-caps text that's a real header (not a sub-header or table column)
+    if (line.type === 'text' && isHeaderText(text) && !isSubHeader(text)) {
       const name = cleanHeaderText(text) || text;
-      if (name.length >= 2) {
-        cur = { name, items: [] };
-        sections.push(cur);
-      }
+      if (name.length >= 2) { cur = { name, items: [] }; sections.push(cur); }
       continue;
     }
 
-    // Otherwise treat as an item if inside a section
+    // Everything else: add as an item to the current section
     if (cur && text.length > 1) {
       const item = text.replace(/^[-—–•*►]+\s*/, '').trim();
-      if (item.length > 1 && !isHeaderText(item)) cur.items.push(item);
+      if (item.length > 1) cur.items.push(item);
     }
   }
 
-  return sections.filter(s => s.name.length > 1);
+  // Collapse phantom sections (0 items) into the previous section
+  return sections.reduce((acc, sec) => {
+    if (sec.items.length === 0 && acc.length > 0) {
+      // absorb as a labelled gap — skip it silently
+      return acc;
+    }
+    return [...acc, sec];
+  }, []).filter(s => s.name.length > 1);
 }
 
 // ── BBCODE PARSER (for paste tab) ────────────────────────────────────────────
@@ -442,7 +472,7 @@ function parsePost(raw) {
   for (const rawLine of lines) {
     const line = rawLine.trim();
     if (!line) continue;
-    if (isHeaderText(line)) {
+    if (isHeaderText(line) && !isSubHeader(line)) {
       const name = cleanHeaderText(line) || line;
       if (name.length >= 2) { cur = { name, items: [] }; sections.push(cur); }
     } else if (cur) {
@@ -451,7 +481,10 @@ function parsePost(raw) {
     }
   }
 
-  return sections.filter(s => s.name.length > 1);
+  return sections.reduce((acc, sec) => {
+    if (sec.items.length === 0 && acc.length > 0) return acc;
+    return [...acc, sec];
+  }, []).filter(s => s.name.length > 1);
 }
 
 // ── STATE + ENTRY POINTS ──────────────────────────────────────────────────────
