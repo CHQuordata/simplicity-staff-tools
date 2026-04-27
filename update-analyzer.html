@@ -65,18 +65,29 @@
   .btn-sm { padding: 6px 12px; font-size: 11px; border-radius: 6px; }
   .btn:disabled { opacity: .45; cursor: not-allowed; }
 
-  /* SUMMARY BAR */
-  .summary-bar { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
-  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
-  .stat-val { font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 5px; }
-  .stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+  /* SUMMARY STRIP */
+  .summary-strip { display: flex; align-items: center; gap: 24px; padding: 14px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .strip-stat { display: flex; flex-direction: column; }
+  .strip-val { font-size: 20px; font-weight: 800; line-height: 1; }
+  .strip-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-top: 3px; }
+  .strip-div { width: 1px; height: 32px; background: var(--border); flex-shrink: 0; }
 
-  /* TOOLBAR */
-  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 16px; }
-  .filter-row { display: flex; flex-wrap: wrap; gap: 7px; flex: 1; }
-  .filter-btn { padding: 4px 13px; border-radius: 20px; font-size: 11px; font-weight: 600; border: 1px solid var(--border); background: var(--surface); color: var(--dim); cursor: pointer; transition: all .2s; }
-  .filter-btn.active { border-color: var(--btn-color, var(--accent)); color: var(--btn-color, var(--accent)); background: var(--surface2); }
-  .toolbar-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  /* CATEGORY NAV */
+  .cat-nav { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 20px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  .cat-nav::-webkit-scrollbar { height: 4px; }
+  .cat-nav::-webkit-scrollbar-track { background: transparent; }
+  .cat-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .cat-card { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 14px 20px; cursor: pointer; flex-shrink: 0; min-width: 110px; text-align: center; transition: border-color .2s, background .2s; }
+  .cat-card:hover { border-color: var(--c, var(--accent)); background: var(--surface2); }
+  .cat-card.active { border-color: var(--c, var(--accent)); background: var(--surface2); }
+  .cat-icon { font-size: 22px; line-height: 1; margin-bottom: 8px; }
+  .cat-count { font-size: 26px; font-weight: 800; color: var(--c, var(--accent)); line-height: 1; margin-bottom: 5px; }
+  .cat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; line-height: 1.3; }
+
+  /* SECTION TOOLBAR */
+  .sec-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .sec-toolbar-title { font-size: 13px; font-weight: 700; color: var(--dim); }
+  .toolbar-actions { display: flex; gap: 8px; }
 
   /* SECTIONS GRID */
   .sections-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
@@ -154,9 +165,10 @@
   </div>
 
   <div id="results" class="hidden">
-    <div id="summary-bar" class="summary-bar"></div>
-    <div class="toolbar">
-      <div id="filter-row" class="filter-row"></div>
+    <div id="summary-strip" class="summary-strip"></div>
+    <div id="cat-nav" class="cat-nav"></div>
+    <div class="sec-toolbar">
+      <div id="sec-toolbar-title" class="sec-toolbar-title"></div>
       <div class="toolbar-actions">
         <button class="btn btn-ghost btn-sm" onclick="toggleAll(true)">Expand All</button>
         <button class="btn btn-ghost btn-sm" onclick="toggleAll(false)">Collapse All</button>
@@ -457,53 +469,78 @@ function analyzePaste() {
 
 function render(sections) {
   parsed = sections;
-  activeFilter = 'all';
   document.getElementById('empty-state').classList.add('hidden');
   document.getElementById('results').classList.remove('hidden');
   renderSummary();
-  renderFilters();
-  renderSections();
+  renderCatNav();
 }
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
 function renderSummary() {
   const total = parsed.reduce((s, sec) => s + sec.items.length, 0);
   const fixes = parsed.find(s => getType(s.name).key === 'fixes');
-  const bossSecs = parsed.filter(s => getType(s.name).key === 'boss');
   const stats = [
-    { val: parsed.length,   lbl: 'Sections',     color: 'var(--accent)' },
-    { val: total,            lbl: 'Total Items',  color: 'var(--green)' },
+    { val: parsed.length, lbl: 'Sections',    color: 'var(--accent)' },
+    { val: total,          lbl: 'Total Items', color: 'var(--green)'  },
     { val: fixes ? fixes.items.length : 0, lbl: 'Bug Fixes', color: 'var(--red)' },
-    { val: bossSecs.length,  lbl: 'Boss Reworks', color: 'var(--purple)' },
   ];
-  document.getElementById('summary-bar').innerHTML = stats.map(s =>
-    `<div class="stat"><div class="stat-val" style="color:${s.color}">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`
-  ).join('');
+  document.getElementById('summary-strip').innerHTML =
+    stats.map((s, i) => `
+      ${i > 0 ? '<div class="strip-div"></div>' : ''}
+      <div class="strip-stat">
+        <span class="strip-val" style="color:${s.color}">${s.val}</span>
+        <span class="strip-lbl">${s.lbl}</span>
+      </div>`).join('');
 }
 
-function renderFilters() {
-  const counts = {};
-  parsed.forEach(s => { const k = getType(s.name).key; counts[k] = (counts[k]||0)+1; });
-  let html = `<button class="filter-btn active" style="--btn-color:var(--accent)" onclick="setFilter('all',this)">All (${parsed.length})</button>`;
-  for (const t of TYPES) {
-    if (!counts[t.key]) continue;
-    html += `<button class="filter-btn" style="--btn-color:${t.color}" onclick="setFilter('${t.key}',this)">${t.icon} ${t.label} (${counts[t.key]})</button>`;
+function renderCatNav() {
+  // Build category list in TYPES order, only those that exist in the data
+  const catSecs = {};
+  parsed.forEach(s => {
+    const k = getType(s.name).key;
+    if (!catSecs[k]) catSecs[k] = [];
+    catSecs[k].push(s);
+  });
+
+  const orderedTypes = TYPES.filter(t => catSecs[t.key]);
+  // Default to first real category (skip 'feature' if something better exists)
+  const firstKey = orderedTypes.find(t => t.key !== 'feature')?.key
+                || orderedTypes[0]?.key || 'feature';
+
+  let html = '';
+  for (const t of orderedTypes) {
+    const itemCount = catSecs[t.key].reduce((s, sec) => s + sec.items.length, 0);
+    html += `
+      <div class="cat-card ${t.key === firstKey ? 'active' : ''}" style="--c:${t.color}"
+           onclick="selectCat('${t.key}', this)">
+        <div class="cat-icon">${t.icon}</div>
+        <div class="cat-count">${itemCount}</div>
+        <div class="cat-label">${t.label}</div>
+      </div>`;
   }
-  document.getElementById('filter-row').innerHTML = html;
+  document.getElementById('cat-nav').innerHTML = html;
+
+  activeFilter = firstKey;
+  renderSections();
 }
 
-function setFilter(key, btn) {
+function selectCat(key, card) {
   activeFilter = key;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('active'));
+  card.classList.add('active');
   renderSections();
 }
 
 function renderSections() {
-  const list = activeFilter === 'all' ? parsed : parsed.filter(s => getType(s.name).key === activeFilter);
+  const list = parsed.filter(s => getType(s.name).key === activeFilter);
   const grid = document.getElementById('sections-grid');
+  const activeDef = TYPES.find(t => t.key === activeFilter);
+  const totalItems = list.reduce((s, sec) => s + sec.items.length, 0);
+  document.getElementById('sec-toolbar-title').textContent =
+    activeDef ? `${activeDef.icon}  ${activeDef.label} — ${list.length} section${list.length !== 1 ? 's' : ''}, ${totalItems} item${totalItems !== 1 ? 's' : ''}` : '';
+
   if (!list.length) {
-    grid.innerHTML = '<p style="color:var(--muted);font-size:13px;grid-column:1/-1;text-align:center;padding:32px">No sections match this filter.</p>';
+    grid.innerHTML = '<p style="color:var(--muted);font-size:13px;grid-column:1/-1;text-align:center;padding:32px">No sections in this category.</p>';
     return;
   }
   grid.innerHTML = list.map(sec => {
