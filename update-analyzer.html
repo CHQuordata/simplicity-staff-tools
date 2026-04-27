@@ -14,7 +14,6 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
 
-  /* HEADER */
   .hdr { background: var(--surface); border-bottom: 1px solid var(--border); padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; }
   .hdr-l { display: flex; align-items: center; gap: 14px; }
   .logo { font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: -.3px; }
@@ -23,10 +22,8 @@
   .back-btn { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; text-decoration: none; border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; transition: color .2s, border-color .2s; }
   .back-btn:hover { color: var(--text); border-color: var(--accent); }
 
-  /* MAIN */
   .main { max-width: 1100px; margin: 0 auto; padding: 32px; }
 
-  /* HERO */
   .hero { margin-bottom: 28px; }
   .hero h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
   .hero h1 span { color: var(--accent); }
@@ -34,16 +31,30 @@
 
   /* INPUT CARD */
   .input-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
-  .input-lbl { font-size: 11px; font-weight: 600; color: var(--dim); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; display: block; }
-  .input-row { display: flex; gap: 12px; align-items: flex-start; }
-  textarea {
-    flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
-    color: var(--text); font-family: 'Segoe UI', monospace; font-size: 12px; padding: 12px;
-    resize: vertical; min-height: 150px; outline: none; transition: border-color .2s; line-height: 1.5;
-  }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; margin-bottom: 18px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 4px; width: fit-content; }
+  .tab { padding: 6px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all .2s; }
+  .tab.active { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+  /* URL INPUT */
+  .url-row { display: flex; gap: 10px; }
+  .url-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px; padding: 10px 14px; outline: none; transition: border-color .2s; }
+  .url-input:focus { border-color: var(--accent); }
+  .url-input::placeholder { color: var(--muted); }
+
+  /* PASTE INPUT */
+  .paste-row { display: flex; gap: 12px; align-items: flex-start; }
+  textarea { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Segoe UI', monospace; font-size: 12px; padding: 12px; resize: vertical; min-height: 150px; outline: none; transition: border-color .2s; line-height: 1.5; }
   textarea:focus { border-color: var(--accent); }
   textarea::placeholder { color: var(--muted); }
+
   .input-actions { display: flex; flex-direction: column; gap: 8px; min-width: 120px; }
+
+  /* FETCH STATUS */
+  .fetch-status { margin-top: 10px; font-size: 12px; color: var(--muted); min-height: 18px; display: flex; align-items: center; gap: 8px; }
+  .spinner { width: 13px; height: 13px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   /* BUTTONS */
   .btn { padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; transition: opacity .2s, background .2s; white-space: nowrap; width: 100%; text-align: center; }
@@ -52,6 +63,7 @@
   .btn-ghost { background: var(--surface2); border: 1px solid var(--border); color: var(--dim); }
   .btn-ghost:hover { border-color: var(--accent); color: var(--text); }
   .btn-sm { padding: 6px 12px; font-size: 11px; border-radius: 6px; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
 
   /* SUMMARY BAR */
   .summary-bar { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
@@ -63,7 +75,6 @@
   .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 16px; }
   .filter-row { display: flex; flex-wrap: wrap; gap: 7px; flex: 1; }
   .filter-btn { padding: 4px 13px; border-radius: 20px; font-size: 11px; font-weight: 600; border: 1px solid var(--border); background: var(--surface); color: var(--dim); cursor: pointer; transition: all .2s; }
-  .filter-btn:hover { color: var(--text); }
   .filter-btn.active { border-color: var(--btn-color, var(--accent)); color: var(--btn-color, var(--accent)); background: var(--surface2); }
   .toolbar-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
@@ -71,10 +82,7 @@
   .sections-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
 
   /* SECTION CARD */
-  .sec-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-    overflow: hidden; position: relative; transition: border-color .2s;
-  }
+  .sec-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative; transition: border-color .2s; }
   .sec-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--c, var(--accent)); opacity: .7; transition: opacity .2s; }
   .sec-card:hover { border-color: var(--c, var(--border)); }
   .sec-card:hover::before { opacity: 1; }
@@ -86,22 +94,17 @@
   .sec-count { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 2px 9px; font-size: 11px; font-weight: 700; color: var(--dim); flex-shrink: 0; }
   .chevron { color: var(--muted); font-size: 10px; transition: transform .25s; flex-shrink: 0; margin-left: 4px; }
   .sec-card.open .chevron { transform: rotate(180deg); }
-
-  /* SECTION BODY */
   .sec-body { display: none; border-top: 1px solid var(--border); padding: 12px 16px 14px; }
   .sec-card.open .sec-body { display: block; }
   .sec-body ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
   .sec-body li { font-size: 12px; color: var(--dim); line-height: 1.55; padding-left: 16px; position: relative; word-break: break-word; }
   .sec-body li::before { content: '—'; position: absolute; left: 0; color: var(--muted); font-size: 11px; top: 1px; }
 
-  /* COPY TOAST */
   .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 8px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 999; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* EMPTY */
   .empty { text-align: center; padding: 64px 32px; color: var(--muted); font-size: 14px; line-height: 1.7; }
   .empty-icon { font-size: 36px; margin-bottom: 12px; }
-
   .hidden { display: none !important; }
 </style>
 </head>
@@ -118,16 +121,34 @@
 <div class="main">
   <div class="hero">
     <h1>Update Log <span>Analyzer</span></h1>
-    <p>Paste a raw forum update post (BBCode from the forum editor) to instantly generate a structured, scannable summary grouped by section type.</p>
+    <p>Paste a forum URL or raw BBCode to instantly generate a structured, filterable summary grouped by section type.</p>
   </div>
 
   <div class="input-card">
-    <label class="input-lbl">Paste Forum Post — BBCode or plain text</label>
-    <div class="input-row">
-      <textarea id="raw-input" placeholder="Paste the raw BBCode from the forum editor here...&#10;&#10;The parser handles [b], [list], [*], [img], [color], [center] etc. &#10;All caps section headers are auto-detected."></textarea>
-      <div class="input-actions">
-        <button class="btn btn-primary" onclick="analyze()">Analyze →</button>
-        <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('url', this)">From URL</button>
+      <button class="tab" onclick="switchTab('paste', this)">Paste BBCode</button>
+    </div>
+
+    <!-- URL TAB -->
+    <div id="tab-url">
+      <div class="url-row">
+        <input class="url-input" id="url-input" type="url"
+          placeholder="https://community.simplicityrsps.com/index.php?/topic/..."
+          onkeydown="if(event.key==='Enter') fetchUrl()" />
+        <button class="btn btn-primary" id="fetch-btn" onclick="fetchUrl()" style="width:auto;padding:10px 22px">Fetch &amp; Analyze</button>
+      </div>
+      <div class="fetch-status" id="fetch-status"></div>
+    </div>
+
+    <!-- PASTE TAB -->
+    <div id="tab-paste" class="hidden">
+      <div class="paste-row">
+        <textarea id="raw-input" placeholder="Paste the raw BBCode from the forum editor here...&#10;&#10;The parser handles [b], [list], [*], [img], [color], [center] etc.&#10;All-caps section headers are auto-detected."></textarea>
+        <div class="input-actions">
+          <button class="btn btn-primary" onclick="analyzePaste()">Analyze →</button>
+          <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
+        </div>
       </div>
     </div>
   </div>
@@ -147,14 +168,14 @@
 
   <div id="empty-state" class="empty">
     <div class="empty-icon">📋</div>
-    Paste an update forum post above and click <strong>Analyze</strong> to generate a structured summary.
+    Paste a forum URL above and click <strong>Fetch &amp; Analyze</strong>,<br>or switch to the BBCode tab to paste manually.
   </div>
 </div>
 
 <div id="toast" class="toast"></div>
 
 <script>
-// ── SECTION TYPE DEFINITIONS ──────────────────────────────────────────────────
+// ── SECTION TYPES ─────────────────────────────────────────────────────────────
 const TYPES = [
   { key:'fixes',    label:'Bug Fixes',    icon:'🔧', color:'#ef4444', keywords:['FIX','BUG','PATCH','RESOLV','CORRECT','PREVENT','ELIMINAT'] },
   { key:'changes',  label:'Changes',      icon:'⚖️', color:'#eab308', keywords:['CHANGE','QOL','QUALITY','REBALANC','TWEAK','ADJUST','REVAMP','REWORK','BUFF','NERF','TUNING'] },
@@ -175,50 +196,197 @@ function getType(name) {
   return TYPES.find(t => t.key === 'feature');
 }
 
-// ── BBCode PARSER ─────────────────────────────────────────────────────────────
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-url').classList.toggle('hidden', name !== 'url');
+  document.getElementById('tab-paste').classList.toggle('hidden', name !== 'paste');
+}
+
+// ── URL FETCH ─────────────────────────────────────────────────────────────────
+async function fetchUrl() {
+  const url = document.getElementById('url-input').value.trim();
+  if (!url) return;
+
+  const btn = document.getElementById('fetch-btn');
+  const status = document.getElementById('fetch-status');
+  btn.disabled = true;
+  status.innerHTML = '<span class="spinner"></span> Fetching post…';
+
+  try {
+    const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
+    const res = await fetch(proxy);
+    if (!res.ok) throw new Error('Proxy request failed');
+    const data = await res.json();
+    if (!data.contents) throw new Error('No content returned');
+
+    status.innerHTML = '<span class="spinner"></span> Parsing…';
+    const sections = parseHtml(data.contents);
+
+    if (!sections.length) {
+      status.innerHTML = '⚠️ Could not extract post content. The forum may require login, or the URL is wrong.';
+      btn.disabled = false;
+      return;
+    }
+
+    status.innerHTML = `✓ Loaded ${sections.length} sections from forum post`;
+    render(sections);
+  } catch (e) {
+    status.innerHTML = '⚠️ Fetch failed — check the URL or try the Paste BBCode tab instead.';
+    console.error(e);
+  }
+
+  btn.disabled = false;
+}
+
+// ── HTML PARSER (for fetched pages) ──────────────────────────────────────────
+function parseHtml(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+
+  // Try IPB selectors in order of specificity
+  const selectors = [
+    '[data-commentid]:first-of-type .ipsType_richText',
+    '.cPost_contentWrap .ipsType_richText',
+    '.ipsType_richText',
+    '[data-role="commentContent"]',
+    '.ipsComment_content',
+    'article .ipsType_normal',
+  ];
+
+  let body = null;
+  for (const sel of selectors) {
+    body = doc.querySelector(sel);
+    if (body) break;
+  }
+
+  if (!body) return [];
+
+  // Walk the DOM and convert to structured lines
+  const lines = [];
+  walkNode(body, lines);
+
+  return linesToSections(lines);
+}
+
+function walkNode(node, out) {
+  if (node.nodeType === Node.TEXT_NODE) {
+    const t = node.textContent.trim();
+    if (t) out.push({ type: 'text', text: t });
+    return;
+  }
+  if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+  const tag = node.tagName.toLowerCase();
+
+  // Skip images, iframes, scripts, style
+  if (['img','picture','video','iframe','script','style','svg'].includes(tag)) return;
+
+  if (tag === 'li') {
+    out.push({ type: 'item', text: node.textContent.trim() });
+    return;
+  }
+
+  if (['strong','b'].includes(tag)) {
+    const t = node.textContent.trim();
+    if (t) out.push({ type: 'bold', text: t });
+    return;
+  }
+
+  if (['h1','h2','h3','h4'].includes(tag)) {
+    const t = node.textContent.trim();
+    if (t) out.push({ type: 'heading', text: t });
+    return;
+  }
+
+  if (tag === 'br') {
+    out.push({ type: 'br' });
+    return;
+  }
+
+  // For block elements, recurse then add a break
+  const isBlock = ['p','div','section','article','blockquote','ul','ol','table','tr'].includes(tag);
+  for (const child of node.childNodes) walkNode(child, out);
+  if (isBlock) out.push({ type: 'br' });
+}
+
+function isHeaderText(text) {
+  if (!text || text.length < 2 || text.length > 90) return false;
+  if (/^[-—–•*►]\s/.test(text)) return false;
+  const letters = (text.match(/[a-zA-Z]/g) || []);
+  if (letters.length < 3) return false;
+  const uppers = (text.match(/[A-Z]/g) || []).length;
+  const ratio = uppers / letters.length;
+  const words = text.split(/\s+/).filter(w => /[a-zA-Z]/.test(w));
+  return ratio >= 0.7 && words.length <= 10;
+}
+
+function cleanHeaderText(t) {
+  return t.replace(/^[\u{1F000}-\u{1FFFF}☀-➿\s]+/gu, '').trim();
+}
+
+function linesToSections(lines) {
+  const sections = [];
+  let cur = null;
+
+  for (const line of lines) {
+    if (line.type === 'br') continue;
+
+    const text = line.text?.trim();
+    if (!text) continue;
+
+    // Bold/heading that looks like a header → new section
+    if ((line.type === 'bold' || line.type === 'heading') && isHeaderText(text)) {
+      const name = cleanHeaderText(text) || text;
+      if (name.length >= 2) {
+        cur = { name, items: [] };
+        sections.push(cur);
+      }
+      continue;
+    }
+
+    // List item → always add to current section
+    if (line.type === 'item' && cur) {
+      const item = text.replace(/^[-—–•*►]+\s*/, '').trim();
+      if (item.length > 1) cur.items.push(item);
+      continue;
+    }
+
+    // Plain text — could be a header (all caps) or an item
+    if (line.type === 'text' && isHeaderText(text)) {
+      const name = cleanHeaderText(text) || text;
+      if (name.length >= 2) {
+        cur = { name, items: [] };
+        sections.push(cur);
+      }
+      continue;
+    }
+
+    // Otherwise treat as an item if inside a section
+    if (cur && text.length > 1) {
+      const item = text.replace(/^[-—–•*►]+\s*/, '').trim();
+      if (item.length > 1 && !isHeaderText(item)) cur.items.push(item);
+    }
+  }
+
+  return sections.filter(s => s.name.length > 1);
+}
+
+// ── BBCODE PARSER (for paste tab) ────────────────────────────────────────────
 function stripBBCode(text) {
-  // Kill [img] blocks entirely
   text = text.replace(/\[img[^\]]*\][\s\S]*?\[\/img\]/gi, '');
   text = text.replace(/\[video[^\]]*\][\s\S]*?\[\/video\]/gi, '');
   text = text.replace(/\[attach[^\]]*\][\s\S]*?\[\/attach\]/gi, '');
-  // [url=...]link text[/url] → link text
   text = text.replace(/\[url=[^\]]*\]([\s\S]*?)\[\/url\]/gi, '$1');
   text = text.replace(/\[url\]([\s\S]*?)\[\/url\]/gi, '$1');
-  // Lists → newlines with dashes
   text = text.replace(/\[list[^\]]*\]/gi, '\n');
   text = text.replace(/\[\/list\]/gi, '\n');
   text = text.replace(/\[\*\]/gi, '\n- ');
-  // [hr] dividers → blank line
   text = text.replace(/\[hr\]/gi, '\n');
-  // Strip all remaining tags, keep inner text
   text = text.replace(/\[[^\]]+\]/g, '');
-  // Normalize whitespace
   text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   text = text.replace(/\n{3,}/g, '\n\n');
   return text.trim();
-}
-
-function isHeader(line) {
-  const t = line.trim();
-  if (!t || t.length < 2 || t.length > 90) return false;
-  // Skip list items
-  if (/^[-—–•*►]\s/.test(t)) return false;
-  // Must have some letters
-  const letters = (t.match(/[a-zA-Z]/g) || []);
-  if (letters.length < 3) return false;
-  // Uppercase ratio >= 70%
-  const uppers = (t.match(/[A-Z]/g) || []).length;
-  const ratio = uppers / letters.length;
-  if (ratio < 0.7) return false;
-  // Should be few words (headers aren't sentences)
-  const words = t.split(/\s+/).filter(w => /[a-zA-Z]/.test(w));
-  if (words.length > 10) return false;
-  return true;
-}
-
-function cleanHeader(line) {
-  // Strip leading emoji / special chars, trim
-  return line.trim().replace(/^[\u{1F000}-\u{1FFFF}☀-⛿✀-➿\s]+/gu, '').trim();
 }
 
 function parsePost(raw) {
@@ -230,13 +398,9 @@ function parsePost(raw) {
   for (const rawLine of lines) {
     const line = rawLine.trim();
     if (!line) continue;
-
-    if (isHeader(line)) {
-      const name = cleanHeader(line) || line.trim();
-      if (name.length >= 2) {
-        cur = { name, items: [] };
-        sections.push(cur);
-      }
+    if (isHeaderText(line)) {
+      const name = cleanHeaderText(line) || line;
+      if (name.length >= 2) { cur = { name, items: [] }; sections.push(cur); }
     } else if (cur) {
       const item = line.replace(/^[-—–•*►]+\s*/, '').trim();
       if (item.length > 1) cur.items.push(item);
@@ -246,57 +410,47 @@ function parsePost(raw) {
   return sections.filter(s => s.name.length > 1);
 }
 
-// ── STATE ─────────────────────────────────────────────────────────────────────
+// ── STATE + ENTRY POINTS ──────────────────────────────────────────────────────
 let parsed = [];
 let activeFilter = 'all';
 
-// ── ANALYZE ───────────────────────────────────────────────────────────────────
-function analyze() {
+function analyzePaste() {
   const raw = document.getElementById('raw-input').value.trim();
   if (!raw) return;
+  const sections = parsePost(raw);
+  if (!sections.length) { showToast('No sections detected — check the pasted content.'); return; }
+  render(sections);
+}
 
-  parsed = parsePost(raw);
-
-  if (!parsed.length) {
-    showToast('No sections detected — check the pasted content.');
-    return;
-  }
-
+function render(sections) {
+  parsed = sections;
+  activeFilter = 'all';
   document.getElementById('empty-state').classList.add('hidden');
   document.getElementById('results').classList.remove('hidden');
-
-  activeFilter = 'all';
   renderSummary();
   renderFilters();
   renderSections();
 }
 
-// ── RENDER: SUMMARY ───────────────────────────────────────────────────────────
+// ── RENDER ────────────────────────────────────────────────────────────────────
 function renderSummary() {
-  const totalItems = parsed.reduce((s, sec) => s + sec.items.length, 0);
+  const total = parsed.reduce((s, sec) => s + sec.items.length, 0);
   const fixes = parsed.find(s => getType(s.name).key === 'fixes');
   const bossSecs = parsed.filter(s => getType(s.name).key === 'boss');
-
   const stats = [
-    { val: parsed.length,   lbl: 'Sections',    color: 'var(--accent)' },
-    { val: totalItems,       lbl: 'Total Items', color: 'var(--green)' },
+    { val: parsed.length,   lbl: 'Sections',     color: 'var(--accent)' },
+    { val: total,            lbl: 'Total Items',  color: 'var(--green)' },
     { val: fixes ? fixes.items.length : 0, lbl: 'Bug Fixes', color: 'var(--red)' },
     { val: bossSecs.length,  lbl: 'Boss Reworks', color: 'var(--purple)' },
   ];
-
   document.getElementById('summary-bar').innerHTML = stats.map(s =>
-    `<div class="stat">
-      <div class="stat-val" style="color:${s.color}">${s.val}</div>
-      <div class="stat-lbl">${s.lbl}</div>
-    </div>`
+    `<div class="stat"><div class="stat-val" style="color:${s.color}">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`
   ).join('');
 }
 
-// ── RENDER: FILTERS ───────────────────────────────────────────────────────────
 function renderFilters() {
   const counts = {};
   parsed.forEach(s => { const k = getType(s.name).key; counts[k] = (counts[k]||0)+1; });
-
   let html = `<button class="filter-btn active" style="--btn-color:var(--accent)" onclick="setFilter('all',this)">All (${parsed.length})</button>`;
   for (const t of TYPES) {
     if (!counts[t.key]) continue;
@@ -312,16 +466,13 @@ function setFilter(key, btn) {
   renderSections();
 }
 
-// ── RENDER: SECTION CARDS ─────────────────────────────────────────────────────
 function renderSections() {
   const list = activeFilter === 'all' ? parsed : parsed.filter(s => getType(s.name).key === activeFilter);
   const grid = document.getElementById('sections-grid');
-
   if (!list.length) {
     grid.innerHTML = '<p style="color:var(--muted);font-size:13px;grid-column:1/-1;text-align:center;padding:32px">No sections match this filter.</p>';
     return;
   }
-
   grid.innerHTML = list.map(sec => {
     const t = getType(sec.name);
     const items = sec.items.length
@@ -344,31 +495,18 @@ function renderSections() {
 }
 
 function toggleCard(card) { card.classList.toggle('open'); }
-
-function toggleAll(open) {
-  document.querySelectorAll('.sec-card').forEach(c => c.classList.toggle('open', open));
-}
+function toggleAll(open) { document.querySelectorAll('.sec-card').forEach(c => c.classList.toggle('open', open)); }
 
 // ── COPY SUMMARY ──────────────────────────────────────────────────────────────
 function copySummary() {
   if (!parsed.length) return;
   const total = parsed.reduce((s, sec) => s + sec.items.length, 0);
   const fixes = parsed.find(s => getType(s.name).key === 'fixes');
-
-  let out = `UPDATE SUMMARY\n`;
-  out += `${'─'.repeat(50)}\n`;
-  out += `${parsed.length} sections  •  ${total} total items`;
+  let out = `UPDATE SUMMARY\n${'─'.repeat(50)}\n${parsed.length} sections  •  ${total} total items`;
   if (fixes) out += `  •  ${fixes.items.length} bug fixes`;
   out += `\n${'─'.repeat(50)}\n\n`;
-
-  // Group by type
   const groups = {};
-  parsed.forEach(s => {
-    const t = getType(s.name);
-    if (!groups[t.key]) groups[t.key] = { t, secs: [] };
-    groups[t.key].secs.push(s);
-  });
-
+  parsed.forEach(s => { const t = getType(s.name); if (!groups[t.key]) groups[t.key] = { t, secs: [] }; groups[t.key].secs.push(s); });
   for (const { t, secs } of Object.values(groups)) {
     out += `${t.icon}  ${t.label.toUpperCase()}\n`;
     secs.forEach(s => {
@@ -378,7 +516,6 @@ function copySummary() {
     });
     out += '\n';
   }
-
   navigator.clipboard.writeText(out.trim()).then(() => showToast('Summary copied to clipboard!'));
 }
 
