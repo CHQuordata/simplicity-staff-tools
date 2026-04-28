@@ -294,6 +294,13 @@
       <div class="desc">+1 NPC in Superior Elite Instance<br>3 NPCs → 4 NPCs · single unlock · 1,000,000 pts</div>
     </div>
   </button>
+  <button class="perk-btn" data-perk="sacrifice">
+    <div class="perk-icon" style="background:linear-gradient(135deg,#1a0010,#380020);border-color:#e11d48;box-shadow:0 0 10px #e11d4833;">💀</div>
+    <div class="perk-info">
+      <div class="name">The Sacrifice</div>
+      <div class="desc">Sacrifice loot for XP, Tokens, Points & Bills<br>Single unlock · 100,000 pts · 14 items · 4 tiers</div>
+    </div>
+  </button>
   <button class="perk-btn" data-perk="pointvalue">
     <div class="perk-icon" style="background:linear-gradient(135deg,#001a10,#003828);border-color:#4ade80;box-shadow:0 0 10px #4ade8033;">⚖️</div>
     <div class="perk-info">
@@ -842,6 +849,106 @@
     <div class="card">
       <h2 id="asCumTitle">Cumulative XP — 3 NPCs vs 4 NPCs over 500 Instances</h2>
       <div class="chart-wrap"><canvas id="asCumChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════╗
+     ║  PERK 6 — THE SACRIFICE                 ║
+     ╚══════════════════════════════════════════╝ -->
+<div class="perk-section" id="perk-sacrifice">
+  <div class="tabs" id="sacrificeTabs">
+    <button class="tab active" data-tab="sac-overview">Item Overview</button>
+    <button class="tab" data-tab="sac-simulator">Sacrifice Simulator</button>
+    <button class="tab" data-tab="sac-tiers">Tier Comparison</button>
+  </div>
+
+  <!-- SAC: Item Overview -->
+  <div class="panel active" id="tab-sac-overview">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Reward Type</div>
+        <div class="btn-row" id="sacMetricToggle">
+          <button class="btn active" data-metric="xp">XP</button>
+          <button class="btn" data-metric="tok">Tokens</button>
+          <button class="btn" data-metric="pts">Immortal Points</button>
+          <button class="btn" data-metric="bill">Bill Tickets</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Scenario</div>
+        <div class="btn-row" id="sacScenarioToggle">
+          <button class="btn" data-scenario="min">Min</button>
+          <button class="btn active" data-scenario="mid">Expected</button>
+          <button class="btn" data-scenario="max">Max</button>
+        </div>
+      </div>
+    </div>
+    <div id="sacOverviewStats" class="stat-row"></div>
+    <div class="card">
+      <h2 id="sacOverviewTitle">Expected XP per Sacrifice — All Items</h2>
+      <div class="chart-wrap"><canvas id="sacOverviewChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- SAC: Simulator -->
+  <div class="panel" id="tab-sac-simulator">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Item</div>
+        <select id="sacItemSelect"></select>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Sacrifices</div>
+        <div class="btn-row" id="sacCountToggle">
+          <button class="btn" data-count="10">10</button>
+          <button class="btn active" data-count="50">50</button>
+          <button class="btn" data-count="100">100</button>
+          <button class="btn" data-count="500">500</button>
+          <button class="btn" data-count="1000">1,000</button>
+        </div>
+      </div>
+    </div>
+    <div class="stat-row" id="sacSimStats"></div>
+    <div class="card">
+      <h2 id="sacSimTitle">Cumulative XP over Sacrifices — Min / Expected / Max</h2>
+      <div class="chart-wrap"><canvas id="sacSimChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- SAC: Tier Comparison -->
+  <div class="panel" id="tab-sac-tiers">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Reward Type</div>
+        <div class="btn-row" id="sacTierMetricToggle">
+          <button class="btn active" data-metric="xp">XP</button>
+          <button class="btn" data-metric="tok">Tokens</button>
+          <button class="btn" data-metric="pts">Immortal Points</button>
+          <button class="btn" data-metric="bill">Bill Tickets</button>
+        </div>
+      </div>
+    </div>
+    <div class="stat-row" id="sacTierStats"></div>
+    <div class="card">
+      <h2 id="sacTierTitle">Expected XP per Sacrifice — Tier Comparison (Min / Expected / Max)</h2>
+      <div class="chart-wrap"><canvas id="sacTierChart"></canvas></div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;font-size:.85rem;">
+        <thead>
+          <tr style="background:var(--surface2);">
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Tier</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Min XP</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Avg XP</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Max XP</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Avg Tokens</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Avg Points</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Avg Bills</th>
+          </tr>
+        </thead>
+        <tbody id="sacTierTable"></tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -1790,6 +1897,167 @@ document.getElementById('asCumToggle').addEventListener('click', e => {
 updateASCumulative();
 
 /* ════════════════════════════════════════════
+   THE SACRIFICE DATA
+   ════════════════════════════════════════════ */
+tabGroup('sacrificeTabs', 'sacrifice');
+
+const SAC_ITEMS = [
+  // Tier 1 — Dark Saggitarian
+  { name:'Dark Saggitarian Coif',      short:'Sag. Coif',     tier:1, minXP:250000,  maxXP:1500000, minBill:100, maxBill:150,  minTok:10000, maxTok:15000, minPts:100,  maxPts:5000  },
+  { name:'Dark Saggitarian Platebody', short:'Sag. Body',     tier:1, minXP:250000,  maxXP:1500000, minBill:100, maxBill:150,  minTok:10000, maxTok:15000, minPts:100,  maxPts:5000  },
+  { name:'Dark Saggitarian Platelegs', short:'Sag. Legs',     tier:1, minXP:250000,  maxXP:1500000, minBill:100, maxBill:150,  minTok:10000, maxTok:15000, minPts:100,  maxPts:5000  },
+  { name:'Dark Saggitarian Gloves',    short:'Sag. Gloves',   tier:1, minXP:250000,  maxXP:1500000, minBill:100, maxBill:150,  minTok:10000, maxTok:15000, minPts:100,  maxPts:5000  },
+  { name:'Dark Saggitarian Boots',     short:'Sag. Boots',    tier:1, minXP:250000,  maxXP:1500000, minBill:100, maxBill:150,  minTok:10000, maxTok:15000, minPts:100,  maxPts:5000  },
+  // Tier 2 — Dark Sacred Clay
+  { name:'Dark Sacred Clay Helm',      short:'SC Helm',       tier:2, minXP:250000,  maxXP:1500000, minBill:100, maxBill:500,  minTok:10000, maxTok:15000, minPts:100,  maxPts:5000  },
+  { name:'Dark Sacred Clay Platebody', short:'SC Body',       tier:2, minXP:250000,  maxXP:1500000, minBill:100, maxBill:500,  minTok:10000, maxTok:15000, minPts:100,  maxPts:5000  },
+  { name:'Dark Sacred Clay Platelegs', short:'SC Legs',       tier:2, minXP:250000,  maxXP:1500000, minBill:100, maxBill:500,  minTok:10000, maxTok:15000, minPts:100,  maxPts:5000  },
+  // Tier 3 — Infernal / Elite
+  { name:'Infernal Hand Cannon',       short:'Inf. Cannon',   tier:3, minXP:500000,  maxXP:2500000, minBill:100, maxBill:1000, minTok:15000, maxTok:30000, minPts:500,  maxPts:5000  },
+  { name:'Elite Sanguine Vitur X',     short:'Sanguine X',    tier:3, minXP:500000,  maxXP:2500000, minBill:100, maxBill:1000, minTok:15000, maxTok:30000, minPts:500,  maxPts:5000  },
+  { name:'Elite Purging Staff',        short:'Purging Staff', tier:3, minXP:500000,  maxXP:3500000, minBill:100, maxBill:1000, minTok:15000, maxTok:30000, minPts:500,  maxPts:5000  },
+  // Tier 4 — Immortal
+  { name:'Immortal War Staff',         short:'War Staff',     tier:4, minXP:2500000, maxXP:9500000, minBill:500, maxBill:2500, minTok:50000, maxTok:100000,minPts:1000, maxPts:10000 },
+  { name:'Immortal Godcrusher Axe',    short:'Godcrusher',    tier:4, minXP:2500000, maxXP:9500000, minBill:500, maxBill:2500, minTok:50000, maxTok:100000,minPts:1000, maxPts:10000 },
+  { name:'Immortal Elven Bow',         short:'Elven Bow',     tier:4, minXP:2500000, maxXP:9500000, minBill:500, maxBill:2500, minTok:50000, maxTok:100000,minPts:1000, maxPts:10000 },
+];
+const SAC_TIER_COLORS = ['','#60a5fa','#34d399','#fb923c','#f0b429'];
+const SAC_TIER_NAMES  = ['','Dark Saggitarian','Dark Sacred Clay','Infernal / Elite','Immortal'];
+const SAC_AVG_T1_XP   = 875000; // (250k+1500k)/2 — Point Value metric baseline
+
+const sacMid  = (mn,mx) => (mn+mx)/2;
+const sacGet  = (item, metric, scenario) => {
+  const k = {xp:['minXP','maxXP'],tok:['minTok','maxTok'],pts:['minPts','maxPts'],bill:['minBill','maxBill']}[metric];
+  return scenario==='min'?item[k[0]]:scenario==='max'?item[k[1]]:sacMid(item[k[0]],item[k[1]]);
+};
+const sacUnit = m => ({xp:'XP',tok:'Tokens',pts:'Immortal Points',bill:'Bill Tickets'}[m]);
+const sacFmtV = (v,m) => m==='xp'?fmtXP(v):fmt(v);
+
+/* ── SAC: Overview ── */
+let sacMetric='xp', sacScenario='mid';
+const sacOverviewChart = makeChart('sacOverviewChart','bar',{legend:false,yFmt:v=>fmtXP(v)});
+
+function updateSacOverview() {
+  const vals=SAC_ITEMS.map(it=>sacGet(it,sacMetric,sacScenario));
+  const colors=SAC_ITEMS.map(it=>SAC_TIER_COLORS[it.tier]);
+  sacOverviewChart.data.labels=SAC_ITEMS.map(it=>it.short);
+  sacOverviewChart.data.datasets=[{
+    label:sacUnit(sacMetric), data:vals,
+    backgroundColor:colors.map(c=>c+'cc'), borderColor:colors, borderWidth:2, borderRadius:5,
+  }];
+  sacOverviewChart.options.plugins.tooltip.callbacks.label=c=>` ${sacFmtV(c.parsed.y,sacMetric)} ${sacUnit(sacMetric)}`;
+  sacOverviewChart.options.scales.y.ticks.callback=sacMetric==='xp'?v=>fmtXP(v):v=>fmt(v);
+  sacOverviewChart.update();
+  const sl={min:'Minimum',mid:'Expected',max:'Maximum'}[sacScenario];
+  document.getElementById('sacOverviewTitle').textContent=`${sl} ${sacUnit(sacMetric)} per Sacrifice — All Items`;
+  document.getElementById('sacOverviewStats').innerHTML=[1,2,3,4].map(t=>{
+    const its=SAC_ITEMS.filter(i=>i.tier===t);
+    const avg=its.reduce((s,it)=>s+sacGet(it,sacMetric,sacScenario),0)/its.length;
+    return `<div class="stat"><div class="lbl" style="color:${SAC_TIER_COLORS[t]}">T${t} — ${SAC_TIER_NAMES[t]}</div><div class="val" style="color:${SAC_TIER_COLORS[t]}">${sacFmtV(avg,sacMetric)}</div><div class="sub">${sl.toLowerCase()} · ${its.length} items</div></div>`;
+  }).join('');
+}
+document.getElementById('sacMetricToggle').addEventListener('click',e=>{
+  const b=e.target.closest('[data-metric]');if(!b)return;
+  sacMetric=b.dataset.metric;
+  document.querySelectorAll('#sacMetricToggle .btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');updateSacOverview();
+});
+document.getElementById('sacScenarioToggle').addEventListener('click',e=>{
+  const b=e.target.closest('[data-scenario]');if(!b)return;
+  sacScenario=b.dataset.scenario;
+  document.querySelectorAll('#sacScenarioToggle .btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');updateSacOverview();
+});
+updateSacOverview();
+
+/* ── SAC: Simulator ── */
+let sacSimCount=50, sacSimIdx=0;
+const sacItemSelectEl=document.getElementById('sacItemSelect');
+SAC_ITEMS.forEach((it,i)=>{
+  const opt=document.createElement('option');opt.value=i;
+  opt.textContent=`T${it.tier} — ${it.name}`;sacItemSelectEl.appendChild(opt);
+});
+const sacSimChart=makeChart('sacSimChart','line',{legend:true,unit:' XP',yFmt:v=>fmtXP(v),xTitle:'Sacrifices',yTitle:'Cumulative XP'});
+
+function updateSacSim() {
+  const item=SAC_ITEMS[sacSimIdx],n=sacSimCount,col=SAC_TIER_COLORS[item.tier];
+  const pts=buildPoints(n,Math.min(n,100));
+  sacSimChart.data.labels=pts;
+  sacSimChart.data.datasets=[
+    {label:'Min XP',     data:pts.map(s=>item.minXP*s),                          borderColor:'#475569',   backgroundColor:'#47556918',borderWidth:1.5,pointRadius:0,tension:0.2,fill:false,borderDash:[4,3]},
+    {label:'Expected XP',data:pts.map(s=>sacMid(item.minXP,item.maxXP)*s),       borderColor:col,         backgroundColor:col+'18',   borderWidth:2.5,pointRadius:0,tension:0.2,fill:true},
+    {label:'Max XP',     data:pts.map(s=>item.maxXP*s),                           borderColor:col+'88',    backgroundColor:col+'08',   borderWidth:1.5,pointRadius:0,tension:0.2,fill:false,borderDash:[4,3]},
+  ];
+  sacSimChart.options.plugins.legend.display=true;
+  sacSimChart.options.plugins.tooltip.callbacks.label=c=>` ${c.dataset.label}: ${fmtXP(c.parsed.y)}`;
+  sacSimChart.update();
+  document.getElementById('sacSimTitle').textContent=`Cumulative XP — ${item.short} × ${n.toLocaleString()} Sacrifices`;
+  const midXP=sacMid(item.minXP,item.maxXP)*n,midTok=sacMid(item.minTok,item.maxTok)*n,
+        midPts=sacMid(item.minPts,item.maxPts)*n,midBil=sacMid(item.minBill,item.maxBill)*n;
+  document.getElementById('sacSimStats').innerHTML=`
+    <div class="stat highlight"><div class="lbl">Expected XP</div><div class="val" style="color:${col}">${fmtXP(midXP)}</div><div class="sub">${fmtXP(item.minXP*n)} – ${fmtXP(item.maxXP*n)}</div></div>
+    <div class="stat"><div class="lbl">Expected Tokens</div><div class="val" style="color:var(--blue)">${fmt(midTok)}</div><div class="sub">${fmt(item.minTok*n)} – ${fmt(item.maxTok*n)}</div></div>
+    <div class="stat"><div class="lbl">Immortal Points</div><div class="val" style="color:var(--purple)">${fmt(midPts)}</div><div class="sub">${fmt(item.minPts*n)} – ${fmt(item.maxPts*n)}</div></div>
+    <div class="stat"><div class="lbl">Bill Tickets</div><div class="val" style="color:var(--green)">${fmt(midBil)}</div><div class="sub">${fmt(item.minBill*n)} – ${fmt(item.maxBill*n)}</div></div>`;
+}
+sacItemSelectEl.addEventListener('change',()=>{sacSimIdx=parseInt(sacItemSelectEl.value);updateSacSim();});
+document.getElementById('sacCountToggle').addEventListener('click',e=>{
+  const b=e.target.closest('[data-count]');if(!b)return;
+  sacSimCount=parseInt(b.dataset.count);
+  document.querySelectorAll('#sacCountToggle .btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');updateSacSim();
+});
+updateSacSim();
+
+/* ── SAC: Tier Comparison ── */
+let sacTierMetric='xp';
+const sacTierChart=makeChart('sacTierChart','bar',{legend:true,yFmt:v=>fmtXP(v)});
+
+function updateSacTiers() {
+  const kmap={xp:['minXP','maxXP'],tok:['minTok','maxTok'],pts:['minPts','maxPts'],bill:['minBill','maxBill']};
+  const [mn,mx]=kmap[sacTierMetric];
+  const tiers=[1,2,3,4],cols=SAC_TIER_COLORS.slice(1);
+  const tAvg=(t,k)=>{const its=SAC_ITEMS.filter(i=>i.tier===t);return its.reduce((s,i)=>s+i[k],0)/its.length;};
+  const tMid=(t)=>{const its=SAC_ITEMS.filter(i=>i.tier===t);return its.reduce((s,i)=>s+sacMid(i[mn],i[mx]),0)/its.length;};
+  sacTierChart.data.labels=SAC_TIER_NAMES.slice(1);
+  sacTierChart.data.datasets=[
+    {label:'Min',      data:tiers.map(t=>tAvg(t,mn)),backgroundColor:cols.map(c=>c+'44'),borderColor:cols,borderWidth:1.5,borderRadius:4},
+    {label:'Expected', data:tiers.map(t=>tMid(t)),   backgroundColor:cols.map(c=>c+'aa'),borderColor:cols,borderWidth:2,  borderRadius:4},
+    {label:'Max',      data:tiers.map(t=>tAvg(t,mx)),backgroundColor:cols.map(c=>c+'22'),borderColor:cols.map(c=>c+'66'),borderWidth:1.5,borderRadius:4},
+  ];
+  sacTierChart.options.plugins.legend.display=true;
+  sacTierChart.options.plugins.tooltip.callbacks.label=c=>` ${c.dataset.label}: ${sacFmtV(c.parsed.y,sacTierMetric)} ${sacUnit(sacTierMetric)}`;
+  sacTierChart.options.scales.y.ticks.callback=sacTierMetric==='xp'?v=>fmtXP(v):v=>fmt(v);
+  sacTierChart.update();
+  document.getElementById('sacTierTitle').textContent=`${sacUnit(sacTierMetric)} per Sacrifice — Tier Comparison`;
+  document.getElementById('sacTierStats').innerHTML=tiers.map(t=>`
+    <div class="stat"><div class="lbl" style="color:${SAC_TIER_COLORS[t]}">T${t} — ${SAC_TIER_NAMES[t]}</div><div class="val" style="color:${SAC_TIER_COLORS[t]}">${sacFmtV(tMid(t),sacTierMetric)}</div><div class="sub">avg expected ${sacUnit(sacTierMetric)}/sacrifice</div></div>`).join('');
+  document.getElementById('sacTierTable').innerHTML=tiers.map((t,ri)=>{
+    const its=SAC_ITEMS.filter(i=>i.tier===t);
+    const xpAvg=its.reduce((s,i)=>s+sacMid(i.minXP,i.maxXP),0)/its.length;
+    const tokAvg=its.reduce((s,i)=>s+sacMid(i.minTok,i.maxTok),0)/its.length;
+    const ptsAvg=its.reduce((s,i)=>s+sacMid(i.minPts,i.maxPts),0)/its.length;
+    const bilAvg=its.reduce((s,i)=>s+sacMid(i.minBill,i.maxBill),0)/its.length;
+    return `<tr style="border-bottom:1px solid var(--border)${ri===3?';background:linear-gradient(135deg,#1a1200,#2a1e00)':''}">
+      <td style="padding:11px 16px;font-weight:700;color:${SAC_TIER_COLORS[t]}">T${t} — ${SAC_TIER_NAMES[t]}</td>
+      <td style="padding:11px 16px;color:var(--muted)">${fmtXP(its[0].minXP)}</td>
+      <td style="padding:11px 16px;color:var(--gold-light);font-weight:700">${fmtXP(xpAvg)}</td>
+      <td style="padding:11px 16px;color:var(--text)">${fmtXP(its[0].maxXP)}</td>
+      <td style="padding:11px 16px;color:var(--blue)">${fmt(tokAvg)}</td>
+      <td style="padding:11px 16px;color:var(--purple)">${fmt(ptsAvg)}</td>
+      <td style="padding:11px 16px;color:var(--green)">${fmt(bilAvg)}</td>
+    </tr>`;
+  }).join('');
+}
+document.getElementById('sacTierMetricToggle').addEventListener('click',e=>{
+  const b=e.target.closest('[data-metric]');if(!b)return;
+  sacTierMetric=b.dataset.metric;
+  document.querySelectorAll('#sacTierMetricToggle .btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');updateSacTiers();
+});
+updateSacTiers();
+
+/* ════════════════════════════════════════════
    POINT VALUE TAB
    ════════════════════════════════════════════ */
 
@@ -1799,11 +2067,12 @@ const PV_COSTS = {
   angelic: { label:'Angelic Blast',  color:'#60a5fa', steps:['Unlock','Upgrade 1','Upgrade 2','Upgrade 3','Upgrade 4','Upgrade 5 (Max)'], vals:[50000,100000,150000,200000,250000,300000] },
   immortal:{ label:'Immortal Hit',   color:'#f87171', steps:['Unlock','Upgrade 1','Upgrade 2 (Max)'], vals:[100000,150000,200000] },
   astral:      { label:'Astral Bosses', color:'#a78bfa', steps:['Unlock','Upgrade 1','Upgrade 2','Upgrade 3','Upgrade 4 (Max)'], vals:[50000,100000,150000,200000,250000] },
-  astralspawn: { label:'Astral Spawn',  color:'#2dd4bf', steps:['Unlock'],                                                         vals:[1000000] },
+  astralspawn: { label:'Astral Spawn',  color:'#2dd4bf', steps:['Unlock'], vals:[1000000] },
+  sacrifice:   { label:'The Sacrifice', color:'#e11d48', steps:['Unlock'], vals:[100000]  },
 };
 
 // Current level state (index into each perk's steps array, -1 = not unlocked)
-const PV_CUR = { hyper: -1, angelic: -1, immortal: -1, astral: -1, astralspawn: -1 };
+const PV_CUR = { hyper: -1, angelic: -1, immortal: -1, astral: -1, astralspawn: -1, sacrifice: -1 };
 
 // ── localStorage persistence ──
 function loadState() {
@@ -1875,7 +2144,8 @@ function getPerkDefs() {
     { key:'angelic', label:'Angelic Blast',  color:'#60a5fa', gains: aMargGains, unit:'avg dmg/hit',          unitFmt: v => v.toFixed(3) },
     { key:'immortal',label:'Immortal Hit',   color:'#f87171', gains: iMargGains, unit:'extra hits/100',       unitFmt: v => v.toFixed(2) },
     { key:'astral',      label:'Astral Bosses', color:'#a78bfa', gains: abG,                 unit:'contracts/100k kills',  unitFmt: v => v.toFixed(4) },
-    { key:'astralspawn', label:'Astral Spawn',  color:'#2dd4bf', gains: [AS_XP_PER_KILL],    unit:'extra XP/instance',     unitFmt: v => fmtXP(v) },
+    { key:'astralspawn', label:'Astral Spawn',  color:'#2dd4bf', gains: [AS_XP_PER_KILL],  unit:'extra XP/instance',        unitFmt: v => fmtXP(v) },
+    { key:'sacrifice',   label:'The Sacrifice', color:'#e11d48', gains: [SAC_AVG_T1_XP], unit:'avg XP/sacrifice (T1 avg)', unitFmt: v => fmtXP(v) },
   ];
 }
 
