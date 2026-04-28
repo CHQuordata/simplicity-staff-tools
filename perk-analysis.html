@@ -861,7 +861,7 @@
     <button class="tab active" data-tab="sac-overview">Item Overview</button>
     <button class="tab" data-tab="sac-simulator">Sacrifice Simulator</button>
     <button class="tab" data-tab="sac-tiers">Tier Comparison</button>
-    <button class="tab" data-tab="sac-cost">💰 Cost Efficiency</button>
+    <button class="tab" data-tab="sac-cost">🎯 Points Goal</button>
   </div>
 
   <!-- SAC: Item Overview -->
@@ -951,39 +951,68 @@
         <tbody id="sacTierTable"></tbody>
       </table>
     </div>
-  <!-- SAC: Cost Efficiency -->
+  </div><!-- /tab-sac-tiers -->
+
+  <!-- SAC: Points Goal -->
   <div class="panel" id="tab-sac-cost">
+    <!-- Controls -->
     <div class="controls">
       <div class="ctrl-group">
-        <div class="ctrl-label">GP Budget (Trillions)</div>
+        <div class="ctrl-label">Current Points</div>
         <div style="display:flex;align-items:center;gap:6px">
-          <input type="number" id="sacBudgetInput" min="1" step="1" value="100"
-            style="padding:6px 10px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.85rem;width:100px;outline:none">
-          <span style="color:var(--muted);font-size:.8rem">T GP</span>
+          <input type="number" id="sacCurPts" min="0" step="1000" value="220000"
+            style="padding:6px 10px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.85rem;width:130px;outline:none">
+          <span style="color:var(--muted);font-size:.8rem">pts</span>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Target Points</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="number" id="sacTgtPts" min="0" step="1000" value="1000000"
+            style="padding:6px 10px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.85rem;width:130px;outline:none">
+          <span style="color:var(--muted);font-size:.8rem">pts</span>
         </div>
       </div>
     </div>
-    <div class="stat-row" id="sacCostStats"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
-      <div class="card" style="margin-bottom:0">
-        <h2>Item Costs (T GP) — Edit to update analysis</h2>
-        <p style="font-size:.75rem;color:var(--muted);margin-bottom:12px">Approximate market buy prices. Leave blank if unknown.</p>
-        <div id="sacCostInputGrid"></div>
-      </div>
-      <div class="card" style="margin-bottom:0">
-        <h2 id="sacBudgetTitle">Budget Ranking — 100T GP</h2>
-        <p style="font-size:.75rem;color:var(--muted);margin-bottom:12px">Most XP you can get buying & sacrificing one item type within budget.</p>
-        <div id="sacBudgetTable" style="overflow-x:auto"></div>
-      </div>
-    </div>
-    <div class="card">
-      <h2>XP per Trillion GP — Efficiency Ranking (Expected XP ÷ Cost)</h2>
-      <div style="font-size:.75rem;color:var(--muted);margin-bottom:10px">Higher = more XP for your GP. Items without costs are hidden.</div>
-      <div class="chart-wrap"><canvas id="sacCostChart"></canvas></div>
-    </div>
-  </div>
 
-  </div>
+    <!-- Progress bar -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:.8rem;color:var(--muted);font-weight:600">Progress to goal</span>
+        <span id="sacProgressLabel" style="font-size:.85rem;font-weight:700;color:#60a5fa">22.0%</span>
+      </div>
+      <div style="background:var(--surface2);border-radius:6px;height:14px;overflow:hidden;border:1px solid var(--border)">
+        <div id="sacProgressBar" style="height:100%;background:linear-gradient(90deg,#60a5fa,#7c3aed);border-radius:6px;transition:width .35s;width:22%"></div>
+      </div>
+      <div class="stat-row" id="sacGoalStats" style="margin-top:14px"></div>
+    </div>
+
+    <!-- Goal table -->
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="padding:16px 20px 10px;border-bottom:1px solid var(--border)">
+        <h2 style="margin-bottom:3px">Sacs to Goal &amp; GP Cost</h2>
+        <p style="font-size:.75rem;color:var(--muted)">Items ranked by Avg Pts/Sac. Bar shows relative point yield. Edit Cost column to calculate GP to Goal.</p>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+          <thead>
+            <tr style="background:var(--surface2)">
+              <th style="padding:9px 14px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Item</th>
+              <th style="padding:9px 14px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Tier</th>
+              <th style="padding:9px 14px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);min-width:160px">Avg Pts/Sac</th>
+              <th style="padding:9px 14px;text-align:right;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Sacs Needed</th>
+              <th style="padding:9px 14px;text-align:right;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Cost (T GP)</th>
+              <th style="padding:9px 14px;text-align:right;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">GP to Goal</th>
+              <th style="padding:9px 14px;text-align:right;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Pts / T GP</th>
+            </tr>
+          </thead>
+          <tbody id="sacGoalTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /tab-sac-cost -->
+
+</div><!-- /perk-sacrifice -->
 </div>
 
 <!-- ╔══════════════════════════════════════════╗
@@ -2096,13 +2125,13 @@ document.getElementById('sacTierMetricToggle').addEventListener('click',e=>{
 });
 updateSacTiers();
 
-/* ── SAC: Cost Efficiency ── */
-// Default costs in Trillions GP (null = unknown)
+/* ── SAC: Points Goal ── */
+// Default costs in Trillions GP (0 = unknown / farming free)
 const SAC_DEFAULT_COSTS_T = [
   10, 10, 10, 10, 10,   // T1: Dark Saggitarian ×5
   10, 10, 10,           // T2: Dark Sacred Clay ×3
-  null, null, null,     // T3: Infernal/Elite (unknown)
-  null, null, null,     // T4: Immortal (unknown)
+  0, 0, 0,              // T3: Infernal/Elite (unknown)
+  0, 0, 0,              // T4: Immortal (unknown)
   40, 28, 28, 20, 10,   // T5: Ring of Elites, Overlord Cape, Demonic Relic, Fire Sigil, Sanguine SOV
 ];
 let sacCostData = [...SAC_DEFAULT_COSTS_T];
@@ -2118,110 +2147,99 @@ function loadSacCosts() {
 }
 loadSacCosts();
 
-const sacCostChart = makeChart('sacCostChart','bar',{legend:false,yFmt:v=>fmtXP(v)});
-let sacBudget = 100;
+let sacGoalCur = 220000, sacGoalTgt = 1000000;
 
-function updateSacCost() {
-  // Items that have a cost entered
-  const priced = SAC_ITEMS.map((it,i) => {
-    const cost = sacCostData[i];
-    const midXP = sacMid(it.minXP, it.maxXP);
-    return { ...it, i, cost, midXP, eff: (cost>0) ? midXP/cost : null };
-  }).filter(it => it.cost > 0);
+function updateSacGoal() {
+  const needed = Math.max(0, sacGoalTgt - sacGoalCur);
+  const pct = sacGoalTgt > 0 ? Math.min(100, (sacGoalCur / sacGoalTgt) * 100) : 0;
 
-  // Sort by efficiency descending
-  const sorted = [...priced].sort((a,b) => (b.eff||0) - (a.eff||0));
-  const best = sorted[0], worst = sorted[sorted.length-1];
+  // Progress bar
+  document.getElementById('sacProgressBar').style.width = pct.toFixed(1) + '%';
+  document.getElementById('sacProgressLabel').textContent = pct.toFixed(1) + '%';
 
-  // ── Efficiency chart ──
-  sacCostChart.data.labels   = sorted.map(it => it.short);
-  sacCostChart.data.datasets = [{
-    label: 'XP per T GP',
-    data:  sorted.map(it => it.eff),
-    backgroundColor: sorted.map(it => SAC_TIER_COLORS[it.tier]+'cc'),
-    borderColor:     sorted.map(it => SAC_TIER_COLORS[it.tier]),
-    borderWidth: 2, borderRadius: 5,
-  }];
-  sacCostChart.options.plugins.tooltip.callbacks.label = c => ` ${fmtXP(c.parsed.y)} XP per T GP`;
-  sacCostChart.options.scales.y.ticks.callback = v => fmtXP(v);
-  sacCostChart.update();
+  // Stat row
+  document.getElementById('sacGoalStats').innerHTML =
+    '<div class="stat"><div class="lbl">Current Points</div><div class="val" style="color:#60a5fa">' + fmt(sacGoalCur) + '</div></div>' +
+    '<div class="stat highlight"><div class="lbl">Points Needed</div><div class="val" style="color:#eab308">' + fmt(needed) + '</div></div>' +
+    '<div class="stat"><div class="lbl">Target Points</div><div class="val">' + fmt(sacGoalTgt) + '</div></div>';
 
-  // ── Stat cards ──
-  document.getElementById('sacCostStats').innerHTML = best ? `
-    <div class="stat highlight">
-      <div class="lbl">🏆 Best Value — ${best.short}</div>
-      <div class="val" style="color:${SAC_TIER_COLORS[best.tier]}">${fmtXP(best.eff)} XP/T</div>
-      <div class="sub">${fmtXP(best.midXP)} avg XP · ${best.cost}T per sac</div>
-    </div>
-    <div class="stat">
-      <div class="lbl">Worst Value — ${worst.short}</div>
-      <div class="val" style="color:${SAC_TIER_COLORS[worst.tier]}">${fmtXP(worst.eff)} XP/T</div>
-      <div class="sub">${fmtXP(worst.midXP)} avg XP · ${worst.cost}T per sac</div>
-    </div>
-    <div class="stat">
-      <div class="lbl">Efficiency Gap</div>
-      <div class="val" style="color:var(--green)">${(best.eff/worst.eff).toFixed(1)}×</div>
-      <div class="sub">best vs worst XP per GP</div>
-    </div>
-    <div class="stat">
-      <div class="lbl">Best · GP per 1M XP</div>
-      <div class="val" style="color:var(--blue)">${(1000000/best.eff).toFixed(2)}T</div>
-      <div class="sub">to earn 1M XP via ${best.short}</div>
-    </div>` : '<div class="stat"><div class="lbl">Enter item costs above to see analysis</div></div>';
+  // Build rows sorted by avg pts/sac desc
+  const rows = SAC_ITEMS.map((it, i) => {
+    const avgPts   = sacMid(it.minPts, it.maxPts);
+    const minPts   = it.minPts, maxPts = it.maxPts;
+    const sacsExp  = avgPts  > 0 ? Math.ceil(needed / avgPts)  : null;
+    const sacsMin  = maxPts  > 0 ? Math.ceil(needed / maxPts)  : null; // best case: max pts per sac
+    const sacsMax  = minPts  > 0 ? Math.ceil(needed / minPts)  : null; // worst case: min pts per sac
+    const cost     = sacCostData[i] || 0;
+    const gpToGoal = (cost > 0 && sacsExp !== null) ? sacsExp * cost : null;
+    const ptsPerT  = cost > 0 ? avgPts / cost : null;
+    return { it, i, avgPts, sacsExp, sacsMin, sacsMax, cost, gpToGoal, ptsPerT };
+  }).sort((a, b) => b.avgPts - a.avgPts);
 
-  // ── Budget table ──
-  const budget = sacBudget;
-  document.getElementById('sacBudgetTitle').textContent = `Budget Ranking — ${budget}T GP`;
-  const budgetRows = [...priced].map(it => {
-    const sacs = Math.floor(budget / it.cost);
-    return { ...it, sacs, totalXP: sacs * it.midXP, leftover: budget - sacs * it.cost };
-  }).sort((a,b) => b.totalXP - a.totalXP);
+  // Goal table — pure string concat, no template literals
+  var maxPts = rows.length ? rows[0].avgPts : 1;
+  var html = '';
+  for (var ri = 0; ri < rows.length; ri++) {
+    var r = rows[ri];
+    var tc = SAC_TIER_COLORS[r.it.tier];
+    var tn = SAC_TIER_NAMES[r.it.tier];
+    var rowBg = ri === 0 ? 'background:rgba(34,197,94,.06);' : '';
+    var barW  = maxPts > 0 ? (r.avgPts / maxPts * 100).toFixed(0) : '0';
+    var sacsStr = r.sacsExp !== null
+      ? '<b>' + fmt(r.sacsExp) + '</b> <span style="color:#888899;font-size:.72rem">(' + fmt(r.sacsMin) + '–' + fmt(r.sacsMax) + ')</span>'
+      : '—';
+    var gpStr = r.gpToGoal !== null
+      ? '<b style="color:#eab308">' + fmt(Math.round(r.gpToGoal)) + 'T</b>'
+      : '<span style="color:#888899">—</span>';
+    var ptTStr = r.ptsPerT !== null
+      ? fmt(Math.round(r.ptsPerT))
+      : '<span style="color:#888899">—</span>';
+    html += '<tr style="border-bottom:1px solid var(--border);' + rowBg + '">';
+    html += '<td style="padding:9px 14px;font-weight:600">' + (ri === 0 ? '🏆 ' : '') + r.it.name + '</td>';
+    html += '<td style="padding:9px 14px"><span style="color:' + tc + ';font-size:.72rem;font-weight:700">' + tn + '</span></td>';
+    html += '<td style="padding:9px 14px;min-width:170px">';
+    html +=   '<div style="display:flex;align-items:center;gap:8px">';
+    html +=     '<div style="flex:1;background:var(--surface2);border-radius:3px;height:8px;overflow:hidden">';
+    html +=       '<div style="height:100%;width:' + barW + '%;background:' + tc + ';border-radius:3px"></div>';
+    html +=     '</div>';
+    html +=     '<span style="color:#60a5fa;font-weight:700;min-width:56px;text-align:right">' + fmt(r.avgPts) + '</span>';
+    html +=   '</div>';
+    html += '</td>';
+    html += '<td style="padding:9px 14px;text-align:right">' + sacsStr + '</td>';
+    html += '<td style="padding:9px 14px;text-align:right;white-space:nowrap">';
+    html +=   '<input class="cost-input sac-cost-inp" type="number" min="0" step="1" data-idx="' + r.i + '" value="' + (r.cost || '') + '" placeholder="0"';
+    html +=   ' style="width:62px;text-align:right;padding:3px 6px;border-radius:4px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.8rem;outline:none">';
+    html +=   ' <span style="color:#888899;font-size:.72rem">T</span>';
+    html += '</td>';
+    html += '<td style="padding:9px 14px;text-align:right">' + gpStr + '</td>';
+    html += '<td style="padding:9px 14px;text-align:right">' + ptTStr + '</td>';
+    html += '</tr>';
+  }
+  var tbody = document.getElementById('sacGoalTable');
+  tbody.innerHTML = html;
 
-  document.getElementById('sacBudgetTable').innerHTML = `
-    <table class="adv-table">
-      <thead><tr>
-        <th>#</th><th>Item</th><th>Each</th><th>Sacs</th><th>Total XP</th><th>Left</th>
-      </tr></thead>
-      <tbody>${budgetRows.map((it,rank) => `<tr>
-        <td><span class="rank-badge" style="background:${rank<3?['#3a2800','#1a1a00','#001a0a'][rank]:'#1a1a22'};color:${SAC_TIER_COLORS[it.tier]}">${['🥇','🥈','🥉'][rank]??rank+1}</span></td>
-        <td style="color:${SAC_TIER_COLORS[it.tier]};font-weight:700">${it.short}</td>
-        <td style="color:var(--muted)">${it.cost}T</td>
-        <td style="color:var(--text);font-weight:600">${it.sacs}×</td>
-        <td style="color:var(--gold-light);font-weight:700">${it.sacs > 0 ? fmtXP(it.totalXP) : '<span style="color:var(--muted)">Can\'t afford</span>'}</td>
-        <td style="color:var(--muted);font-size:.78rem">${it.leftover.toFixed(0)}T</td>
-      </tr>`).join('')}</tbody>
-    </table>`;
+  // Re-attach cost input listeners
+  var inps = tbody.querySelectorAll('.sac-cost-inp');
+  for (var ci = 0; ci < inps.length; ci++) {
+    (function(inp) {
+      inp.addEventListener('input', function() {
+        sacCostData[parseInt(inp.dataset.idx)] = parseFloat(inp.value) || 0;
+        saveSacCosts();
+        updateSacGoal();
+      });
+    }(inps[ci]));
+  }
 }
 
-function buildSacCostInputs() {
-  const grid = document.getElementById('sacCostInputGrid');
-  grid.innerHTML = '';
-  SAC_ITEMS.forEach((it,i) => {
-    const row = document.createElement('div');
-    row.className = 'cost-row';
-    row.innerHTML = `
-      <label style="color:${SAC_TIER_COLORS[it.tier]};flex:1">${it.short}</label>
-      <div style="display:flex;align-items:center;gap:4px">
-        <input class="cost-input sac-cost-inp" type="number" min="0" step="1"
-          data-idx="${i}" value="${sacCostData[i]||''}" placeholder="?" style="width:72px">
-        <span style="color:var(--muted);font-size:.72rem">T</span>
-      </div>`;
-    grid.appendChild(row);
-  });
-  grid.querySelectorAll('.sac-cost-inp').forEach(inp => {
-    inp.addEventListener('input', () => {
-      sacCostData[parseInt(inp.dataset.idx)] = parseFloat(inp.value) || 0;
-      saveSacCosts(); updateSacCost();
-    });
-  });
-}
-
-buildSacCostInputs();
-document.getElementById('sacBudgetInput').addEventListener('input', e => {
-  sacBudget = parseFloat(e.target.value) || 0;
-  updateSacCost();
+document.getElementById('sacCurPts').addEventListener('input', function(e) {
+  sacGoalCur = parseFloat(e.target.value) || 0;
+  updateSacGoal();
 });
-updateSacCost();
+document.getElementById('sacTgtPts').addEventListener('input', function(e) {
+  sacGoalTgt = parseFloat(e.target.value) || 0;
+  updateSacGoal();
+});
+updateSacGoal();
 
 /* ════════════════════════════════════════════
    POINT VALUE TAB
