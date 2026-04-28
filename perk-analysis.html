@@ -987,11 +987,18 @@
       <div class="stat-row" id="sacGoalStats" style="margin-top:14px"></div>
     </div>
 
+    <!-- Points per sac chart -->
+    <div class="card" style="margin-bottom:16px">
+      <h2>Avg Immortal Points per Sacrifice — All Items</h2>
+      <div style="font-size:.75rem;color:var(--muted);margin-bottom:10px">Sorted highest → lowest. Taller bar = fewer sacs to reach your goal.</div>
+      <div class="chart-wrap"><canvas id="sacCostChart"></canvas></div>
+    </div>
+
     <!-- Goal table -->
     <div class="card" style="padding:0;overflow:hidden;">
       <div style="padding:16px 20px 10px;border-bottom:1px solid var(--border)">
         <h2 style="margin-bottom:3px">Sacs to Goal &amp; GP Cost</h2>
-        <p style="font-size:.75rem;color:var(--muted)">Items ranked by Avg Pts/Sac. Bar shows relative point yield. Edit Cost column to calculate GP to Goal.</p>
+        <p style="font-size:.75rem;color:var(--muted)">Items ranked by Avg Pts/Sac. Edit Cost column to calculate GP to Goal.</p>
       </div>
       <div style="overflow-x:auto">
         <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
@@ -2147,6 +2154,7 @@ function loadSacCosts() {
 }
 loadSacCosts();
 
+const sacCostChart = makeChart('sacCostChart','bar',{legend:false,yFmt:v=>fmt(v)});
 let sacGoalCur = 220000, sacGoalTgt = 1000000;
 
 function updateSacGoal() {
@@ -2175,6 +2183,19 @@ function updateSacGoal() {
     const ptsPerT  = cost > 0 ? avgPts / cost : null;
     return { it, i, avgPts, sacsExp, sacsMin, sacsMax, cost, gpToGoal, ptsPerT };
   }).sort((a, b) => b.avgPts - a.avgPts);
+
+  // Chart
+  sacCostChart.data.labels = rows.map(function(r){return r.it.short;});
+  sacCostChart.data.datasets = [{
+    label:'Avg Pts/Sac',
+    data: rows.map(function(r){return r.avgPts;}),
+    backgroundColor: rows.map(function(r){return SAC_TIER_COLORS[r.it.tier]+'cc';}),
+    borderColor:     rows.map(function(r){return SAC_TIER_COLORS[r.it.tier];}),
+    borderWidth:2, borderRadius:5
+  }];
+  sacCostChart.options.plugins.tooltip.callbacks.label = function(c){return ' '+fmt(c.parsed.y)+' pts/sac';};
+  sacCostChart.options.scales.y.ticks.callback = function(v){return fmt(v);};
+  sacCostChart.update();
 
   // Goal table — pure string concat, no template literals
   var maxPts = rows.length ? rows[0].avgPts : 1;
@@ -2238,6 +2259,11 @@ document.getElementById('sacCurPts').addEventListener('input', function(e) {
 document.getElementById('sacTgtPts').addEventListener('input', function(e) {
   sacGoalTgt = parseFloat(e.target.value) || 0;
   updateSacGoal();
+});
+// Resize chart when tab becomes visible so it fills its container
+document.getElementById('sacrificeTabs').addEventListener('click', function(e) {
+  var t = e.target.closest('[data-tab="sac-cost"]');
+  if (t) { setTimeout(function(){ sacCostChart.resize(); updateSacGoal(); }, 50); }
 });
 updateSacGoal();
 
