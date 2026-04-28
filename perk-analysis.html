@@ -287,6 +287,13 @@
       <div class="desc">1/1000 chance · Astral Boss contract<br>Max 1/800 · 4 upgrades</div>
     </div>
   </button>
+  <button class="perk-btn" data-perk="astralspawn">
+    <div class="perk-icon" style="background:linear-gradient(135deg,#001a16,#00382e);border-color:#2dd4bf;box-shadow:0 0 10px #2dd4bf33;">🏰</div>
+    <div class="perk-info">
+      <div class="name">Astral Spawn</div>
+      <div class="desc">+1 NPC in Superior Elite Instance<br>3 NPCs → 4 NPCs · single unlock · 179,077 pts</div>
+    </div>
+  </button>
   <button class="perk-btn" data-perk="pointvalue">
     <div class="perk-icon" style="background:linear-gradient(135deg,#001a10,#003828);border-color:#4ade80;box-shadow:0 0 10px #4ade8033;">⚖️</div>
     <div class="perk-info">
@@ -772,6 +779,70 @@
       <div class="chart-wrap"><canvas id="abProbChart"></canvas></div>
     </div>
     <div class="stat-row" id="abProbStats"></div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════╗
+     ║  PERK 5 — ASTRAL SPAWN                  ║
+     ╚══════════════════════════════════════════╝ -->
+<div class="perk-section" id="perk-astralspawn">
+  <div class="tabs" id="astralspawnTabs">
+    <button class="tab active" data-tab="as-compare">XP Comparison</button>
+    <button class="tab" data-tab="as-cumulative">Cumulative XP Gain</button>
+  </div>
+
+  <!-- AS: Compare -->
+  <div class="panel active" id="tab-as-compare">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Instance Count</div>
+        <div class="btn-row" id="asInstToggle">
+          <button class="btn active" data-inst="1">Per Instance</button>
+          <button class="btn" data-inst="10">10</button>
+          <button class="btn" data-inst="100">100</button>
+          <button class="btn" data-inst="1000">1,000</button>
+        </div>
+      </div>
+    </div>
+    <div id="asCompareStats" class="stat-row"></div>
+    <div class="card">
+      <h2 id="asCompareTitle">Total XP — 3 NPCs (No Perk) vs 4 NPCs (With Perk) per Instance</h2>
+      <div class="chart-wrap"><canvas id="asCompareChart"></canvas></div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;font-size:.85rem;">
+        <thead>
+          <tr style="background:var(--surface2);">
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Instances</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">3 NPCs XP (No Perk)</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">4 NPCs XP (With Perk)</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">Extra XP</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);">% Bonus</th>
+          </tr>
+        </thead>
+        <tbody id="asTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- AS: Cumulative -->
+  <div class="panel" id="tab-as-cumulative">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Max Instances</div>
+        <div class="btn-row" id="asCumToggle">
+          <button class="btn" data-max="100">100</button>
+          <button class="btn active" data-max="500">500</button>
+          <button class="btn" data-max="1000">1,000</button>
+          <button class="btn" data-max="5000">5,000</button>
+        </div>
+      </div>
+    </div>
+    <div class="stat-row" id="asCumStats"></div>
+    <div class="card">
+      <h2 id="asCumTitle">Cumulative XP — 3 NPCs vs 4 NPCs over 500 Instances</h2>
+      <div class="chart-wrap"><canvas id="asCumChart"></canvas></div>
+    </div>
   </div>
 </div>
 
@@ -1601,6 +1672,124 @@ document.getElementById('abProbModeToggle').addEventListener('click', e => {
 updateABProb();
 
 /* ════════════════════════════════════════════
+   ASTRAL SPAWN DATA
+   ════════════════════════════════════════════ */
+tabGroup('astralspawnTabs', 'astralspawn');
+
+const AS_BASE_NPC    = 3;        // NPCs per instance without perk
+const AS_PERK_NPC    = 4;        // NPCs per instance with perk
+const AS_XP_PER_KILL = BASE_XP;  // 150,000
+const AS_INST_STEPS  = [1, 10, 100, 500, 1000, 5000];
+
+const asXP_no   = inst => AS_BASE_NPC * AS_XP_PER_KILL * inst;
+const asXP_with = inst => AS_PERK_NPC * AS_XP_PER_KILL * inst;
+const asExtra   = inst => AS_XP_PER_KILL * inst;  // exactly 1 extra NPC
+
+/* ── AS: Compare ── */
+let asInst = 1;
+const asCompareChart = makeChart('asCompareChart','bar',{ legend:true, unit:' XP', yFmt:v=>fmtXP(v) });
+
+function updateASCompare() {
+  const n = asInst;
+  document.getElementById('asCompareStats').innerHTML = `
+    <div class="stat">
+      <div class="lbl">XP per Instance — No Perk</div>
+      <div class="val" style="color:var(--muted)">${fmtXP(asXP_no(1))}</div>
+      <div class="sub">3 NPCs × ${fmtXP(AS_XP_PER_KILL)} XP/kill</div>
+    </div>
+    <div class="stat highlight">
+      <div class="lbl">XP per Instance — With Perk</div>
+      <div class="val" style="color:#2dd4bf">${fmtXP(asXP_with(1))}</div>
+      <div class="sub">4 NPCs × ${fmtXP(AS_XP_PER_KILL)} XP/kill</div>
+    </div>
+    <div class="stat">
+      <div class="lbl">Extra XP per Instance</div>
+      <div class="val" style="color:var(--green)">+${fmtXP(asExtra(1))}</div>
+      <div class="sub">+33.33% per instance always</div>
+    </div>
+    <div class="stat">
+      <div class="lbl">Extra XP — ${n.toLocaleString()} Instance${n>1?'s':''}</div>
+      <div class="val" style="color:var(--green)">+${fmtXP(asExtra(n))}</div>
+      <div class="sub">vs no perk</div>
+    </div>`;
+
+  asCompareChart.data.labels   = ['3 NPCs — No Perk', '4 NPCs — With Perk'];
+  asCompareChart.data.datasets = [{
+    label: `XP over ${n.toLocaleString()} instance${n>1?'s':''}`,
+    data: [asXP_no(n), asXP_with(n)],
+    backgroundColor: ['#475569cc','#2dd4bfcc'],
+    borderColor:     ['#475569',  '#2dd4bf'],
+    borderWidth: 2, borderRadius: 8,
+  }];
+  asCompareChart.update();
+  document.getElementById('asCompareTitle').textContent =
+    `Total XP — 3 NPCs vs 4 NPCs over ${n.toLocaleString()} Instance${n>1?'s':''}`;
+
+  document.getElementById('asTable').innerHTML = AS_INST_STEPS.map((inst,i) => `
+    <tr style="border-bottom:1px solid var(--border)${i===AS_INST_STEPS.length-1?';background:linear-gradient(135deg,#001a16,#002a20)':''}">
+      <td style="padding:11px 16px;color:var(--muted)">${inst.toLocaleString()}</td>
+      <td style="padding:11px 16px;color:var(--dim);font-weight:600">${fmtXP(asXP_no(inst))}</td>
+      <td style="padding:11px 16px;color:#2dd4bf;font-weight:700">${fmtXP(asXP_with(inst))}</td>
+      <td style="padding:11px 16px;color:var(--green);font-weight:700">+${fmtXP(asExtra(inst))}</td>
+      <td style="padding:11px 16px;color:var(--gold-light)">+33.33%</td>
+    </tr>`).join('');
+}
+document.getElementById('asInstToggle').addEventListener('click', e => {
+  const b = e.target.closest('[data-inst]'); if (!b) return;
+  asInst = parseInt(b.dataset.inst);
+  document.querySelectorAll('#asInstToggle .btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active'); updateASCompare();
+});
+updateASCompare();
+
+/* ── AS: Cumulative ── */
+let asCumMax = 500;
+const asCumChart = makeChart('asCumChart','line',{
+  legend:true, unit:' XP', yFmt:v=>fmtXP(v), xTitle:'Instances', yTitle:'XP'
+});
+
+function updateASCumulative() {
+  const pts = buildPoints(asCumMax);
+  asCumChart.data.labels   = pts;
+  asCumChart.data.datasets = [
+    {
+      label: '3 NPCs — No Perk',
+      data:  pts.map(i => asXP_no(i)),
+      borderColor: '#475569', backgroundColor: '#47556918',
+      borderWidth: 2, pointRadius: 0, tension: 0.2, fill: false,
+    },
+    {
+      label: '4 NPCs — With Perk',
+      data:  pts.map(i => asXP_with(i)),
+      borderColor: '#2dd4bf', backgroundColor: '#2dd4bf18',
+      borderWidth: 2.5, pointRadius: 0, tension: 0.2, fill: false,
+    },
+    {
+      label: 'Extra XP from Perk',
+      data:  pts.map(i => asExtra(i)),
+      borderColor: '#4ade80', backgroundColor: '#4ade8022',
+      borderWidth: 2, pointRadius: 0, tension: 0.2, fill: true, borderDash: [6,3],
+    },
+  ];
+  asCumChart.options.plugins.legend.display = true;
+  asCumChart.update();
+  document.getElementById('asCumTitle').textContent =
+    `Cumulative XP — 3 NPCs vs 4 NPCs over ${asCumMax.toLocaleString()} Instances`;
+  document.getElementById('asCumStats').innerHTML = `
+    <div class="stat"><div class="lbl">Extra XP / 100 instances</div><div class="val" style="color:var(--green)">${fmtXP(asExtra(100))}</div><div class="sub">+33.33% vs no perk</div></div>
+    <div class="stat"><div class="lbl">Extra XP / 500 instances</div><div class="val" style="color:var(--green)">${fmtXP(asExtra(500))}</div><div class="sub">+33.33% vs no perk</div></div>
+    <div class="stat"><div class="lbl">Extra XP / 1,000 instances</div><div class="val" style="color:#2dd4bf">${fmtXP(asExtra(1000))}</div><div class="sub">+33.33% vs no perk</div></div>
+    <div class="stat highlight"><div class="lbl">Extra XP / 5,000 instances</div><div class="val">${fmtXP(asExtra(5000))}</div><div class="sub">full grind value</div></div>`;
+}
+document.getElementById('asCumToggle').addEventListener('click', e => {
+  const b = e.target.closest('[data-max]'); if (!b) return;
+  asCumMax = parseInt(b.dataset.max);
+  document.querySelectorAll('#asCumToggle .btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active'); updateASCumulative();
+});
+updateASCumulative();
+
+/* ════════════════════════════════════════════
    POINT VALUE TAB
    ════════════════════════════════════════════ */
 
@@ -1609,11 +1798,12 @@ const PV_COSTS = {
   hyper:   { label:'Hyper Boost',    color:'#f0b429', steps:['Unlock','Upgrade 1','Upgrade 2','Upgrade 3','Upgrade 4','Upgrade 5 (Max)'], vals:[100000,150000,200000,250000,300000,350000] },
   angelic: { label:'Angelic Blast',  color:'#60a5fa', steps:['Unlock','Upgrade 1','Upgrade 2','Upgrade 3','Upgrade 4','Upgrade 5 (Max)'], vals:[50000,100000,150000,200000,250000,300000] },
   immortal:{ label:'Immortal Hit',   color:'#f87171', steps:['Unlock','Upgrade 1','Upgrade 2 (Max)'], vals:[100000,150000,200000] },
-  astral:  { label:'Astral Bosses',  color:'#a78bfa', steps:['Unlock','Upgrade 1','Upgrade 2','Upgrade 3','Upgrade 4 (Max)'], vals:[50000,100000,150000,200000,250000] },
+  astral:      { label:'Astral Bosses', color:'#a78bfa', steps:['Unlock','Upgrade 1','Upgrade 2','Upgrade 3','Upgrade 4 (Max)'], vals:[50000,100000,150000,200000,250000] },
+  astralspawn: { label:'Astral Spawn',  color:'#2dd4bf', steps:['Unlock'],                                                         vals:[179077] },
 };
 
 // Current level state (index into each perk's steps array, -1 = not unlocked)
-const PV_CUR = { hyper: -1, angelic: -1, immortal: -1, astral: -1 };
+const PV_CUR = { hyper: -1, angelic: -1, immortal: -1, astral: -1, astralspawn: -1 };
 
 // ── localStorage persistence ──
 function loadState() {
@@ -1684,7 +1874,8 @@ function getPerkDefs() {
     { key:'hyper',   label:'Hyper Boost',   color:'#f0b429', gains: hMargGains, unit:'XP/kill bonus',        unitFmt: v => fmtXP(v) },
     { key:'angelic', label:'Angelic Blast',  color:'#60a5fa', gains: aMargGains, unit:'avg dmg/hit',          unitFmt: v => v.toFixed(3) },
     { key:'immortal',label:'Immortal Hit',   color:'#f87171', gains: iMargGains, unit:'extra hits/100',       unitFmt: v => v.toFixed(2) },
-    { key:'astral',  label:'Astral Bosses',  color:'#a78bfa', gains: abG,        unit:'contracts/100k kills', unitFmt: v => v.toFixed(4) },
+    { key:'astral',      label:'Astral Bosses', color:'#a78bfa', gains: abG,                 unit:'contracts/100k kills',  unitFmt: v => v.toFixed(4) },
+    { key:'astralspawn', label:'Astral Spawn',  color:'#2dd4bf', gains: [AS_XP_PER_KILL],    unit:'extra XP/instance',     unitFmt: v => fmtXP(v) },
   ];
 }
 
