@@ -1917,12 +1917,18 @@ const SAC_ITEMS = [
   { name:'Elite Sanguine Vitur X',     short:'Sanguine X',    tier:3, minXP:500000,  maxXP:2500000, minBill:100, maxBill:1000, minTok:15000, maxTok:30000, minPts:500,  maxPts:5000  },
   { name:'Elite Purging Staff',        short:'Purging Staff', tier:3, minXP:500000,  maxXP:3500000, minBill:100, maxBill:1000, minTok:15000, maxTok:30000, minPts:500,  maxPts:5000  },
   // Tier 4 — Immortal
-  { name:'Immortal War Staff',         short:'War Staff',     tier:4, minXP:2500000, maxXP:9500000, minBill:500, maxBill:2500, minTok:50000, maxTok:100000,minPts:1000, maxPts:10000 },
-  { name:'Immortal Godcrusher Axe',    short:'Godcrusher',    tier:4, minXP:2500000, maxXP:9500000, minBill:500, maxBill:2500, minTok:50000, maxTok:100000,minPts:1000, maxPts:10000 },
-  { name:'Immortal Elven Bow',         short:'Elven Bow',     tier:4, minXP:2500000, maxXP:9500000, minBill:500, maxBill:2500, minTok:50000, maxTok:100000,minPts:1000, maxPts:10000 },
+  { name:'Immortal War Staff',         short:'War Staff',     tier:4, minXP:2500000, maxXP:9500000,  minBill:500,  maxBill:2500, minTok:50000,  maxTok:100000, minPts:1000,  maxPts:10000 },
+  { name:'Immortal Godcrusher Axe',    short:'Godcrusher',    tier:4, minXP:2500000, maxXP:9500000,  minBill:500,  maxBill:2500, minTok:50000,  maxTok:100000, minPts:1000,  maxPts:10000 },
+  { name:'Immortal Elven Bow',         short:'Elven Bow',     tier:4, minXP:2500000, maxXP:9500000,  minBill:500,  maxBill:2500, minTok:50000,  maxTok:100000, minPts:1000,  maxPts:10000 },
+  // Tier 5 — Elite / Premium
+  { name:'Ring of Elites',             short:'Ring of Elites',tier:5, minXP:9500000, maxXP:15500000, minBill:2500, maxBill:5000, minTok:100000, maxTok:200000, minPts:10000, maxPts:25000 },
+  { name:'Overlord Cape',              short:'Overlord Cape', tier:5, minXP:9500000, maxXP:15500000, minBill:2500, maxBill:6500, minTok:100000, maxTok:200000, minPts:5000,  maxPts:15000 },
+  { name:'Demonic Relic',              short:'Demonic Relic', tier:5, minXP:7500000, maxXP:15500000, minBill:1500, maxBill:5000, minTok:100000, maxTok:200000, minPts:5000,  maxPts:15000 },
+  { name:'Fire Sigil',                 short:'Fire Sigil',    tier:5, minXP:7500000, maxXP:12500000, minBill:1000, maxBill:2000, minTok:100000, maxTok:200000, minPts:5000,  maxPts:10000 },
+  { name:'Sanguine SOV',               short:'Sanguine SOV',  tier:5, minXP:2500000, maxXP:9500000,  minBill:500,  maxBill:1000, minTok:25000,  maxTok:50000,  minPts:5000,  maxPts:10000 },
 ];
-const SAC_TIER_COLORS = ['','#60a5fa','#34d399','#fb923c','#f0b429'];
-const SAC_TIER_NAMES  = ['','Dark Saggitarian','Dark Sacred Clay','Infernal / Elite','Immortal'];
+const SAC_TIER_COLORS = ['','#60a5fa','#34d399','#fb923c','#f0b429','#e879f9'];
+const SAC_TIER_NAMES  = ['','Dark Saggitarian','Dark Sacred Clay','Infernal / Elite','Immortal','Elite / Premium'];
 const SAC_AVG_T1_XP   = 875000; // (250k+1500k)/2 — Point Value metric baseline
 
 const sacMid  = (mn,mx) => (mn+mx)/2;
@@ -1950,7 +1956,7 @@ function updateSacOverview() {
   sacOverviewChart.update();
   const sl={min:'Minimum',mid:'Expected',max:'Maximum'}[sacScenario];
   document.getElementById('sacOverviewTitle').textContent=`${sl} ${sacUnit(sacMetric)} per Sacrifice — All Items`;
-  document.getElementById('sacOverviewStats').innerHTML=[1,2,3,4].map(t=>{
+  document.getElementById('sacOverviewStats').innerHTML=[1,2,3,4,5].map(t=>{
     const its=SAC_ITEMS.filter(i=>i.tier===t);
     const avg=its.reduce((s,it)=>s+sacGet(it,sacMetric,sacScenario),0)/its.length;
     return `<div class="stat"><div class="lbl" style="color:${SAC_TIER_COLORS[t]}">T${t} — ${SAC_TIER_NAMES[t]}</div><div class="val" style="color:${SAC_TIER_COLORS[t]}">${sacFmtV(avg,sacMetric)}</div><div class="sub">${sl.toLowerCase()} · ${its.length} items</div></div>`;
@@ -2016,7 +2022,7 @@ const sacTierChart=makeChart('sacTierChart','bar',{legend:true,yFmt:v=>fmtXP(v)}
 function updateSacTiers() {
   const kmap={xp:['minXP','maxXP'],tok:['minTok','maxTok'],pts:['minPts','maxPts'],bill:['minBill','maxBill']};
   const [mn,mx]=kmap[sacTierMetric];
-  const tiers=[1,2,3,4],cols=SAC_TIER_COLORS.slice(1);
+  const tiers=[1,2,3,4,5],cols=SAC_TIER_COLORS.slice(1);
   const tAvg=(t,k)=>{const its=SAC_ITEMS.filter(i=>i.tier===t);return its.reduce((s,i)=>s+i[k],0)/its.length;};
   const tMid=(t)=>{const its=SAC_ITEMS.filter(i=>i.tier===t);return its.reduce((s,i)=>s+sacMid(i[mn],i[mx]),0)/its.length;};
   sacTierChart.data.labels=SAC_TIER_NAMES.slice(1);
@@ -2038,7 +2044,7 @@ function updateSacTiers() {
     const tokAvg=its.reduce((s,i)=>s+sacMid(i.minTok,i.maxTok),0)/its.length;
     const ptsAvg=its.reduce((s,i)=>s+sacMid(i.minPts,i.maxPts),0)/its.length;
     const bilAvg=its.reduce((s,i)=>s+sacMid(i.minBill,i.maxBill),0)/its.length;
-    return `<tr style="border-bottom:1px solid var(--border)${ri===3?';background:linear-gradient(135deg,#1a1200,#2a1e00)':''}">
+    return `<tr style="border-bottom:1px solid var(--border)${ri===4?';background:linear-gradient(135deg,#200020,#300030)':''}">
       <td style="padding:11px 16px;font-weight:700;color:${SAC_TIER_COLORS[t]}">T${t} — ${SAC_TIER_NAMES[t]}</td>
       <td style="padding:11px 16px;color:var(--muted)">${fmtXP(its[0].minXP)}</td>
       <td style="padding:11px 16px;color:var(--gold-light);font-weight:700">${fmtXP(xpAvg)}</td>
