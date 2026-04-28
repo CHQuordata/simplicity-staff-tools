@@ -1001,16 +1001,16 @@
         <p style="font-size:.75rem;color:var(--muted)">Items ranked by Avg Pts/Sac. Edit Cost column to calculate GP to Goal.</p>
       </div>
       <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
-          <thead>
+        <table id="sacGoalTableEl" style="width:100%;border-collapse:collapse;font-size:.82rem;">
+          <thead id="sacGoalHead">
             <tr style="background:var(--surface2)">
               <th style="padding:9px 14px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Item</th>
               <th style="padding:9px 14px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Tier</th>
-              <th style="padding:9px 14px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);min-width:160px">Avg Pts/Sac</th>
-              <th style="padding:9px 14px;text-align:right;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Sacs Needed</th>
+              <th data-sort="avgPts" style="padding:9px 14px;text-align:left;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);min-width:160px;cursor:pointer;user-select:none">Avg Pts/Sac</th>
+              <th data-sort="sacsExp" style="padding:9px 14px;text-align:right;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);cursor:pointer;user-select:none">Sacs Needed</th>
               <th style="padding:9px 14px;text-align:right;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Cost (T GP)</th>
-              <th style="padding:9px 14px;text-align:right;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">GP to Goal</th>
-              <th style="padding:9px 14px;text-align:right;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Pts / T GP</th>
+              <th data-sort="gpToGoal" style="padding:9px 14px;text-align:right;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);cursor:pointer;user-select:none">GP to Goal</th>
+              <th data-sort="ptsPerT" style="padding:9px 14px;text-align:right;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);cursor:pointer;user-select:none">Pts / T GP</th>
             </tr>
           </thead>
           <tbody id="sacGoalTable"></tbody>
@@ -2182,7 +2182,15 @@ function updateSacGoal() {
     const gpToGoal = (cost > 0 && sacsExp !== null) ? sacsExp * cost : null;
     const ptsPerT  = cost > 0 ? avgPts / cost : null;
     return { it, i, avgPts, sacsExp, sacsMin, sacsMax, cost, gpToGoal, ptsPerT };
-  }).sort((a, b) => b.avgPts - a.avgPts);
+  });
+  // Sortable — nulls always last regardless of direction
+  rows.sort(function(a, b) {
+    var av = a[sacSortCol], bv = b[sacSortCol];
+    if (av === null && bv === null) return 0;
+    if (av === null) return 1;
+    if (bv === null) return -1;
+    return sacSortDir * (av - bv);
+  });
 
   // Chart
   sacCostChart.data.labels = rows.map(function(r){return r.it.short;});
@@ -2239,6 +2247,19 @@ function updateSacGoal() {
   var tbody = document.getElementById('sacGoalTable');
   tbody.innerHTML = html;
 
+  // Update thead sort indicators
+  document.querySelectorAll('#sacGoalHead th[data-sort]').forEach(function(th) {
+    var col = th.dataset.sort;
+    var base = th.textContent.replace(/ [▲▼]$/, '');
+    if (col === sacSortCol) {
+      th.textContent = base + ' ' + (sacSortDir === 1 ? '▲' : '▼');
+      th.style.color = '#e8e8f0';
+    } else {
+      th.textContent = base;
+      th.style.color = '';
+    }
+  });
+
   // Re-attach cost input listeners
   var inps = tbody.querySelectorAll('.sac-cost-inp');
   for (var ci = 0; ci < inps.length; ci++) {
@@ -2260,6 +2281,21 @@ document.getElementById('sacTgtPts').addEventListener('input', function(e) {
   sacGoalTgt = parseFloat(e.target.value) || 0;
   updateSacGoal();
 });
+// Sort state — default: GP to Goal ascending (cheapest path to 1M first)
+var sacSortCol = 'gpToGoal', sacSortDir = 1;
+document.getElementById('sacGoalHead').addEventListener('click', function(e) {
+  var th = e.target.closest('th[data-sort]');
+  if (!th) return;
+  if (sacSortCol === th.dataset.sort) {
+    sacSortDir = -sacSortDir;
+  } else {
+    sacSortCol = th.dataset.sort;
+    // gpToGoal/sacsExp: asc by default (smallest first); avgPts/ptsPerT: desc by default (largest first)
+    sacSortDir = (sacSortCol === 'gpToGoal' || sacSortCol === 'sacsExp') ? 1 : -1;
+  }
+  updateSacGoal();
+});
+
 // Resize chart when tab becomes visible so it fills its container
 document.getElementById('sacrificeTabs').addEventListener('click', function(e) {
   var t = e.target.closest('[data-tab="sac-cost"]');
