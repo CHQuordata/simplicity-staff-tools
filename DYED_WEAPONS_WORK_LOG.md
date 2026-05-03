@@ -9,9 +9,9 @@
 
 ---
 
-## Open Branches (not yet merged to main)
+## Merged Changes (already in main)
 
-### `remove-textures-animations`
+### `remove-textures-animations` — merged via PR #1
 
 **What it does:** Removes the Textures and Animations categories entirely — both from the sidebar and from the `ITEMS` data array.
 
@@ -29,7 +29,7 @@
 
 ---
 
-### `fix-cosmetic-icons`
+### `fix-cosmetic-icons` — merged via PR #2
 
 **Builds on top of `remove-textures-animations`.** Adds `iconName` field to specific cosmetic items whose wiki filenames don't match their item name, fixing broken icon loading.
 
@@ -58,7 +58,7 @@ if (item.iconName) {
 | `override-shadow-sword` | `Shadow sword detail` | Needs `detail` suffix to resolve correctly |
 | `override-golden-scythe` | `Golden scythe` | Override suffix causes mismatch |
 
-**Status:** Both branches exist on remote, neither merged to main yet.
+**Status:** Both branches merged and live on main.
 
 ---
 
@@ -184,6 +184,8 @@ The `pageimages` API returns each dye variant page's primary image = always `Wea
 
 | Commit | Description |
 |--------|-------------|
+| `f5dd680` | Fix icon loading for cosmetic items with mismatched wiki filenames (PR #2) |
+| `5c7f099` | Remove textures and animations from sidebar (PR #1) |
 | `f60b25a` | Replace dyed weapon data with correct wiki slugs, expand to full 7-dye coverage |
 | `f985a32` | Bake thumbnails for dyed weapon variants |
 | `fb68426` | Add 92 dyed weapon variants + 2 missing off-hand base weapons |
