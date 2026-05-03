@@ -278,9 +278,9 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 
     <!-- Full Sets (moved to top, expanded by default) -->
     <div class="sb-lbl" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleFullSetsSidebar()">
-      Full Sets <span id="fullsets-arrow" style="font-size:.7rem;color:var(--mu);">▼</span>
+      Full Sets <span id="fullsets-arrow" style="font-size:.7rem;color:var(--mu);">▶</span>
     </div>
-    <div id="sb-fullsets"></div>
+    <div id="sb-fullsets" style="display:none"></div>
     <div class="hr"></div>
 
     <div class="sb-lbl">Categories</div>
@@ -2881,7 +2881,7 @@ function renderSidebarSets() {
   `).join('');
 }
 
-let fullSetsSidebarOpen = true;
+let fullSetsSidebarOpen = false;
 
 function toggleFullSetsSidebar() {
   fullSetsSidebarOpen = !fullSetsSidebarOpen;
