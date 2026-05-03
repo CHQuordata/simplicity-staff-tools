@@ -2706,6 +2706,8 @@ function slugShareCount(slug) {
 function iconUrlChain(item) {
   const cached = wikiCache[item.slug];
   const cachedThumb = cached?.thumbUrl || null;
+  // Cosmetic items are fully baked — skip all guessing and use the baked URL directly.
+  if (item.isCosmetic && cachedThumb) return [cachedThumb];
   const slugShared = slugShareCount(item.slug) > 1;
   const name = item.name;
   const slugUnderscored = item.slug; // already uses underscores
