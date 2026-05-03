@@ -32,6 +32,15 @@ Running regex replacements on the full file string will corrupt it.
 
 5. **Never use `-e` inline node scripts for regex work on this file** — escaping is error-prone. Write a `.mjs` file instead.
 
+6. **Always run a pre-write syntax check before writing any modified file:**
+   ```js
+   const scriptSrc = newHtml.slice(newHtml.indexOf('<script>') + 8, newHtml.indexOf('</script>'));
+   try { new Function(scriptSrc); } catch(e) { console.error('SYNTAX ERROR:', e.message); process.exit(1); }
+   ```
+   This catches JS syntax errors (e.g. unquoted `2h` property keys) before they brick the dashboard.
+
+7. **Property keys that are not valid JS identifiers must be quoted.** `2h`, numeric-prefixed names, and hyphenated names all need quotes: `'2h':'value'` not `2h:'value'`.
+
 ## rs3-asset-library.html — Item Addition Rule
 
 **Any item with no accessible wiki image must not be added to the dashboard.**
