@@ -31,3 +31,14 @@ Running regex replacements on the full file string will corrupt it.
 4. **Prefer the Edit tool for small targeted removals** — use scripts only when iterating over many items.
 
 5. **Never use `-e` inline node scripts for regex work on this file** — escaping is error-prone. Write a `.mjs` file instead.
+
+## rs3-asset-library.html — Item Addition Rule
+
+**Any item with no accessible wiki image must not be added to the dashboard.**
+
+Before adding any new item:
+1. Confirm its wiki image exists (probe `BAKED_WIKI_CACHE` slug against `runescape.wiki/api.php` or `oldschool.runescape.wiki/api.php`)
+2. If no image is found — remove the item entirely. Do not add it with a placeholder or broken card.
+3. If an item is already in the dashboard and its wiki image is confirmed dead — remove it immediately.
+
+This applies to all categories: weapons, armour, cosmetics, pets, auras, etc.
