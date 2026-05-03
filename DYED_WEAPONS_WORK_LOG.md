@@ -1,4 +1,4 @@
-# RS3 Asset Library — Dyed Weapons Work Log
+# RS3 Asset Library — Work Log
 
 ## Project Context
 
@@ -9,31 +9,84 @@
 
 ---
 
-## What Was Done This Session
+## Open Branches (not yet merged to main)
+
+### `remove-textures-animations`
+
+**What it does:** Removes the Textures and Animations categories entirely — both from the sidebar and from the `ITEMS` data array.
+
+**Deleted from sidebar:**
+```html
+<!-- REMOVED -->
+<button data-cat="textures">🎨 Textures</button>
+<button data-cat="animations">🎬 Animations</button>
+```
+
+**Deleted from ITEMS (~53 lines):**
+- 16 texture items (`tex-obsidian`, `tex-glacyte`, `tex-dragon`, `tex-crystal`, `tex-barrows`, `tex-shadow`, `tex-abyssal`, `tex-third-age`, `tex-noxious`, `tex-masterwork`, `tex-blood`, `tex-ice`, `tex-soul`, `tex-smoke`, `tex-eldritch`, `tex-aurora`)
+- 10 attack animation items (`anim-barrows`, `anim-whip`, `anim-2h-basic`, `anim-nox-scythe`, `anim-zaros-gs`, `anim-rcb`, `anim-magic-staff`, `anim-dual-wield-melee`, `anim-wand-offhand`, `anim-ascension-cbow`)
+- 10 walk/idle/death override items (`anim-walk-plague`, `anim-walk-scorpion`, `anim-walk-royal`, `anim-walk-ranger`, `anim-walk-stealth`, `anim-walk-hellhound`, `anim-walk-penguin`, `anim-walk-sliske`, `anim-walk-vampyric`, `anim-walk-pirate`, `anim-idle-slayer`, `anim-idle-phantom`, `anim-idle-meditation`, `anim-death-reaper`, `anim-death-disintegrate`)
+
+---
+
+### `fix-cosmetic-icons`
+
+**Builds on top of `remove-textures-animations`.** Adds `iconName` field to specific cosmetic items whose wiki filenames don't match their item name, fixing broken icon loading.
+
+**How `iconName` works:**
+
+The card renderer (`iconUrlChain()`) normally derives the wiki image filename from the item `name` or `slug`. When those don't match the actual wiki file, the icon 404s and falls through to a broken image. Adding `iconName` sets the exact wiki filename to use, bypassing the guessing logic:
+
+```js
+// In iconUrlChain():
+if (item.iconName) {
+  chain.push(cdn(item.iconName));   // direct CDN URL
+  chain.push(sfp(item.iconName));   // Special:FilePath fallback
+  if (cachedThumb) chain.push(cachedThumb);
+  return chain;
+}
+```
+
+**Items that got `iconName` added:**
+
+| Item ID | `iconName` value | Why needed |
+|---------|-----------------|-----------|
+| `warlord-helm` | `Warlord headdress` | Wiki file is "headdress" not "helmet" |
+| `warlord-body` | `Warlord tunic` | Wiki file is "tunic" not "body" |
+| `warlord-legs` | `Warlord kilt` | Wiki file is "kilt" not "legs" |
+| `samurai-helm` | `Samurai kasa` | Wiki file uses Japanese term "kasa" |
+| `override-shadow-sword` | `Shadow sword detail` | Needs `detail` suffix to resolve correctly |
+| `override-golden-scythe` | `Golden scythe` | Override suffix causes mismatch |
+
+**Status:** Both branches exist on remote, neither merged to main yet.
+
+---
+
+## Session Work — Dyed Weapons Overhaul
 
 ### 1. Removed Wrong `isDyed:true` Block (~90 entries)
 
-A previous session had added 90 dyed weapon entries using a completely wrong slug format:
+A previous session had added 90 dyed weapon entries using completely wrong slug format:
 
 ```js
 // WRONG — these files don't exist on the wiki
-slug:'Zaros_godsword_(Blood_dye)'
-slug:'Ek-ZekKil_(Smoke_dye)'
-slug:'Noxious_scythe_(Abyssal)'
+slug: 'Zaros_godsword_(Blood_dye)'
+slug: 'Ek-ZekKil_(Smoke_dye)'
+slug: 'Noxious_scythe_(Abyssal)'
 ```
 
-These were `cat:'weapons'`, `isDyed:true` — wrong category, wrong slugs, wrong dye names (referenced "Smoke dye", "Eldritch dye", "Abyssal dye" which don't apply to weapons). All 90 were deleted.
+These were `cat:'weapons'`, `isDyed:true` — wrong category, wrong slugs, wrong dye names ("Smoke dye", "Eldritch dye", "Abyssal dye" don't apply to weapons). All 90 deleted.
 
 ---
 
 ### 2. Rewrote Dyed Weapon Section (136 correct entries)
 
-Replaced the deleted block + expanded the existing partial `cat:'cosmetic-weapon'` block into a complete, wiki-verified dataset.
+Replaced deleted block + expanded existing partial `cat:'cosmetic-weapon'` block into a complete wiki-verified dataset.
 
 #### Correct Wiki Slug Format
 
-| Dye | Slug suffix | Notes |
-|-----|------------|-------|
+| Dye | Slug suffix | Capitalisation |
+|-----|------------|----------------|
 | blood | `_(blood)` | lowercase |
 | ice | `_(ice)` | lowercase |
 | shadow | `_(shadow)` | lowercase |
@@ -44,8 +97,8 @@ Replaced the deleted block + expanded the existing partial `cat:'cosmetic-weapon
 
 #### Weapons Covered
 
-| Weapon | Dye count | Notes |
-|--------|-----------|-------|
+| Weapon | Dyes | Notes |
+|--------|------|-------|
 | Zaros godsword | 7 | All dyes |
 | Khopesh of Tumeken | 7 | All dyes |
 | Khopesh of Elidinis | 7 | All dyes (offhand) |
@@ -67,11 +120,11 @@ Replaced the deleted block + expanded the existing partial `cat:'cosmetic-weapon
 | Bow of the Last Guardian | **4** | Aurora/Barrows/Soul/Third_Age only — no blood/ice/shadow on wiki |
 | Eldritch crossbow | **6** | Aurora/Soul/Third_Age/barrows(lowercase!)/blood/ice — no shadow |
 
-**Off-hand Eldritch crossbow** and **Off-hand Ascension crossbow** have NO dye images on the wiki — not included.
+**Off-hand Eldritch crossbow** and **Off-hand Ascension crossbow** — NO dye images on wiki, not included.
 
 **Total: 136 entries**
 
-#### Item Structure Used
+#### Item Structure
 
 ```js
 {
@@ -86,7 +139,7 @@ Replaced the deleted block + expanded the existing partial `cat:'cosmetic-weapon
   slug: 'Zaros_godsword_(blood)',
   isCosmetic: true,
   stats: {},
-  cosmDesc: 'Blood-dyed Zaros godsword. Crimson recolor of the iconic T92 ancient melee weapon.'
+  cosmDesc: 'Blood-dyed Zaros godsword.'
 }
 ```
 
@@ -94,13 +147,11 @@ Replaced the deleted block + expanded the existing partial `cat:'cosmetic-weapon
 
 ### 3. Updated `bake_dyed_weapons.mjs`
 
-Changed detection from `isDyed:true` to `cat:'cosmetic-weapon'` + `'dyed'` in tags:
-
 ```js
-// OLD — broken after isDyed block deleted
+// OLD
 if (!line.includes('isDyed:true')) continue;
 
-// NEW — correct
+// NEW
 if (!line.includes("cat:'cosmetic-weapon'")) continue;
 if (!line.includes("'dyed'")) continue;
 ```
@@ -109,47 +160,31 @@ if (!line.includes("'dyed'")) continue;
 
 ### 4. Baked 91 New Wiki Thumbnails
 
-Ran `node bake_dyed_weapons.mjs`:
-- **91 slugs** detected as missing from cache
-- **90 direct wiki hits** — each returned `_{dye}_detail.png` (the actual dyed variant detail image)
-- **1 fallback** — `Off-hand_drygore_rapier_(ice)` has no thumb on wiki, used base weapon image
-- Cache grew from **1,135 → 1,226 entries**
+- **90 direct wiki hits** — each card gets the specific `_detail.png` for that dye variant
+- **1 fallback** — `Off-hand_drygore_rapier_(ice)` has no wiki thumb, used base weapon image
+- Cache: **1,135 → 1,226 entries**
 
-Example cached URL:
-```
-Zaros_godsword_(Aurora) →
-https://runescape.wiki/images/thumb/Zaros_godsword_%28Aurora%29_detail.png/200px-Zaros_godsword_%28Aurora%29_detail.png
-```
-
-The `pageimages` API returns the item page's primary image, which for RS3 wiki weapon pages is always the `_detail.png`. This means each dyed variant card shows its specific coloured detail image, not the base weapon.
+The `pageimages` API returns each dye variant page's primary image = always `Weapon_(dye)_detail.png`. Scales to every weapon automatically.
 
 ---
 
-### 5. Committed & Pushed
-
-```
-commit f60b25a
-Replace dyed weapon data with correct wiki slugs, expand to full 7-dye coverage
-```
-
-**Live on GitHub Hub immediately after push.**
-
----
-
-## Key Rules Going Forward
+## Key Rules
 
 1. **Always push after every change** — site is live from GitHub, local edits are invisible until pushed
-2. **Dye slug format** — `_(blood)` not `_(Blood_dye)`, Soul/Aurora/Barrows/Third_Age are capitalised
-3. **BoLG exception** — only 4 dyes (no blood/ice/shadow)
-4. **Eldritch CBow exception** — 6 dyes, `_(barrows)` is lowercase, no shadow
-5. **No off-hand dye images** — Off-hand Eldritch and Off-hand Ascension have no wiki equipped images
+2. **Dye slug format** — `_(blood)` not `_(Blood_dye)`, Soul/Aurora/Barrows/Third_Age capitalised
+3. **BoLG exception** — only 4 dyes (no blood/ice/shadow on wiki)
+4. **Eldritch CBow exception** — 6 dyes, `_(barrows)` lowercase, no shadow
+5. **No off-hand dye images** — Off-hand Eldritch and Off-hand Ascension have no wiki images
 6. **Bake detection** — detect dyed weapons by `cat:'cosmetic-weapon'` + `'dyed'` in tags
+7. **iconName field** — use on items whose wiki filename doesn't match their name/slug
 
 ---
 
-## Files Modified
+## Commit History (this work)
 
-| File | What changed |
-|------|-------------|
-| `Dashboards/rs3-asset-library.html` | Deleted 90 wrong entries, added 136 correct dyed weapon entries, updated BAKED_WIKI_CACHE (+91 entries) |
-| `bake_dyed_weapons.mjs` | Updated item detection from `isDyed:true` to `cat+dyed tag` |
+| Commit | Description |
+|--------|-------------|
+| `f60b25a` | Replace dyed weapon data with correct wiki slugs, expand to full 7-dye coverage |
+| `f985a32` | Bake thumbnails for dyed weapon variants |
+| `fb68426` | Add 92 dyed weapon variants + 2 missing off-hand base weapons |
+| `48eab67` | Remove Compare and Inspiration features from RS3 Asset Library |
