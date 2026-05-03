@@ -4068,6 +4068,7 @@ function loadWikiCache() {
             thumbUrl: lsEntry.thumbUrl || baked.thumbUrl,
             gifs: (lsEntry.gifs && lsEntry.gifs.length ? lsEntry.gifs : null) || baked.gifs || [],
             videos: (lsEntry.videos && lsEntry.videos.length ? lsEntry.videos : null) || baked.videos || [],
+            gifUrl: lsEntry.gifUrl || baked.gifUrl || '',
           });
         } else {
           wikiCache[slug] = lsEntry;
