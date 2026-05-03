@@ -11,10 +11,11 @@ if (!cacheMatch) { console.error('BAKED_WIKI_CACHE not found'); process.exit(1);
 const cache = JSON.parse(cacheMatch[1]);
 console.log(`Existing cache: ${Object.keys(cache).length} entries`);
 
-// Extract all isDyed:true item slugs
+// Extract all dyed cosmetic-weapon slugs (cat:'cosmetic-weapon' with 'dyed' in tags)
 const dyedSlugs = [];
 for (const line of content.split('\n')) {
-  if (!line.includes('isDyed:true')) continue;
+  if (!line.includes("cat:'cosmetic-weapon'")) continue;
+  if (!line.includes("'dyed'")) continue;
   const m = line.match(/slug:'([^']*)'/);
   if (m) dyedSlugs.push(m[1]);
 }
