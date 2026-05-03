@@ -169,6 +169,11 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 .mhdr .mcl{margin-left:auto;background:none;border:none;color:var(--mu);cursor:pointer;font-size:1.1rem;}
 .mtags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;}
 .tpill{padding:2px 9px;background:rgba(200,168,75,.12);border:1px solid rgba(200,168,75,.3);color:var(--gold);border-radius:9px;font-size:.7rem;cursor:pointer;}
+.pet-subfilter{display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--s1);border-bottom:1px solid var(--b1);flex-wrap:wrap;}
+.pet-subfilter.h{display:none;}
+.psf-label{font-size:.68rem;color:var(--mu2);text-transform:uppercase;letter-spacing:.06em;margin-right:2px;}
+.psf-btn{padding:3px 11px;border-radius:10px;border:1px solid var(--b1);background:var(--s2);color:var(--mu);font-size:.75rem;cursor:pointer;transition:.15s;}
+.psf-btn.on{background:rgba(168,85,247,.15);border-color:rgba(168,85,247,.5);color:#c084fc;}
 .tpill.custom{background:rgba(96,165,250,.12);border-color:rgba(96,165,250,.3);color:var(--blue);}
 .tpill.remove{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.3);color:var(--red);}
 .mntxt{width:100%;background:var(--s2);border:1px solid var(--b1);color:var(--tx);padding:9px 11px;border-radius:5px;font-size:.8rem;resize:vertical;min-height:75px;outline:none;font-family:inherit;}
@@ -397,6 +402,15 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
           </select>
           <div class="chips" id="tag-chips"></div>
           <span class="fcount" id="fcount">0 items</span>
+        </div>
+        <!-- Pet sub-filter (visible only when Pets category is active) -->
+        <div class="pet-subfilter h" id="pet-subfilter">
+          <span class="psf-label">Type:</span>
+          <button class="psf-btn on" data-psf="all"      onclick="setPetSubcat('all')">All</button>
+          <button class="psf-btn"    data-psf="boss"     onclick="setPetSubcat('boss')">Boss Drops</button>
+          <button class="psf-btn"    data-psf="skilling" onclick="setPetSubcat('skilling')">Skilling</button>
+          <button class="psf-btn"    data-psf="holiday"  onclick="setPetSubcat('holiday')">Holiday</button>
+          <button class="psf-btn"    data-psf="companion" onclick="setPetSubcat('companion')">Companions</button>
         </div>
         <!-- Grid -->
         <div class="gc" id="grid-container">
@@ -1388,6 +1402,12 @@ const ITEMS = [
   {id:'tex-third-age',name:'Third Age texture',cat:'textures',slot:'none',tier:0,style:'none',era:'classic',tags:['third-age','gold','ancient','prestige'],slug:'Third-age_equipment',equippedPage:'Third-age_equipment',stats:{},isTexture:true,textureDesc:'Ancient gold and white with Saradomin motifs. Maximum prestige look.'},
   {id:'tex-noxious',name:'Noxious texture',cat:'textures',slot:'none',tier:0,style:'none',era:'modern',tags:['noxious','green','spider','poison'],slug:'Noxious_equipment',equippedPage:'Noxious_equipment',stats:{},isTexture:true,textureDesc:'Venomous green spider-silk webbing pattern. Unsettling but iconic.'},
   {id:'tex-masterwork',name:'Masterwork texture',cat:'textures',slot:'none',tier:0,style:'none',era:'modern',tags:['masterwork','dark','metal','crafted'],slug:'Masterwork_equipment',equippedPage:'Masterwork_equipment',stats:{},isTexture:true,textureDesc:'Perfectly forged dark alloy with visible hammer marks. Elite smithing aesthetic.'},
+  {id:'tex-blood',name:'Blood dye',cat:'textures',slot:'none',tier:0,style:'none',era:'elite',tags:['blood','red','dark','dye','elite','rare'],slug:'Blood_dye',equippedPage:'Blood-dyed_equipment',stats:{},isTexture:true,textureDesc:'Deep crimson with dark red veining. One of the rarest and most prestigious dyes in RS3.'},
+  {id:'tex-ice',name:'Ice dye',cat:'textures',slot:'none',tier:0,style:'none',era:'elite',tags:['ice','blue','cold','dye','elite','rare','frosty'],slug:'Ice_dye',equippedPage:'Ice-dyed_equipment',stats:{},isTexture:true,textureDesc:'Glacial blue-white with frost crystal shimmer. Pairs beautifully with T90 power armour.'},
+  {id:'tex-soul',name:'Soul dye',cat:'textures',slot:'none',tier:0,style:'none',era:'elite',tags:['soul','purple','spirit','dye','elite','rare'],slug:'Soul_dye',equippedPage:'Soul-dyed_equipment',stats:{},isTexture:true,textureDesc:'Ghostly purple-white with wispy soul energy. Ethereal aesthetic perfect for necromancy builds.'},
+  {id:'tex-smoke',name:'Smoke dye',cat:'textures',slot:'none',tier:0,style:'none',era:'elite',tags:['smoke','grey','dark','dye','elite','rare'],slug:'Smoke_dye',equippedPage:'Smoke-dyed_equipment',stats:{},isTexture:true,textureDesc:'Smoky dark grey with subtle swirling patterns. Understated but unmistakably elite.'},
+  {id:'tex-eldritch',name:'Eldritch dye',cat:'textures',slot:'none',tier:0,style:'none',era:'elite',tags:['eldritch','teal','green','dye','elite','rare','runic'],slug:'Eldritch_dye',equippedPage:'Eldritch-dyed_equipment',stats:{},isTexture:true,textureDesc:'Otherworldly teal-green with runic energy patterns. Unique colour range not found on any other dye.'},
+  {id:'tex-aurora',name:'Aurora dye',cat:'textures',slot:'none',tier:0,style:'none',era:'elite',tags:['aurora','rainbow','multicolour','dye','elite','rare','iridescent'],slug:'Aurora_dye',equippedPage:'Aurora-dyed_equipment',stats:{},isTexture:true,textureDesc:'Shifting rainbow aurora effect that changes colour as you move. The most visually dynamic dye in RS3.'},
 
   // ── ANIMATIONS ────────────────────────────────────────────
   {id:'anim-barrows',name:'Barrows attack animations',cat:'animations',slot:'none',tier:0,style:'melee',era:'classic',tags:['barrows','attack','ancient'],slug:'Dharoks_greataxe',stats:{},isAnim:true,animDesc:'Heavy 2h axe swings used by Dharok\'s greataxe. Powerful, aggressive feel.'},
@@ -2041,6 +2061,16 @@ const ITEMS = [
   {id:'aura-inspiration',name:'Inspiration aura',cat:'auras',slot:'aura',tier:0,style:'aura',era:'loyalty',tags:['inspiration','adrenaline','passive','utility'],slug:'Inspiration_aura',isCosmetic:true,stats:{},cosmDesc:'Each hit has a chance to grant 0.5% adrenaline. Good general-purpose PvM filler aura.'},
   {id:'aura-tracker',name:'Tracker aura',cat:'auras',slot:'aura',tier:0,style:'aura',era:'loyalty',tags:['tracker','slayer','range','damage'],slug:'Tracker_aura',isCosmetic:true,stats:{},cosmDesc:'+3% ranged accuracy and damage vs Slayer targets. Pairs well with any Slayer task.'},
   {id:'aura-corruption',name:'Corruption aura',cat:'auras',slot:'aura',tier:0,style:'aura',era:'loyalty',tags:['corruption','bleed','ranged','aoe','slayer'],slug:'Corruption_aura',isCosmetic:true,stats:{},cosmDesc:'Ranged hits inflict corruption, spreading damage to nearby enemies. Excellent for AoE Slayer.'},
+  {id:'aura-maniacal',name:'Maniacal aura',cat:'auras',slot:'aura',tier:0,style:'aura',era:'loyalty',tags:['maniacal','ranged','dps','supreme','orange'],slug:'Maniacal_aura',isCosmetic:true,stats:{},cosmDesc:'+15% ranged damage but −15% defence. Supreme ranged DPS aura with intense orange glow.'},
+  {id:'aura-reckless',name:'Reckless aura',cat:'auras',slot:'aura',tier:0,style:'aura',era:'loyalty',tags:['reckless','melee','dps','supreme','red'],slug:'Reckless_aura',isCosmetic:true,stats:{},cosmDesc:'+15% melee damage but −15% defence. Supreme melee DPS aura with bright red energy.'},
+  {id:'aura-invigorate',name:'Invigorate aura',cat:'auras',slot:'aura',tier:0,style:'aura',era:'loyalty',tags:['invigorate','magic','dps','adrenaline','purple'],slug:'Invigorate_aura',isCosmetic:true,stats:{},cosmDesc:'Reduces adrenaline cost of ultimate abilities by 10%. Great for magic-heavy rotations.'},
+  {id:'aura-supreme-invigorate',name:'Supreme invigorate aura',cat:'auras',slot:'aura',tier:0,style:'aura',era:'loyalty',tags:['invigorate','supreme','magic','dps','purple'],slug:'Supreme_invigorate_aura',isCosmetic:true,stats:{},cosmDesc:'+15% magic damage but −15% defence. Supreme magic DPS aura with deep purple glow.'},
+  {id:'aura-mahjarrat',name:'Mahjarrat aura',cat:'auras',slot:'aura',tier:0,style:'aura',era:'loyalty',tags:['mahjarrat','prestige','rare','gold','all-styles','dps'],slug:'Mahjarrat_aura',isCosmetic:true,stats:{},cosmDesc:'All-style DPS aura providing +5% damage. Visually distinct gold and purple prestige aura — very rare.'},
+  {id:'aura-jack-of-trades',name:'Jack of trades aura',cat:'auras',slot:'aura',tier:0,style:'aura',era:'loyalty',tags:['jack-of-trades','skilling','xp','utility','green'],slug:'Jack_of_trades_aura',isCosmetic:true,stats:{},cosmDesc:'Grants bonus XP after training a set number of different skills. Popular skilling companion aura.'},
+  {id:'aura-resourceful',name:'Resourceful aura',cat:'auras',slot:'aura',tier:0,style:'aura',era:'loyalty',tags:['resourceful','utility','gathering','skilling','teal'],slug:'Resourceful_aura',isCosmetic:true,stats:{},cosmDesc:'Chance to not consume secondary materials during production. Subtle teal shimmer effect.'},
+  {id:'aura-master-swordsman',name:'Master swordsman aura',cat:'auras',slot:'aura',tier:0,style:'aura',era:'loyalty',tags:['master-swordsman','melee','accuracy','blue'],slug:'Master_swordsman_aura',isCosmetic:true,stats:{},cosmDesc:'+10% melee accuracy. Mid-tier melee accuracy aura with cool blue energy field.'},
+  {id:'aura-focused-sighted',name:'Focused sighted aura',cat:'auras',slot:'aura',tier:0,style:'aura',era:'loyalty',tags:['focused-sighted','ranged','accuracy','cyan'],slug:'Focused_sighted_aura',isCosmetic:true,stats:{},cosmDesc:'+10% ranged accuracy. Mid-tier ranged aura. Pairs well with sharpshooter for pure accuracy builds.'},
+  {id:'aura-aegis',name:'Aegis aura',cat:'auras',slot:'aura',tier:0,style:'aura',era:'loyalty',tags:['aegis','defence','tank','damage-reduction','silver'],slug:'Aegis_aura',isCosmetic:true,stats:{},cosmDesc:'Reduces damage taken by 2–5% depending on tier. Defensive aura with silver shield shimmer.'},
 
   // ── NECROMANCY ARMOR ──────────────────────────────────────
   // Deathwarden robes — tank necromancy, 9 upgrade tiers (T10/T20/T30/T40/T50/T60/T70/T80/T90)
@@ -2603,6 +2633,7 @@ const S = {
   slotFilter: '',
   eraFilter: '',
   tagFilters: [],
+  petSubcat: 'all',
   compareItems: [],      // array of item ids (max 3)
   activeSetId: null,
   inspirationResult: [],
@@ -2787,6 +2818,7 @@ function getFiltered() {
   return ITEMS.filter(it => {
     if (S.cat !== 'all' && it.cat !== S.cat) return false;
     if (skillingHidden && it.cat === 'skilling-outfits') return false;
+    if (it.cat === 'pets' && S.petSubcat !== 'all' && getPetSubcat(it) !== S.petSubcat) return false;
     if (S.styleFilter && it.style !== S.styleFilter) return false;
     if (S.slotFilter && it.slot !== S.slotFilter) return false;
     if (S.eraFilter && it.era !== S.eraFilter) return false;
@@ -2812,7 +2844,9 @@ function applyFilters() {
 
 function clearFilters() {
   S.search = ''; S.styleFilter = ''; S.slotFilter = ''; S.eraFilter = ''; S.colorFilter = '';
-  S.tagFilters = []; S.cat = 'all';
+  S.tagFilters = []; S.cat = 'all'; S.petSubcat = 'all';
+  const psf = document.getElementById('pet-subfilter'); if (psf) psf.classList.add('h');
+  document.querySelectorAll('.psf-btn').forEach(b => b.classList.toggle('on', b.dataset.psf === 'all'));
   const s = document.getElementById('search'); if (s) s.value = '';
   const fs = document.getElementById('f-style'); if (fs) fs.value = '';
   const fsl = document.getElementById('f-slot'); if (fsl) fsl.value = '';
@@ -3049,9 +3083,34 @@ function toggleTagFilter(tag) {
   renderTagChips(); renderGrid();
 }
 
+// Classify a pet item into one of: boss | skilling | holiday | companion
+function getPetSubcat(item) {
+  const tags = item.tags || [];
+  const name = item.name.toLowerCase();
+  if (tags.includes('boss-pet') || tags.includes('boss')) return 'boss';
+  if (tags.includes('skilling-pet')) return 'skilling';
+  if (item.era === 'holiday' || tags.includes('holiday') || tags.includes('christmas') || tags.includes('halloween') || tags.includes('easter')) return 'holiday';
+  const bossKw = ['bombi','kalphite','nihil','mole cub','chaos elemental','dagannoth','abyssal orphan','telos','araxxor','glacor','legio','twin furies','gregorovic','helwyr','vindicta','gorvek','yakaminu','lil tuzzy','zammo','nechryarch','chaos drake','pet dark core','corporeal','kree','zilyana','k\'ril','graardor','nex\'s','zammo','zamorak hawk','zamorak banner','saradomin owl'];
+  if (bossKw.some(k => name.includes(k))) return 'boss';
+  const skillingKw = ['rock golem','rift guardian','beaver','heron','phoenix','baby chinchompa','duskwyvern','shadowroot','winglet'];
+  if (skillingKw.some(k => name.includes(k))) return 'skilling';
+  if (item.era === 'solomons' || item.era === 'treasure-hunter') return 'companion';
+  return 'companion';
+}
+
+function setPetSubcat(type) {
+  S.petSubcat = type;
+  document.querySelectorAll('.psf-btn').forEach(b => b.classList.toggle('on', b.dataset.psf === type));
+  renderGrid();
+}
+
 function selectCat(cat) {
   S.cat = cat;
   document.querySelectorAll('.cbt[data-cat]').forEach(b => b.classList.toggle('on', b.dataset.cat === cat));
+  // Show/hide pet sub-filter
+  const psf = document.getElementById('pet-subfilter');
+  if (psf) psf.classList.toggle('h', cat !== 'pets');
+  if (cat !== 'pets') { S.petSubcat = 'all'; document.querySelectorAll('.psf-btn').forEach(b => b.classList.toggle('on', b.dataset.psf === 'all')); }
   switchView('browser');
   renderGrid();
   maybeCloseSidebarMobile();
@@ -3751,6 +3810,176 @@ const LOOKBOOKS = [
   { name: 'Aurora Crusader', theme:['elemental','prestige'], previewSetKey:'aurora-set',
     pieces:{ helm:'aurora-helm', body:'aurora-body', legs:'aurora-legs',
              '2h':'override-aurora-2h', cape:'wings-eth-infinity', aura:'aura-equilibrium' } },
+
+  // ── COSMETIC OVERRIDES ────────────────────────────────────────────────────
+  { name: 'Iron Warlord', theme:['dark','cosmetic'], previewSetKey:'warlord',
+    pieces:{ helm:'warlord-helm', body:'warlord-body', legs:'warlord-legs',
+             weapon:'override-warlord-sword', cape:'wings-fury', aura:'aura-berserker' } },
+  { name: 'Gothic Revenant', theme:['dark','cosmetic'], previewSetKey:'gothic',
+    pieces:{ helm:'gothic-helm', body:'gothic-body', legs:'gothic-legs',
+             weapon:'override-gothic-blade', cape:'wings-decaying', aura:'aura-vampyrism' } },
+  { name: 'Sentinel Guardian', theme:['prestige','cosmetic'], previewSetKey:'sentinel',
+    pieces:{ helm:'sentinel-helm', body:'sentinel-body', legs:'sentinel-legs',
+             cape:'comp-cape', aura:'aura-reverence' } },
+  { name: 'Crystal Peacock', theme:['cosmetic','elemental'], previewSetKey:'crystal-peacock',
+    pieces:{ helm:'peacock-helm', body:'peacock-body', legs:'peacock-legs',
+             cape:'wings-crystalline', aura:'aura-equilibrium' } },
+  { name: 'Dragon Wolf Hunter', theme:['dark','elemental'], previewSetKey:'dragon-wolf',
+    pieces:{ helm:'dragonwolf-helm', body:'dragonwolf-body', legs:'dragonwolf-legs',
+             cape:'wings-fury', aura:'aura-berserker' } },
+  { name: 'Daemonheim Imperial', theme:['prestige','endgame'], previewSetKey:'dk-imperial',
+    pieces:{ helm:'dkimperial-helm', body:'dkimperial-body', legs:'dkimperial-legs',
+             cape:'comp-cape', aura:'aura-mahjarrat' } },
+  { name: 'Dawnforged Paladin', theme:['prestige','elemental'], previewSetKey:'dawnforged',
+    pieces:{ helm:'dawnforged-helm', body:'dawnforged-body', legs:'dawnforged-legs',
+             cape:'wings-eth-infinity', aura:'aura-penance' } },
+  { name: 'Frosty Cerberus', theme:['dark','elemental'], previewSetKey:'frosty-cerb',
+    pieces:{ helm:'frosty-cerb-helm', body:'frosty-cerb-body', legs:'frosty-cerb-legs',
+             cape:'wings-decaying', aura:'aura-vampyrism' } },
+  { name: 'Elven Warrior', theme:['cosmetic','prestige'], previewSetKey:'elven-warrior',
+    pieces:{ helm:'elven-warrior-helm', body:'elven-warrior-body', legs:'elven-warrior-legs',
+             cape:'wings-crystalline', aura:'aura-berserker' } },
+  { name: 'Elven Ranger', theme:['cosmetic','prestige'], previewSetKey:'elven-ranger',
+    pieces:{ helm:'elven-ranger-helm', body:'elven-ranger-body', legs:'elven-ranger-legs',
+             cape:'wings-crystalline', aura:'aura-sharpshooter' } },
+  { name: 'Elven Mage', theme:['cosmetic','prestige'], previewSetKey:'elven-mage',
+    pieces:{ helm:'elven-mage-helm', body:'elven-mage-body', legs:'elven-mage-legs',
+             cape:'wings-crystalline', aura:'aura-runic' } },
+  { name: 'Dark Crystal Sentinel', theme:['dark','cosmetic'], previewSetKey:'darkcrystal',
+    pieces:{ helm:'darkcrystal-helm', body:'darkcrystal-body', legs:'darkcrystal-legs',
+             cape:'wings-decaying', aura:'aura-dark-magic' } },
+  { name: 'Faceless Assassin', theme:['dark','cosmetic'], previewSetKey:'faceless',
+    pieces:{ helm:'faceless-helm', body:'faceless-body', legs:'faceless-legs',
+             weapon:'override-faceless-dagger', cape:'wings-decaying', aura:'aura-vampyrism' } },
+  { name: 'Faceless Assassin (Cerulean)', theme:['dark','cosmetic'], previewSetKey:'faceless-blue',
+    pieces:{ helm:'faceless-blue-helm', body:'faceless-blue-body', legs:'faceless-blue-legs',
+             weapon:'override-faceless-dagger', cape:'wings-eth-law', aura:'aura-runic' } },
+  { name: 'Faceless Assassin (Crimson)', theme:['dark','cosmetic'], previewSetKey:'faceless-red',
+    pieces:{ helm:'faceless-red-helm', body:'faceless-red-body', legs:'faceless-red-legs',
+             weapon:'override-faceless-dagger', cape:'wings-eth-blood', aura:'aura-vampyrism' } },
+  { name: 'Faceless Assassin (Verdant)', theme:['dark','cosmetic'], previewSetKey:'faceless-green',
+    pieces:{ helm:'faceless-green-helm', body:'faceless-green-body', legs:'faceless-green-legs',
+             weapon:'override-faceless-dagger', cape:'wings-corruption', aura:'aura-tracker' } },
+  { name: 'Highwayman (Blue)', theme:['cosmetic'], previewSetKey:'highwayman-blue',
+    pieces:{ helm:'highwayman-blue-helm', body:'highwayman-blue-body', legs:'highwayman-blue-legs',
+             cape:'wings-eth-law' } },
+  { name: 'Highwayman (Red)', theme:['cosmetic','dark'], previewSetKey:'highwayman-red',
+    pieces:{ helm:'highwayman-red-helm', body:'highwayman-red-body', legs:'highwayman-red-legs',
+             cape:'wings-eth-blood' } },
+  { name: 'Highwayman (Purple)', theme:['cosmetic'], previewSetKey:'highwayman-purple',
+    pieces:{ helm:'highwayman-purple-helm', body:'highwayman-purple-body', legs:'highwayman-purple-legs',
+             cape:'wings-decaying' } },
+  { name: 'Cerberus Hellguard', theme:['dark','cosmetic'], previewSetKey:'cerberus',
+    pieces:{ helm:'cerberus-helm', body:'cerberus-body', legs:'cerberus-legs',
+             cape:'wings-fury', aura:'aura-vampyrism' } },
+  { name: 'Captain Deathbeard', theme:['cosmetic'], previewSetKey:'deathbeard',
+    pieces:{ helm:'deathbeard-helm', body:'deathbeard-body', legs:'deathbeard-legs',
+             weapon:'override-deathbeard-hook', cape:'wings-bloodblade' } },
+  { name: 'Diamond Gentleman', theme:['cosmetic','prestige'], previewSetKey:'diamond-suit',
+    pieces:{ helm:'diamond-tophat', body:'diamond-jacket', legs:'diamond-trousers',
+             cape:'comp-trim-cape', aura:'aura-mahjarrat' } },
+  { name: 'Demon Hunter', theme:['dark','cosmetic'], previewSetKey:'demonhunter',
+    pieces:{ helm:'demonhunter-helm', body:'demonhunter-body', legs:'demonhunter-legs',
+             cape:'wings-decaying', aura:'aura-corruption' } },
+  { name: 'General Cruor', theme:['dark','endgame'], previewSetKey:'cruor',
+    pieces:{ helm:'cruor-helm', body:'cruor-body', legs:'cruor-legs',
+             cape:'wings-eth-blood', aura:'aura-vampyrism' } },
+  { name: 'General Fumus', theme:['dark','endgame'], previewSetKey:'fumus',
+    pieces:{ helm:'fumus-helm', body:'fumus-body', legs:'fumus-legs',
+             cape:'wings-decaying', aura:'aura-dark-magic' } },
+  { name: 'General Glacies', theme:['elemental','endgame'], previewSetKey:'glacies',
+    pieces:{ helm:'glacies-helm', body:'glacies-body', legs:'glacies-legs',
+             cape:'wings-eth-law', aura:'aura-runic' } },
+  { name: 'General Umbra', theme:['dark','endgame'], previewSetKey:'umbra',
+    pieces:{ helm:'umbra-helm', body:'umbra-body', legs:'umbra-legs',
+             cape:'wings-eth-death', aura:'aura-vampyrism' } },
+  { name: 'Carmine Necromancer', theme:['dark','cosmetic'], previewSetKey:'carmine',
+    pieces:{ helm:'carmine-helm', body:'carmine-body', legs:'carmine-legs',
+             cape:'wings-decaying', aura:'aura-dark-magic' } },
+  { name: 'Bistro Chef', theme:['cosmetic'], previewSetKey:'bistro',
+    pieces:{ helm:'bistro-helm', body:'bistro-body', legs:'bistro-legs' } },
+  { name: 'Frostwalker', theme:['elemental','cosmetic'], previewSetKey:'frostwalker',
+    pieces:{ helm:'frostwalker-helm', body:'frostwalker-body', legs:'frostwalker-legs',
+             cape:'wings-eth-law', aura:'aura-invigorate' } },
+  { name: 'Carrot Knight', theme:['holiday','cosmetic'], previewSetKey:'carrot-costume',
+    pieces:{ helm:'carrot-helm', body:'carrot-body', legs:'carrot-legs',
+             cape:'wings-butterfly' } },
+  { name: 'Anniversary Champion', theme:['prestige','cosmetic'], previewSetKey:'anniv-20th',
+    pieces:{ helm:'anniv20-hat', body:'anniv20-top', legs:'anniv20-bottom',
+             '2h':'override-anniv-greatsword', cape:'comp-trim-cape' } },
+  { name: 'Shadow Warrior', theme:['dark','cosmetic'], previewSetKey:'shadow-outfit',
+    pieces:{ helm:'shadow-helm', body:'shadow-body', legs:'shadow-legs',
+             weapon:'override-shadow-sword', cape:'wings-eth-death', aura:'aura-vampyrism' } },
+  { name: 'Phoenix Sorcerer', theme:['elemental','cosmetic'], previewSetKey:'phoenix',
+    pieces:{ body:'phoenix-body', legs:'phoenix-legs',
+             '2h':'override-phoenix-staff', helm:'samurai-helm', cape:'wings-fury', aura:'aura-invigorate' } },
+  { name: 'Katana Master', theme:['cosmetic','prestige'], previewSetKey:'katana',
+    pieces:{ helm:'katana-helm', body:'katana-body', legs:'katana-legs',
+             weapon:'override-katana', cape:'wings-eth-infinity', aura:'aura-master-swordsman' } },
+  { name: 'Deathly Herald', theme:['dark','cosmetic'], previewSetKey:'deathly',
+    pieces:{ helm:'deathly-helm', body:'deathly-body', legs:'deathly-legs',
+             cape:'wings-decaying', aura:'aura-vampyrism' } },
+  { name: 'Anniversary Adventurer', theme:['cosmetic','prestige'], previewSetKey:'anniv-adv',
+    pieces:{ helm:'anniv-helm', body:'anniv-body', legs:'anniv-legs',
+             '2h':'override-anniv-greatsword', cape:'comp-cape' } },
+
+  // ── DYED ENDGAME VARIANTS ─────────────────────────────────────────────────
+  { name: 'Sirenic Shadow Ranger', theme:['dark','endgame'], previewSetKey:'siren-shadow',
+    pieces:{ helm:'siren-mask-shadow', body:'siren-body-shadow', legs:'siren-legs-shadow',
+             '2h':'bolg', cape:'kal-mor', aura:'aura-maniacal' } },
+  { name: 'Sirenic Third Age Ranger', theme:['prestige','endgame'], previewSetKey:'siren-thirdage',
+    pieces:{ helm:'siren-mask-thirdage', body:'siren-body-thirdage', legs:'siren-legs-thirdage',
+             '2h':'sgb', cape:'comp-trim-cape', aura:'aura-sharpshooter' } },
+  { name: 'Tectonic Blood Mage', theme:['dark','endgame'], previewSetKey:'tect-blood',
+    pieces:{ helm:'tect-mask-blood', body:'tect-body-blood', legs:'tect-legs-blood',
+             '2h':'fsoa', cape:'kal-mej', aura:'aura-supreme-invigorate' } },
+  { name: 'Tectonic Third Age Mage', theme:['prestige','endgame'], previewSetKey:'tect-thirdage',
+    pieces:{ helm:'tect-mask-thirdage', body:'tect-body-thirdage', legs:'tect-legs-thirdage',
+             '2h':'fsoa', cape:'comp-trim-cape', aura:'aura-runic' } },
+  { name: 'Malevolent Blood Warrior', theme:['dark','endgame'], previewSetKey:'mal-blood',
+    pieces:{ helm:'mal-helm-blood', body:'mal-body-blood', legs:'mal-legs-blood',
+             '2h':'ekzekkil', cape:'kal-ket', aura:'aura-reckless' } },
+  { name: 'Malevolent Shadow Warrior', theme:['dark','endgame'], previewSetKey:'mal-shadow',
+    pieces:{ helm:'mal-helm-shadow', body:'mal-body-shadow', legs:'mal-legs-shadow',
+             '2h':'override-nox-scythe-shadow', cape:'kal-ket', aura:'aura-reckless' } },
+
+  // ── REAL ARMOR SETS ───────────────────────────────────────────────────────
+  { name: 'Bandos General', theme:['prestige','endgame'], previewSetKey:'bandos',
+    pieces:{ helm:'bandos-helm', body:'bandos-body', legs:'bandos-legs',
+             cape:'comp-cape', aura:'aura-berserker' } },
+  { name: 'Torva Warlord', theme:['prestige','endgame'], previewSetKey:'torva',
+    pieces:{ helm:'torva-helm', body:'torva-body', legs:'torva-legs',
+             cape:'kal-ket', aura:'aura-berserker' } },
+  { name: 'Vestments of Havoc', theme:['dark','endgame'], previewSetKey:'vestments-havoc',
+    pieces:{ helm:'havoc-helm', body:'havoc-body', legs:'havoc-legs',
+             '2h':'ekzekkil', cape:'kal-ket', aura:'aura-reckless' } },
+  { name: 'Armadyl Skyguard', theme:['prestige','endgame'], previewSetKey:'armadyl',
+    pieces:{ helm:'arma-helm', body:'arma-body', legs:'arma-legs',
+             cape:'wings-armadyl', aura:'aura-sharpshooter' } },
+  { name: 'Pernix Shadow', theme:['endgame','prestige'], previewSetKey:'pernix',
+    pieces:{ helm:'pernix-helm', body:'pernix-body', legs:'pernix-legs',
+             '2h':'sgb', cape:'kal-mor', aura:'aura-sharpshooter' } },
+  { name: 'Death Lotus Assassin', theme:['dark','endgame'], previewSetKey:'death-lotus',
+    pieces:{ helm:'death-lotus-hood', body:'death-lotus-chest', legs:'death-lotus-chaps',
+             cape:'wings-eth-death', aura:'aura-maniacal' } },
+  { name: 'Virtus Arch-Mage', theme:['prestige','endgame'], previewSetKey:'virtus',
+    pieces:{ helm:'virtus-helm', body:'virtus-body', legs:'virtus-legs',
+             '2h':'fsoa', cape:'kal-mej', aura:'aura-runic' } },
+  { name: 'Tumeken Desert Mage', theme:['elemental','endgame'], previewSetKey:'tumeken',
+    pieces:{ helm:'tumeken-helm', body:'tumeken-body', legs:'tumeken-legs',
+             cape:'wings-eth-infinity', aura:'aura-runic' } },
+  { name: 'Cryptbloom Druid', theme:['elemental','endgame'], previewSetKey:'cryptbloom',
+    pieces:{ helm:'cryptbloom-helm', body:'cryptbloom-body', legs:'cryptbloom-legs',
+             cape:'wings-dryad', aura:'aura-penance' } },
+  { name: 'Third Age Knight', theme:['prestige'], previewSetKey:'third-age-melee',
+    pieces:{ helm:'3a-melee-helm', body:'3a-melee-body', legs:'3a-melee-legs',
+             cape:'comp-trim-cape', aura:'aura-mahjarrat' } },
+  { name: 'Third Age Ranger', theme:['prestige'], previewSetKey:'third-age-range',
+    pieces:{ helm:'3a-range-coif', body:'3a-range-body', legs:'3a-range-legs',
+             cape:'comp-trim-cape', aura:'aura-mahjarrat' } },
+  { name: 'Third Age Mage', theme:['prestige'], previewSetKey:'third-age-mage',
+    pieces:{ helm:'3a-mage-hat', body:'3a-mage-top', legs:'3a-mage-legs',
+             cape:'comp-trim-cape', aura:'aura-mahjarrat' } },
 ];
 
 let _lookbookFilter = 'all';
