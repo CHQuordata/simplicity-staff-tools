@@ -66,9 +66,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 .acard:hover{border-color:var(--b2);transform:translateY(-1px);}
 .acard.sel{border-color:var(--gold);background:rgba(200,168,75,.06);}
 .acard.inset{border-color:var(--green);}
-.acard.cmp{border-color:var(--blue);}
 .acard .star{position:absolute;top:4px;right:6px;color:var(--gold);font-size:.7rem;}
-.acard .incmp{position:absolute;top:4px;left:6px;color:var(--blue);font-size:.65rem;}
 .acard .src-dot{position:absolute;bottom:4px;right:5px;width:8px;height:8px;border-radius:50%;border:1px solid rgba(0,0,0,.4);box-shadow:0 0 3px rgba(0,0,0,.5);}
 .src-solomons{background:#5b8dd9;}
 .src-treasure-hunter{background:#d97c2a;}
@@ -136,26 +134,6 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 .scard-icons{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;}
 .scard-icons img{width:24px;height:24px;object-fit:contain;image-rendering:pixelated;}
 
-/* COMPARE */
-.cmp-bar{background:var(--s1);border-bottom:1px solid var(--b1);padding:9px 14px;display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap;}
-.cslot{flex:1;max-width:220px;background:var(--s2);border:1px solid var(--b1);border-radius:7px;padding:7px 10px;display:flex;align-items:center;gap:7px;min-height:44px;}
-.cslot.occ{border-color:var(--gold-d);}
-.cslot img{width:26px;height:26px;object-fit:contain;image-rendering:pixelated;}
-.cslot-name{font-size:.75rem;color:var(--tx);flex:1;}
-.cslot-rm{background:none;border:none;color:var(--mu2);cursor:pointer;font-size:.8rem;}
-.cmp-panel{flex:1;overflow-y:auto;padding:14px;}
-.ctbl{width:100%;border-collapse:collapse;font-size:.8rem;}
-.ctbl th{background:var(--s2);border:1px solid var(--b1);padding:9px 11px;text-align:center;color:var(--gold);font-weight:600;}
-.ctbl td{border:1px solid var(--b1);padding:7px 11px;text-align:center;}
-.ctbl tr:nth-child(even) td{background:rgba(255,255,255,.02);}
-.ctbl .rl{text-align:left;color:var(--mu);font-size:.75rem;background:var(--s2);}
-.best{color:var(--green);font-weight:600;}
-.worst{color:var(--red);}
-
-/* INSPIRATION */
-.ins-panel{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
-.ins-ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-.ins-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:9px;}
 
 /* MODAL */
 .mo{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:1000;display:flex;align-items:center;justify-content:center;}
@@ -268,8 +246,6 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
   <div class="nav">
     <button class="nbtn on" data-view="browser" onclick="switchView('browser')">⬛ Browser</button>
     <button class="nbtn" data-view="setbuilder" onclick="switchView('setbuilder')">🧩 Set Builder</button>
-    <button class="nbtn" data-view="compare" onclick="switchView('compare')">⚖ Compare</button>
-    <button class="nbtn" data-view="inspiration" onclick="switchView('inspiration')">✨ Inspiration</button>
     <button class="nbtn" data-view="lookbook" onclick="switchView('lookbook')">🎨 Lookbook</button>
   </div>
   <div class="hdr-right">
@@ -453,58 +429,6 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
     </div>
 
     <!-- COMPARE VIEW -->
-    <div class="view hidden" id="view-compare">
-      <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
-        <div class="cmp-bar">
-          <span style="font-size:.78rem;color:var(--mu);">Compare up to 3 items:</span>
-          <div id="cmp-slots"></div>
-          <button class="btn btn-gh btn-sm" onclick="clearCompare()">Clear All</button>
-          <span style="font-size:.72rem;color:var(--mu2);">Add items from the Browser tab</span>
-        </div>
-        <div class="cmp-panel">
-          <div id="cmp-table-wrap"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- INSPIRATION VIEW -->
-    <div class="view hidden" id="view-inspiration">
-      <div class="ins-panel">
-        <div>
-          <div class="stl">Random Set Generator</div>
-          <div class="ins-ctrl">
-            <select class="fsel" id="ins-style">
-              <option value="">Any Style</option>
-              <option value="melee">Melee</option>
-              <option value="range">Range</option>
-              <option value="mage">Magic</option>
-            </select>
-            <select class="fsel" id="ins-tier">
-              <option value="">Any Tier</option>
-              <option value="low">Low (1–50)</option>
-              <option value="mid">Mid (51–75)</option>
-              <option value="high">High (76–99)</option>
-            </select>
-            <select class="fsel" id="ins-theme">
-              <option value="">Any Theme</option>
-              <option value="black">Black/Dark</option>
-              <option value="gold">Gold/Bronze</option>
-              <option value="dragon">Dragon</option>
-              <option value="barrows">Barrows</option>
-              <option value="ancient">Ancient/Zaros</option>
-              <option value="nature">Nature/Green</option>
-              <option value="crystal">Crystal</option>
-            </select>
-            <button class="btn btn-g" onclick="generateInspiration()">🎲 Shuffle</button>
-            <button class="btn btn-o" onclick="sendInspirationToSet()">➕ Load into Set Builder</button>
-          </div>
-        </div>
-        <div id="ins-result">
-          <div class="empty"><div class="ei">✨</div>Hit Shuffle to generate a random equipment set!</div>
-        </div>
-      </div>
-    </div>
-
     <!-- LOOKBOOK VIEW -->
     <div class="view hidden" id="view-lookbook">
       <div style="flex:1;overflow-y:auto;padding:18px;">
@@ -2634,9 +2558,7 @@ const S = {
   eraFilter: '',
   tagFilters: [],
   petSubcat: 'all',
-  compareItems: [],      // array of item ids (max 3)
   activeSetId: null,
-  inspirationResult: [],
 
   // persisted
   userData: {},          // {[itemId]: {notes, customTags, starred}}
@@ -3044,13 +2966,10 @@ function renderGrid(overrideItems) {
   grid.innerHTML = items.map(it => {
     const ud = getUserData(it.id);
     const inSet = setIds.includes(it.id);
-    const inCmp = S.compareItems.includes(it.id);
     let cls = 'acard';
     if (inSet) cls += ' inset';
-    if (inCmp) cls += ' cmp';
     return `<div class="${cls}" onclick="openModal('${it.id}')" draggable="true" ondragstart="dragStart(event,'${it.id}')">
       ${ud.starred ? '<span class="star">★</span>' : ''}
-      ${inCmp ? '<span class="incmp">⚖</span>' : ''}
       ${makeIcon(it)}
       <div class="iname">${escHtml(it.name)}</div>
       ${it.isCosmetic ? `<span class="tbadge t-other" style="opacity:.8;">✨ ${it.cat==='auras'?'Aura':it.cat==='skilling-outfits'?'Skilling':'Override'}</span>` : ''}
@@ -3154,13 +3073,11 @@ function openModal(itemId) {
   // Actions
   const activeSet = getActiveSet();
   const inSet = activeSet && Object.values(activeSet.slots).includes(itemId);
-  const inCmp = S.compareItems.includes(itemId);
 
   document.getElementById('m-actions').innerHTML = `
     <button class="btn btn-g btn-sm" onclick="toggleStar('${itemId}')">${ud.starred ? '★ Unstar' : '☆ Star'}</button>
     ${item.slot !== 'none' && item.slot ? `<button class="btn btn-o btn-sm" onclick="addToSet('${itemId}');closeModal()">➕ Add to Set</button>` : ''}
     ${inSet ? `<button class="btn btn-d btn-sm" onclick="removeFromSet('${itemId}');closeModal()">✕ Remove from Set</button>` : ''}
-    <button class="btn btn-b btn-sm" onclick="toggleCompare('${itemId}')">${inCmp ? '✕ Uncompare' : '⚖ Compare'}</button>
     <button class="btn btn-gh btn-sm" onclick="closeModal()">Close</button>
   `;
 
@@ -3561,181 +3478,6 @@ function renderSavedSets() {
   }).join('');
 }
 
-// ============================================================
-// COMPARE
-// ============================================================
-function toggleCompare(itemId) {
-  const idx = S.compareItems.indexOf(itemId);
-  if (idx >= 0) { S.compareItems.splice(idx,1); }
-  else {
-    if (S.compareItems.length >= 3) { toast('Max 3 items in comparison'); return; }
-    S.compareItems.push(itemId);
-  }
-  renderCompare(); renderGrid();
-  if (S.compareItems.includes(itemId)) toast('Added to comparison — switch to Compare tab');
-}
-
-function clearCompare() {
-  S.compareItems = [];
-  renderCompare(); renderGrid();
-}
-
-function renderCompare() {
-  // Slots bar
-  const slotsEl = document.getElementById('cmp-slots');
-  if (slotsEl) {
-    slotsEl.innerHTML = [0,1,2].map(i => {
-      const id = S.compareItems[i];
-      const item = id ? byId(id) : null;
-      return `<div class="cslot${item?' occ':''}">
-        ${item ? makeIcon(item,26,'cslot-img') : '<span style="color:var(--mu2);font-size:.8rem;">Empty slot</span>'}
-        ${item ? `<span class="cslot-name">${escHtml(item.name)}</span>
-          <button class="cslot-rm" onclick="toggleCompare('${id}')">✕</button>` : ''}
-      </div>`;
-    }).join('');
-  }
-
-  // Table
-  const wrap = document.getElementById('cmp-table-wrap');
-  if (!wrap) return;
-  const items = S.compareItems.map(id => byId(id)).filter(Boolean);
-  if (items.length === 0) {
-    wrap.innerHTML = '<div class="empty"><div class="ei">⚖</div>Add items to compare from the Browser tab (click item → Compare button).</div>';
-    return;
-  }
-
-  const rows = [
-    {label:'Name', key: it => it.name},
-    {label:'Category', key: it => it.cat.replace('-',' ')},
-    {label:'Slot', key: it => slotLabel(it.slot)},
-    {label:'Style', key: it => it.style.toUpperCase()},
-    {label:'Era', key: it => it.era},
-    {label:'Armour', key: it => it.stats.armour||0, numeric:true},
-    {label:'Life Bonus', key: it => it.stats.lifeBonus||0, numeric:true},
-    {label:'Prayer', key: it => it.stats.prayer||0, numeric:true},
-    {label:'Accuracy', key: it => it.stats.accuracy||0, numeric:true},
-    {label:'Damage', key: it => it.stats.damage||0, numeric:true},
-    {label:'Magic Bonus', key: it => it.stats.mageBonus||0, numeric:true},
-    {label:'Speed', key: it => it.stats.speed||'—'},
-    {label:'Tags', key: it => it.tags.slice(0,4).join(', ')},
-    {label:'Wiki', key: it => `<a class="wiki-link" href="${wikiUrl(it)}" target="_blank">View ↗</a>`},
-  ];
-
-  const numericRows = rows.filter(r => r.numeric);
-  const bestVals = {}, worstVals = {};
-  numericRows.forEach(r => {
-    const vals = items.map(it => r.key(it));
-    bestVals[r.label] = Math.max(...vals);
-    worstVals[r.label] = Math.min(...vals);
-  });
-
-  wrap.innerHTML = `<table class="ctbl">
-    <thead><tr>
-      <th>Stat</th>
-      ${items.map(it => `<th>${makeIcon(it,26)}<br>${escHtml(it.name)}</th>`).join('')}
-    </tr></thead>
-    <tbody>
-    ${rows.map(r => {
-      const vals = items.map(it => r.key(it));
-      const cells = vals.map((v,i) => {
-        let cls = '';
-        if (r.numeric && items.length > 1) {
-          if (v === bestVals[r.label] && v > 0) cls = 'best';
-          else if (v === worstVals[r.label] && v < bestVals[r.label]) cls = 'worst';
-        }
-        return `<td class="${cls}">${v}</td>`;
-      }).join('');
-      return `<tr><td class="rl">${r.label}</td>${cells}</tr>`;
-    }).join('')}
-    </tbody>
-  </table>`;
-}
-
-// ============================================================
-// INSPIRATION
-// ============================================================
-const THEME_TAGS = {
-  black: ['black','dark','shadow','void','obsidian'],
-  gold: ['gold','bronze','metallic','third-age'],
-  dragon: ['dragon','red','dragon-scale'],
-  barrows: ['barrows','dark','ancient','corroded'],
-  ancient: ['ancient','zaros','purple','shadow'],
-  nature: ['nature','green','carapace','natural','jungle'],
-  crystal: ['crystal','teal','elven','translucent'],
-};
-
-function generateInspiration() {
-  const style = document.getElementById('ins-style').value;
-  const tierRange = document.getElementById('ins-tier').value;
-  const theme = document.getElementById('ins-theme').value;
-
-  let [tMin, tMax] = [1,99];
-  if (tierRange==='low') [tMin,tMax]=[1,50];
-  else if (tierRange==='mid') [tMin,tMax]=[51,75];
-  else if (tierRange==='high') [tMin,tMax]=[76,99];
-
-  const themeTags = theme ? THEME_TAGS[theme]||[] : [];
-
-  function pick(slot, catArr) {
-    let pool = ITEMS.filter(it => {
-      if (catArr && !catArr.includes(it.cat)) return false;
-      if (!catArr) { if (!['melee-armor','range-armor','mage-armor','weapons'].includes(it.cat)) return false; }
-      if (it.slot !== slot) return false;
-      if (style && it.style !== style && it.style !== 'hybrid') return false;
-      if (it.tier > 0 && (it.tier < tMin || it.tier > tMax)) return false;
-      return true;
-    });
-    if (theme && pool.length) {
-      const themed = pool.filter(it => themeTags.some(t => it.tags.includes(t)));
-      if (themed.length) pool = themed;
-    }
-    if (!pool.length) return null;
-    return pool[Math.floor(Math.random()*pool.length)];
-  }
-
-  const result = [];
-  const slots = ['helm','body','legs','boots','gloves'];
-  slots.forEach(s => { const it = pick(s); if (it) result.push(it); });
-
-  // Weapon — prefer matching style
-  const wStyle = style || ['melee','range','mage'][Math.floor(Math.random()*3)];
-  const wSlot = Math.random()>0.4 ? '2h' : 'weapon';
-  const wpn = ITEMS.filter(it => it.cat==='weapons' && it.slot===wSlot && it.style===wStyle && it.tier>=tMin && it.tier<=tMax);
-  if (wpn.length) result.push(wpn[Math.floor(Math.random()*wpn.length)]);
-
-  S.inspirationResult = result;
-  renderInspiration();
-}
-
-function renderInspiration() {
-  const el = document.getElementById('ins-result');
-  if (!el) return;
-  if (!S.inspirationResult.length) {
-    el.innerHTML = '<div class="empty"><div class="ei">✨</div>No matching items found. Try different filters!</div>';
-    return;
-  }
-  el.innerHTML = `<div style="margin-bottom:10px;font-size:.78rem;color:var(--mu);">Generated set — ${S.inspirationResult.length} items:</div>
-    <div class="ins-grid">
-    ${S.inspirationResult.map(it => `
-      <div class="acard" onclick="openModal('${it.id}')">
-        ${makeIcon(it)}
-        <div class="iname">${escHtml(it.name)}</div>
-        <span class="tbadge ${styleClass(it.style)}">${slotLabel(it.slot)}</span>
-        ${it.tier ? `<span style="font-size:.65rem;color:var(--mu)">T${it.tier}</span>` : ''}
-      </div>
-    `).join('')}
-    </div>`;
-}
-
-function sendInspirationToSet() {
-  if (!S.inspirationResult.length) { toast('Generate a set first'); return; }
-  let set = getActiveSet();
-  if (!set) set = newSet('Inspired Set');
-  S.inspirationResult.forEach(it => { set.slots[it.slot] = it.id; });
-  saveSets(); renderEquipScreen(); renderSavedSets(); renderGrid();
-  switchView('setbuilder');
-  toast('Loaded into Set Builder!');
-}
 
 // ============================================================
 // LOOKBOOK — curated complete fashionscapes
@@ -4185,13 +3927,11 @@ async function exportSetVisual() {
 // ============================================================
 function switchView(view) {
   S.view = view;
-  ['browser','setbuilder','compare','inspiration','lookbook'].forEach(v => {
+  ['browser','setbuilder','lookbook'].forEach(v => {
     document.getElementById(`view-${v}`)?.classList.toggle('hidden', v !== view);
     document.querySelector(`.nbtn[data-view="${v}"]`)?.classList.toggle('on', v === view);
   });
   if (view === 'setbuilder') { renderEquipScreen(); renderSavedSets(); }
-  if (view === 'compare') renderCompare();
-  if (view === 'inspiration') renderInspiration();
   if (view === 'lookbook') renderLookbook();
 }
 
