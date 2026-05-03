@@ -198,42 +198,62 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
   .grid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr));}
 }
 
-/* RESPONSIVE — mobile (≤640px): sidebar becomes overlay drawer, single-column */
+/* RESPONSIVE — mobile (≤640px): sidebar overlay drawer, compact header */
 @media (max-width:640px){
   body{height:auto;min-height:100vh;overflow-y:auto;}
   .app{flex-direction:column;overflow:visible;}
   .sb-toggle{display:inline-block;}
+  /* Sticky header; height measured by JS → --header-h custom property */
   .hdr{position:sticky;top:0;z-index:50;background:var(--s1);}
   .logo{font-size:.8rem;}
   .nav{gap:0;}
   .nbtn{padding:5px 8px;font-size:.7rem;}
-  .hdr-right{width:100%;justify-content:space-between;}
-  /* Sidebar slides in from left as overlay */
-  .sb{position:fixed;top:50px;left:0;bottom:0;width:78%;max-width:280px;z-index:40;transform:translateX(-100%);transition:transform .25s ease;box-shadow:4px 0 16px rgba(0,0,0,.5);}
+  /* Hide admin-only utility buttons on mobile — keep header to 2 rows */
+  .hdr-right{display:none;}
+  /* Sidebar: top tracks actual header height via JS-set CSS var */
+  .sb{position:fixed;top:var(--header-h,80px);left:0;bottom:0;width:82%;max-width:300px;z-index:40;transform:translateX(-100%);transition:transform .25s ease;box-shadow:4px 0 20px rgba(0,0,0,.6);}
   .sb.open{transform:translateX(0);}
-  .sb-backdrop{display:none;position:fixed;top:50px;inset:0;background:rgba(0,0,0,.6);z-index:30;}
+  /* Backdrop fills everything below the header */
+  .sb-backdrop{display:none;position:fixed;top:var(--header-h,80px);left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:30;}
   .sb-backdrop.show{display:block;}
   .main{flex:1;overflow:visible;}
-  /* Filter bar wraps tightly */
+  /* Filter bar: search full-width first row, dropdowns on second row */
   .fb{padding:7px 9px;gap:6px;}
-  .sw{min-width:100%;max-width:100%;flex:1 1 100%;}
-  .fsel{font-size:.72rem;padding:5px 7px;flex:1;min-width:90px;}
+  .sw{min-width:100%;max-width:100%;flex:1 1 100%;order:-1;}
+  .fsel{font-size:.72rem;padding:8px 7px;flex:1;min-width:90px;min-height:38px;}
   .fcount{flex:1 1 100%;text-align:right;}
+  /* Larger touch targets on interactive elements */
+  .cbt{padding:10px 9px;min-height:40px;}
+  .psf-btn{padding:7px 11px;min-height:36px;}
+  .chip{padding:6px 10px;font-size:.72rem;}
   /* Grid: tighter cards */
   .gc{padding:9px;}
   .grid{grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:6px;}
   .acard{padding:7px 4px;}
   .iico,.ifall{width:36px;height:36px;}
   .iname{font-size:.62rem;}
-  /* Set Builder: stack left/right vertically */
+  /* Set Builder: stack panels vertically */
   .view{flex-direction:column;}
   .sb-left{width:100%;border-right:none;border-bottom:1px solid var(--b1);max-height:none;}
   .sb-right{width:100%;}
-  /* Compare bar wraps */
-  .cmp-bar{padding:7px 9px;}
-  .cslot{max-width:none;width:100%;}
-  /* Modal: full-width on tiny screens */
-  .mbox{width:96vw;padding:14px;}
+  /* Equipment grid stays 3-col for slot alignment; shrink slot padding */
+  .eqscreen{gap:4px;}
+  .eslot{padding:5px 3px;min-height:58px;}
+  .eslot img{width:28px;height:28px;}
+  .eslot .sname{font-size:.58rem;}
+  /* Prevent iOS from zooming in on input focus (font-size must be ≥16px) */
+  input,select,textarea{font-size:16px;}
+  /* Modal: nearly full-width */
+  .mbox{width:96vw;padding:14px;max-height:92vh;}
+  /* Toast: away from home-bar on iOS */
+  .toast{bottom:24px;right:12px;max-width:calc(100vw - 24px);}
+}
+
+/* RESPONSIVE — small mobile (≤480px): lookbook single-column, tighter grid */
+@media (max-width:480px){
+  #lookbook-grid{grid-template-columns:1fr!important;}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(78px,1fr));}
+  .nbtn{padding:5px 6px;font-size:.65rem;}
 }
 </style>
 </head>
@@ -4708,6 +4728,7 @@ function switchView(view) {
   });
   if (view === 'setbuilder') { renderEquipScreen(); renderSavedSets(); }
   if (view === 'lookbook') renderLookbook();
+  maybeCloseSidebarMobile();
 }
 
 // ============================================================
@@ -5454,6 +5475,20 @@ async function _syncMissingOnly(missingItems) {
 }
 
 init();
+
+// ── Mobile: measure actual header height and expose as --header-h ──
+// Used by sidebar and backdrop to position correctly below the sticky header.
+function updateHeaderHeight() {
+  if (window.innerWidth <= 640) {
+    const h = document.querySelector('.hdr')?.offsetHeight || 80;
+    document.documentElement.style.setProperty('--header-h', h + 'px');
+  } else {
+    document.documentElement.style.removeProperty('--header-h');
+  }
+}
+updateHeaderHeight();
+window.addEventListener('resize', updateHeaderHeight);
+window.addEventListener('orientationchange', () => setTimeout(updateHeaderHeight, 150));
 </script>
 </body>
 </html>
