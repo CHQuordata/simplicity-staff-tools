@@ -593,13 +593,7 @@ const ITEMS = [
 
   // ── MELEE ACCESSORIES ────────────────────────────────────
   // Rings
-  {id:'berserker-ring',name:'Berserker ring',cat:'melee-armor',slot:'ring',tier:70,style:'melee',era:'classic',tags:['ring','berserker','slayer','gwd'],slug:'Berserker_ring',stats:{armour:0,lifeBonus:200,prayer:0}},
-  {id:'asylum-ring',name:"Asylum surgeon's ring",cat:'melee-armor',slot:'ring',tier:90,style:'melee',era:'modern',tags:['ring','asylum','boss','endgame'],slug:"Asylum_surgeon%27s_ring",stats:{armour:0,lifeBonus:500,prayer:0}},
-  {id:'ring-of-death',name:'Ring of death',cat:'melee-armor',slot:'ring',tier:90,style:'melee',era:'modern',tags:['ring','death','reaper','hybrid'],slug:'Ring_of_death',stats:{armour:0,lifeBonus:500,prayer:0}},
   // Amulets
-  {id:'fury',name:'Amulet of fury',cat:'melee-armor',slot:'amulet',tier:75,style:'melee',era:'classic',tags:['amulet','fury','onyx','hybrid'],slug:'Amulet_of_fury',stats:{armour:0,lifeBonus:500,prayer:3}},
-  {id:'amulet-souls',name:'Amulet of souls',cat:'melee-armor',slot:'amulet',tier:90,style:'melee',era:'modern',tags:['amulet','souls','endgame','hybrid','prayer'],slug:'Amulet_of_souls',stats:{armour:0,lifeBonus:700,prayer:5}},
-  {id:'reaper-necklace',name:'Reaper necklace',cat:'melee-armor',slot:'amulet',tier:90,style:'melee',era:'modern',tags:['amulet','reaper','endgame','hybrid'],slug:'Reaper_necklace',stats:{armour:0,lifeBonus:700,prayer:0}},
   // Capes
   {id:'fire-cape',name:'Fire cape',cat:'melee-armor',slot:'cape',tier:60,style:'melee',era:'classic',tags:['cape','fire','tzhaar','classic','prestige'],slug:'Fire_cape',stats:{armour:0,lifeBonus:400,prayer:0}},
   {id:'tokhar-kal',name:'TokHaar-Kal',cat:'melee-armor',slot:'cape',tier:80,style:'melee',era:'eoc',tags:['cape','kiln','tokhaar','melee','endgame'],slug:'TokHaar-Kal',stats:{armour:0,lifeBonus:600,prayer:0}},
@@ -677,7 +671,6 @@ const ITEMS = [
   {id:'karil-legs',name:"Karil's leatherskirt",cat:'range-armor',slot:'legs',tier:70,style:'range',era:'classic',setKey:'karils',tags:['barrows','karil','dark','ranged'],slug:"Karil's_leatherskirt",stats:{armour:804,lifeBonus:0,rangeStr:0}},
 
   // ── RANGED ACCESSORIES ───────────────────────────────────
-  {id:'archers-ring',name:"Archers' ring",cat:'range-armor',slot:'ring',tier:70,style:'range',era:'classic',tags:['ring','archers','slayer','range'],slug:"Archers'_ring",stats:{armour:0,lifeBonus:200,prayer:0}},
   {id:'ava-alerter',name:"Ava's alerter",cat:'range-armor',slot:'cape',tier:70,style:'range',era:'eoc',tags:['cape','ava','range','utility','passive'],slug:"Ava's_alerter",stats:{armour:0,lifeBonus:0,rangeStr:4}},
   {id:'twisted-buckler',name:'Twisted buckler',cat:'range-armor',slot:'shield',tier:80,style:'range',era:'eoc',tags:['shield','buckler','range','kalphite','kk'],slug:'Twisted_buckler',stats:{armour:396,lifeBonus:0,rangeStr:0}},
 
@@ -732,8 +725,6 @@ const ITEMS = [
   {id:'tumeken-legs',name:"Tumeken's damaged bottoms",cat:'mage-armor',slot:'legs',tier:95,style:'mage',era:'modern',setKey:'tumeken',tags:['tumeken','amascut','desert','elite','endgame'],slug:"Tumeken%27s_damaged_bottoms",stats:{armour:1476,lifeBonus:0,mageBonus:20}},
 
   // ── MAGE ACCESSORIES ─────────────────────────────────────
-  {id:'seers-ring',name:"Seers' ring",cat:'mage-armor',slot:'ring',tier:70,style:'mage',era:'classic',tags:['ring','seers','mage','slayer'],slug:"Seers'_ring",stats:{armour:0,lifeBonus:200,prayer:0}},
-  {id:'arcane-stream',name:'Arcane stream necklace',cat:'mage-armor',slot:'amulet',tier:80,style:'mage',era:'eoc',tags:['amulet','arcane','mage','dungeoneering'],slug:'Arcane_stream_necklace',stats:{armour:0,lifeBonus:600,prayer:0}},
   {id:'ancient-lantern',name:'Ancient lantern',cat:'mage-armor',slot:'shield',tier:80,style:'mage',era:'eoc',tags:['shield','mage','offhand','ancient','dungeoneering'],slug:'Ancient_lantern',stats:{armour:396,lifeBonus:0,mageBonus:7}},
   {id:'merciless-kiteshield',name:'Merciless kiteshield',cat:'mage-armor',slot:'shield',tier:90,style:'mage',era:'modern',tags:['shield','mage','offhand','dungeoneering','endgame'],slug:'Merciless_kiteshield',stats:{armour:528,lifeBonus:0,mageBonus:10}},
 
@@ -3377,8 +3368,6 @@ function renderEquipScreen() {
     {slot:'legs',label:'Legs',area:'sa-legs',icon:'👖'},
     {slot:'gloves',label:'Gloves',area:'sa-gloves',icon:'🧤'},
     {slot:'boots',label:'Boots',area:'sa-boots',icon:'👟'},
-    {slot:'ring',label:'Ring',area:'sa-ring',icon:'💍'},
-    {slot:'amulet',label:'Neck',area:'sa-amulet',icon:'📿'},
     {slot:'weapon',label:'Weapon',area:'sa-weapon',icon:'⚔'},
     {slot:'shield',label:'Shield/OH',area:'sa-shield',icon:'🛡'},
     {slot:'aura',label:'Aura',area:'sa-aura',icon:'🔆'},
