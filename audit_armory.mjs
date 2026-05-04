@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 // Gap audit: cosmetic armour/weapon overrides in dashboard vs RS3 wiki.
+// Outputs two reports:
+//   Data/armory_gap_report.txt    — flat list of missing items
+//   Data/armory_gap_sets.txt      — missing items grouped by set (sorted by piece count)
 // Run: node audit_armory.mjs
 
 import { readFileSync, writeFileSync } from 'fs';
@@ -8,23 +11,60 @@ const WIKI = 'https://runescape.wiki/api.php';
 const H = { headers: { 'Api-User-Agent': 'SimplicitRS3Tool/1.0 (armory-gap-audit)' } };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// ── Variant patterns that represent augmented/trim/state noise ────────────────
-// These are NOT distinct override items — skip them on the wiki side.
-const VARIANT_RE = new RegExp(
-  [
-    /\s*\+\s*\d+$/,                          // +1, +2 … (augmented tiers)
-    /\s*\([gtehi]\)$/,                        // (g) (t) (e) gold/trim/enchanted
-    /\s*\(h[1-5]\)$/,                         // (h1)–(h5) heraldic
-    /\s*\((charged|uncharged|empty|broken|inactive|degraded|damaged)\)$/i,
-    /\s*(equipment|armour|armor|weapons?)\s*$/i, // meta hub-pages
-  ].map(r => r.source).join('|')
-);
+// ── Variant / noise filters ───────────────────────────────────────────────────
+const VARIANT_RE = new RegExp([
+  /\s*\+\s*\d+$/,
+  /\s*\([gtehi]\)$/,
+  /\s*\(h[1-5]\)$/,
+  /\s*\((charged|uncharged|empty|broken|inactive|degraded|damaged)\)$/i,
+  /\s*(equipment|armour|armor|weapons?)\s*$/i,
+].map(r => r.source).join('|'));
 
-// Names of meta/disambiguation pages to skip outright
 const SKIP_EXACT = new Set(['Cosmetic override', 'Override']);
-
-// Set-overview suffixes — these are bundle pages, not individual overrides
 const SET_OVERVIEW_RE = /\s+(outfit|bundle|pack|set|collection|package)$/i;
+
+// ── Slot-suffix words (strip from right to derive the set key) ────────────────
+const SLOT_WORDS = new Set([
+  // Head
+  'helm','helmet','hood','cap','hat','coif','tiara','circlet','mask',
+  'headdress','visor','crown','headband','turban',
+  // Body
+  'body','platebody','cuirass','jacket','top','chestplate','hauberk',
+  'tunic','shirt','robe','chest','tabard','jerkin','vest','surcoat','brassard',
+  // Legs
+  'legs','platelegs','greaves','chaps','trousers','bottom','skirt',
+  'leggings','plateskirt','tassets','chainskirt','shorts','pants',
+  // Feet
+  'boots','shoes','footwraps','sandals','sabatons','slippers','pumps',
+  // Hands
+  'gloves','gauntlets','handwraps','bracers','bracelets','cuffs','vambraces',
+  // Cape / back
+  'cape','cloak','wings','backpack','mantle','tail','trail',
+  // Off-hand / shield
+  'shield','buckler',
+  // Weapons (bare types)
+  'scimitar','sword','bow','staff','wand','crossbow','longsword','dagger',
+  'mace','axe','battleaxe','spear','halberd','lance','maul','rapier',
+  'whip','torch','blade','katana','naginata','cutlass','javelin','arrows',
+  'quiver','hammer','hammers','claws','needles','flail','trident','scythe',
+  // Neck / misc
+  'necklace','amulet','gorget','collar','pendant','wreath',
+  // Generic qualifiers that appear last
+  'override','adornment','gaze','arteria','aurora','aten','agony','amare',
+]);
+
+function setKeyOf(rawName) {
+  // Strip trailing parenthetical: "Aurora Longsword (Wintumber Aurora)" → "Aurora Longsword"
+  let name = rawName.replace(/\s*\([^)]+\)\s*$/, '').trim();
+  const words = name.split(/\s+/);
+  // Strip trailing slot words one at a time
+  while (words.length > 1 && SLOT_WORDS.has(words.at(-1).toLowerCase())) {
+    words.pop();
+  }
+  // Also strip a leading "Off-hand" if that's now the last token pair
+  if (words.length > 1 && words.at(-1).toLowerCase() === 'off-hand') words.pop();
+  return words.join(' ');
+}
 
 // ── 1. Extract cosmetic ITEMS from dashboard ──────────────────────────────────
 
@@ -42,27 +82,20 @@ const COSMETIC_CATS = new Set(['cosmetic-armor', 'cosmetic-weapon']);
 const dashItems = ITEMS.filter(it => COSMETIC_CATS.has(it.cat));
 console.log(`Dashboard cosmetic items: ${dashItems.length}  (armor: ${dashItems.filter(i=>i.cat==='cosmetic-armor').length}, weapon: ${dashItems.filter(i=>i.cat==='cosmetic-weapon').length})`);
 
-const normalize = s => s
-  .toLowerCase()
-  .replace(/['']/g, '')
-  .replace(/\s+/g, ' ')
-  .trim();
-
+const normalize = s => s.toLowerCase().replace(/['']/g, '').replace(/\s+/g, ' ').trim();
 const dashByName = new Map(dashItems.map(it => [normalize(it.name), it]));
+const dashPrefixes = new Set(dashItems.map(it => normalize(it.name).split(' ').slice(0, 2).join(' ')));
+const wikiPrefix2 = rawName => normalize(rawName).split(' ').slice(0, 2).join(' ');
 
-// ── 2. Fetch wiki cosmetic override category (paginated) ──────────────────────
+// ── 2. Fetch wiki cosmetic overrides (paginated) ──────────────────────────────
 
 async function getCategoryMembers(category) {
   const members = [];
   let cmcontinue;
   do {
     const params = new URLSearchParams({
-      action: 'query',
-      list: 'categorymembers',
-      cmtitle: `Category:${category}`,
-      cmlimit: '500',
-      cmnamespace: '0',
-      format: 'json',
+      action: 'query', list: 'categorymembers',
+      cmtitle: `Category:${category}`, cmlimit: '500', cmnamespace: '0', format: 'json',
       ...(cmcontinue ? { cmcontinue } : {}),
     });
     const r = await fetch(`${WIKI}?${params}`, H);
@@ -75,97 +108,74 @@ async function getCategoryMembers(category) {
 }
 
 console.log('\nFetching wiki cosmetic override categories...');
+const wikiItems = new Map();
 
-const WIKI_CATS = [
-  { wiki: 'Cosmetic overrides', label: 'Cosmetic overrides' },
-];
-
-const wikiItems = new Map(); // normalized → { rawName, wikiCat }
-
-for (const { wiki, label } of WIKI_CATS) {
-  process.stdout.write(`  ${label}... `);
-  const members = await getCategoryMembers(wiki);
-  let kept = 0;
-  for (const rawName of members) {
-    if (rawName.includes('/')) continue;                // sub-pages
-    if (SKIP_EXACT.has(rawName)) continue;              // meta pages
-    if (VARIANT_RE.test(rawName)) continue;             // augment/trim noise
-    if (SET_OVERVIEW_RE.test(rawName)) continue;        // bundle/set overview pages
-    const norm = normalize(rawName);
-    if (!wikiItems.has(norm)) {
-      wikiItems.set(norm, { rawName, wikiCat: label });
-      kept++;
-    }
-  }
-  console.log(`${members.length} raw → ${kept} after filtering`);
-  await sleep(200);
+for (const rawName of await getCategoryMembers('Cosmetic overrides')) {
+  if (rawName.includes('/')) continue;
+  if (SKIP_EXACT.has(rawName)) continue;
+  if (VARIANT_RE.test(rawName)) continue;
+  if (SET_OVERVIEW_RE.test(rawName)) continue;
+  const norm = normalize(rawName);
+  if (!wikiItems.has(norm)) wikiItems.set(norm, rawName);
 }
-
 console.log(`Wiki cosmetic items (filtered): ${wikiItems.size}`);
 
 // ── 3. Diff ───────────────────────────────────────────────────────────────────
 
-// Build a set of "root prefixes" from dashboard names (first 2 words).
-// This handles cases where the wiki uses "Aetherium Helm" but the dashboard
-// stores it as "Aetherium helmet" / "Aetherium platebody" / etc.
-const dashPrefixes = new Set(
-  dashItems.map(it => normalize(it.name).split(' ').slice(0, 2).join(' '))
-);
-
-const wikiPrefix = rawName =>
-  normalize(rawName).split(' ').slice(0, 2).join(' ');
-
-// Wiki overrides not in dashboard — neither exact name nor 2-word prefix match
 const wikiOnly = [];
-for (const [norm, entry] of wikiItems) {
-  if (!dashByName.has(norm) && !dashPrefixes.has(wikiPrefix(entry.rawName))) {
-    wikiOnly.push(entry);
+for (const [norm, rawName] of wikiItems) {
+  if (!dashByName.has(norm) && !dashPrefixes.has(wikiPrefix2(rawName))) {
+    wikiOnly.push(rawName);
   }
 }
 
-// Dashboard cosmetics not matched in wiki (exact only — informational)
-const dashOnly = dashItems.filter(it => !wikiItems.has(normalize(it.name)));
+// ── 4. Group missing items by set key ─────────────────────────────────────────
 
-// ── 4. Report ─────────────────────────────────────────────────────────────────
-
-console.log(`\n${'═'.repeat(65)}`);
-console.log(` WIKI COSMETIC OVERRIDES → NOT IN DASHBOARD  (${wikiOnly.length})`);
-console.log(`${'═'.repeat(65)}`);
-for (const { rawName, wikiCat } of wikiOnly.sort((a, b) => a.rawName.localeCompare(b.rawName))) {
-  console.log(`  • ${rawName}`);
+const setMap = new Map(); // setKey → [piece names]
+for (const rawName of wikiOnly) {
+  const key = setKeyOf(rawName);
+  (setMap.get(key) ?? setMap.set(key, []).get(key)).push(rawName);
 }
 
-console.log(`\n${'═'.repeat(65)}`);
-console.log(` DASHBOARD COSMETICS → NOT IN WIKI CATEGORY  (${dashOnly.length})`);
+// Sort sets: most pieces first, then alphabetically
+const sortedSets = [...setMap.entries()]
+  .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+
+// ── 5. Console output — sets view ─────────────────────────────────────────────
+
+console.log(`\nMissing items: ${wikiOnly.length}  →  ${sortedSets.length} distinct sets\n`);
 console.log(`${'═'.repeat(65)}`);
-const byDashCat = {};
-for (const it of dashOnly) (byDashCat[it.cat] ??= []).push(it);
-for (const [cat, items] of Object.entries(byDashCat).sort()) {
-  console.log(`\n  ── ${cat} ──`);
-  for (const it of items.sort((a, b) => a.name.localeCompare(b.name))) {
-    console.log(`    • ${it.name}`);
-  }
+console.log(` MISSING SETS  (by piece count, largest first)`);
+console.log(`${'═'.repeat(65)}`);
+for (const [key, pieces] of sortedSets) {
+  console.log(`\n  ▸ ${key}  (${pieces.length} piece${pieces.length > 1 ? 's' : ''})`);
+  for (const p of pieces.sort()) console.log(`      ${p}`);
 }
 
-// ── 5. Save report file ───────────────────────────────────────────────────────
+// ── 6. Save reports ───────────────────────────────────────────────────────────
 
-const lines = [
+const flatLines = [
   `RS3 Cosmetic Override Gap Report — ${new Date().toISOString().slice(0, 10)}`,
-  `Dashboard cosmetic items : ${dashItems.length}`,
-  `Wiki cosmetic items (filtered) : ${wikiItems.size}`,
+  `Dashboard: ${dashItems.length}  |  Wiki (filtered): ${wikiItems.size}  |  Missing: ${wikiOnly.length}`,
   '',
-  `${'═'.repeat(65)}`,
-  ` WIKI → NOT IN DASHBOARD  (${wikiOnly.length})`,
-  `${'═'.repeat(65)}`,
-  ...wikiOnly.sort((a, b) => a.rawName.localeCompare(b.rawName)).map(e => `  • ${e.rawName}`),
-  '',
-  `${'═'.repeat(65)}`,
-  ` DASHBOARD → NOT IN WIKI  (${dashOnly.length})`,
-  `${'═'.repeat(65)}`,
-  ...dashOnly.sort((a, b) => a.name.localeCompare(b.name)).map(it => `  [${it.cat}]  ${it.name}`),
+  ...wikiOnly.sort().map(n => `  • ${n}`),
 ];
+writeFileSync('./Data/armory_gap_report.txt', flatLines.join('\n') + '\n');
 
-const outPath = './Data/armory_gap_report.txt';
-writeFileSync(outPath, lines.join('\n') + '\n');
-console.log(`\nReport saved → ${outPath}`);
+const setLines = [
+  `RS3 Missing Cosmetic Sets Report — ${new Date().toISOString().slice(0, 10)}`,
+  `${wikiOnly.length} missing items across ${sortedSets.length} sets (sorted by piece count)`,
+  '',
+];
+for (const [key, pieces] of sortedSets) {
+  setLines.push(`${'─'.repeat(55)}`);
+  setLines.push(`  ${key}  (${pieces.length} pieces)`);
+  for (const p of pieces.sort()) setLines.push(`    • ${p}`);
+  setLines.push('');
+}
+writeFileSync('./Data/armory_gap_sets.txt', setLines.join('\n') + '\n');
+
+console.log(`\nReports saved:`);
+console.log(`  Data/armory_gap_report.txt  (flat list)`);
+console.log(`  Data/armory_gap_sets.txt    (grouped by set)`);
 console.log('Done.');
