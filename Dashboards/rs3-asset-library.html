@@ -526,11 +526,14 @@ const ITEMS = [
   {id:'rune-legs',name:'Rune platelegs',cat:'melee-armor',slot:'legs',tier:50,style:'melee',era:'classic',tags:['metallic','blue','rune'],slug:'Rune_platelegs',stats:{armour:410,lifeBonus:0,prayer:0}},
   {id:'rune-boots',name:'Rune boots',cat:'melee-armor',slot:'boots',tier:50,style:'melee',era:'classic',tags:['metallic','blue','rune'],slug:'Rune_boots',stats:{armour:95,lifeBonus:0,prayer:0}},
   {id:'rune-gloves',name:'Rune gauntlets',cat:'melee-armor',slot:'gloves',tier:50,style:'melee',era:'classic',tags:['metallic','blue','rune'],slug:'Rune_gauntlets',stats:{armour:95,lifeBonus:0,prayer:0}},
+  {id:'rock-shell-boots',name:'Rock-shell boots',cat:'melee-armor',slot:'boots',tier:40,style:'melee',era:'classic',setKey:'rock-shell',tags:['daggannoth','rock-shell','melee','dungeon','unique'],slug:'Rock-shell_boots',stats:{armour:70,lifeBonus:0,prayer:0}},
+  {id:'rock-shell-gloves',name:'Rock-shell gloves',cat:'melee-armor',slot:'gloves',tier:40,style:'melee',era:'classic',setKey:'rock-shell',tags:['daggannoth','rock-shell','melee','dungeon','unique'],slug:'Rock-shell_gloves',stats:{armour:70,lifeBonus:0,prayer:0}},
   {id:'dragon-helm',name:'Dragon full helm',cat:'melee-armor',slot:'helm',tier:60,style:'melee',era:'classic',tags:['dragon','red','metallic'],slug:'Dragon_full_helm',stats:{armour:298,lifeBonus:0,prayer:0}},
   {id:'dragon-body',name:'Dragon platebody',cat:'melee-armor',slot:'body',tier:60,style:'melee',era:'classic',tags:['dragon','red','metallic'],slug:'Dragon_platebody',stats:{armour:762,lifeBonus:0,prayer:0}},
   {id:'dragon-legs',name:'Dragon platelegs',cat:'melee-armor',slot:'legs',tier:60,style:'melee',era:'classic',tags:['dragon','red','metallic'],slug:'Dragon_platelegs',stats:{armour:624,lifeBonus:0,prayer:0}},
   {id:'dragon-boots',name:'Dragon boots',cat:'melee-armor',slot:'boots',tier:60,style:'melee',era:'classic',tags:['dragon','red','metallic'],slug:'Dragon_boots',stats:{armour:145,lifeBonus:0,prayer:0}},
   {id:'dragon-gloves',name:'Dragon gauntlets',cat:'melee-armor',slot:'gloves',tier:60,style:'melee',era:'classic',tags:['dragon','red','metallic'],slug:'Dragon_gauntlets',stats:{armour:145,lifeBonus:0,prayer:0}},
+  {id:'culinaro-gloves-10',name:"Culinaromancer's gloves 10",cat:'melee-armor',slot:'gloves',tier:60,style:'melee',era:'classic',tags:['culinaromancer','recipe-for-disaster','quest','unique'],slug:"Culinaromancer%27s_gloves_10",stats:{armour:145,lifeBonus:0,prayer:0}},
   {id:'bandos-helm',name:"Bandos warhelm",cat:'melee-armor',slot:'helm',tier:70,style:'melee',era:'eoc',setKey:'bandos',tags:['bandos','god-wars','green'],slug:'Bandos_warhelm',stats:{armour:382,lifeBonus:0,prayer:3}},
   {id:'bandos-body',name:"Bandos chestplate",cat:'melee-armor',slot:'body',tier:70,style:'melee',era:'eoc',setKey:'bandos',tags:['bandos','god-wars','green'],slug:'Bandos_chestplate',stats:{armour:981,lifeBonus:0,prayer:1}},
   {id:'bandos-legs',name:"Bandos tassets",cat:'melee-armor',slot:'legs',tier:70,style:'melee',era:'eoc',setKey:'bandos',tags:['bandos','god-wars','green'],slug:'Bandos_tassets',stats:{armour:804,lifeBonus:0,prayer:1}},
@@ -553,6 +556,15 @@ const ITEMS = [
   {id:'torva-legs',name:'Torva platelegs',cat:'melee-armor',slot:'legs',tier:80,style:'melee',era:'eoc',setKey:'torva',tags:['torva','nex','dark','endgame'],slug:'Torva_platelegs',stats:{armour:1080,lifeBonus:0,prayer:0}},
   {id:'torva-boots',name:'Steadfast boots',cat:'melee-armor',slot:'boots',tier:80,style:'melee',era:'eoc',tags:['nex','dark','endgame'],slug:'Steadfast_boots',stats:{armour:250,lifeBonus:0,prayer:0}},
   {id:'torva-gloves',name:'Razorback gauntlets',cat:'melee-armor',slot:'gloves',tier:80,style:'melee',era:'eoc',tags:['nex','dark','endgame'],slug:'Razorback_gauntlets',stats:{armour:250,lifeBonus:0,prayer:0}},
+  // Teralith armour (T85 power melee, Liberation of Mazcab raids)
+  {id:'teralith-boots',name:'Teralith boots',cat:'melee-armor',slot:'boots',tier:85,style:'melee',era:'modern',setKey:'teralith',tags:['raids','mazcab','melee','t85','degradable'],slug:'Teralith_boots',stats:{armour:298,lifeBonus:0,prayer:0}},
+  {id:'achto-teralith-boots',name:'Achto Teralith boots',cat:'melee-armor',slot:'boots',tier:85,style:'melee',era:'modern',setKey:'achto-teralith',tags:['raids','mazcab','melee','achto','glow','rare'],slug:'Achto_Teralith_boots',stats:{armour:298,lifeBonus:0,prayer:0}},
+  // Laceration boots (T85, Telos reward — bleed-stack passive)
+  {id:'laceration-boots',name:'Laceration boots',cat:'melee-armor',slot:'boots',tier:85,style:'melee',era:'modern',tags:['telos','melee','bleed','rare','t85'],slug:'Laceration_boots',stats:{armour:298,lifeBonus:0,prayer:0}},
+  // Nightmare gauntlets (T70 melee, Vorago)
+  {id:'nightmare-gauntlets',name:'Nightmare gauntlets',cat:'melee-armor',slot:'gloves',tier:70,style:'melee',era:'eoc',tags:['vorago','melee','nightmare','dark'],slug:'Nightmare_gauntlets',stats:{armour:186,lifeBonus:0,prayer:0}},
+  // Blast diffusion boots (T70 melee, Slayer reward)
+  {id:'blast-diffusion-boots',name:'Blast diffusion boots',cat:'melee-armor',slot:'boots',tier:70,style:'melee',era:'eoc',tags:['slayer','blast','explosive','utility','unique'],slug:'Blast_diffusion_boots',stats:{armour:186,lifeBonus:0,prayer:0}},
   {id:'malevolent-helm',name:'Malevolent helm',cat:'melee-armor',slot:'helm',tier:90,style:'melee',era:'modern',setKey:'malevolent',tags:['malevolent','telos','dark','endgame'],slug:'Malevolent_helm',stats:{armour:643,lifeBonus:0,prayer:0}},
   {id:'malevolent-body',name:'Malevolent cuirass',cat:'melee-armor',slot:'body',tier:90,style:'melee',era:'modern',setKey:'malevolent',tags:['malevolent','telos','dark','endgame'],slug:'Malevolent_cuirass',stats:{armour:1655,lifeBonus:0,prayer:0}},
   {id:'malevolent-legs',name:'Malevolent greaves',cat:'melee-armor',slot:'legs',tier:90,style:'melee',era:'modern',setKey:'malevolent',tags:['malevolent','telos','dark','endgame'],slug:'Malevolent_greaves',stats:{armour:1358,lifeBonus:0,prayer:0}},
@@ -574,6 +586,7 @@ const ITEMS = [
   {id:'havoc-helm',name:'Vestments of havoc hood',cat:'melee-armor',slot:'helm',tier:95,style:'melee',era:'modern',setKey:'vestments-havoc',tags:['vestments','havoc','zamorak','elite','endgame'],slug:'Vestments_of_havoc_hood',stats:{armour:698,lifeBonus:0,prayer:0}},
   {id:'havoc-body',name:'Vestments of havoc top',cat:'melee-armor',slot:'body',tier:95,style:'melee',era:'modern',setKey:'vestments-havoc',tags:['vestments','havoc','zamorak','elite','endgame'],slug:'Vestments_of_havoc_top',stats:{armour:1798,lifeBonus:0,prayer:0}},
   {id:'havoc-legs',name:'Vestments of havoc bottom',cat:'melee-armor',slot:'legs',tier:95,style:'melee',era:'modern',setKey:'vestments-havoc',tags:['vestments','havoc','zamorak','elite','endgame'],slug:'Vestments_of_havoc_bottom',stats:{armour:1476,lifeBonus:0,prayer:0}},
+  {id:'havoc-boots',name:'Vestments of havoc boots',cat:'melee-armor',slot:'boots',tier:95,style:'melee',era:'modern',setKey:'vestments-havoc',tags:['vestments','havoc','zamorak','elite','endgame'],slug:'Vestments_of_havoc_boots',stats:{armour:409,lifeBonus:0,prayer:0}},
   // Void Knight equipment (T42 hybrid, Pest Control)
   {id:'void-melee-helm',name:'Void melee helm',cat:'hybrid-armor',slot:'helm',tier:42,style:'hybrid',era:'classic',setKey:'void-knight',tags:['void','hybrid','pest-control','accuracy'],slug:'Void_melee_helm',stats:{armour:128,lifeBonus:0,prayer:0}},
   {id:'void-range-helm',name:'Void ranger helm',cat:'range-armor',slot:'helm',tier:42,style:'hybrid',era:'classic',setKey:'void-knight',tags:['void','hybrid','pest-control','accuracy'],slug:'Void_ranger_helm',stats:{armour:128,lifeBonus:0,prayer:0}},
@@ -581,6 +594,8 @@ const ITEMS = [
   {id:'void-top',name:'Void knight top',cat:'hybrid-armor',slot:'body',tier:42,style:'hybrid',era:'classic',setKey:'void-knight',tags:['void','hybrid','pest-control'],slug:'Void_knight_top',stats:{armour:328,lifeBonus:0,prayer:0}},
   {id:'void-robe',name:'Void knight robe',cat:'hybrid-armor',slot:'legs',tier:42,style:'hybrid',era:'classic',setKey:'void-knight',tags:['void','hybrid','pest-control'],slug:'Void_knight_robe',stats:{armour:268,lifeBonus:0,prayer:0}},
   {id:'void-gloves',name:'Void knight gloves',cat:'hybrid-armor',slot:'gloves',tier:42,style:'hybrid',era:'classic',setKey:'void-knight',tags:['void','hybrid','pest-control'],slug:'Void_knight_gloves',stats:{armour:95,lifeBonus:0,prayer:0}},
+  // Cinderbane gloves (T85 hybrid, Araxxor/Araxxi — passive poison-stack animation)
+  {id:'cinderbane-gloves',name:'Cinderbane gloves',cat:'hybrid-armor',slot:'gloves',tier:85,style:'hybrid',era:'modern',tags:['araxxor','araxxi','spider','poison','animated','hybrid'],slug:'Cinderbane_gloves',stats:{armour:298,lifeBonus:0,prayer:0}},
   {id:'elite-void-top',name:'Elite void knight top',cat:'hybrid-armor',slot:'body',tier:42,style:'hybrid',era:'eoc',setKey:'elite-void',tags:['void','hybrid','elite','pest-control'],slug:'Elite_void_knight_top',stats:{armour:328,lifeBonus:100,prayer:0}},
   {id:'elite-void-robe',name:'Elite void knight robe',cat:'hybrid-armor',slot:'legs',tier:42,style:'hybrid',era:'eoc',setKey:'elite-void',tags:['void','hybrid','elite','pest-control'],slug:'Elite_void_knight_robe',stats:{armour:268,lifeBonus:100,prayer:0}},
   // Warpriest of Bandos (T75 hybrid, God Wars world event)
@@ -625,6 +640,9 @@ const ITEMS = [
   {id:'carapace-helm',name:'Carapace helm',cat:'range-armor',slot:'helm',tier:40,style:'range',era:'eoc',tags:['carapace','nature','green'],slug:'Carapace_helm',stats:{armour:128,lifeBonus:0,rangeStr:0}},
   {id:'carapace-body',name:'Carapace torso',cat:'range-armor',slot:'body',tier:40,style:'range',era:'eoc',tags:['carapace','nature','green'],slug:'Carapace_torso',stats:{armour:328,lifeBonus:0,rangeStr:0}},
   {id:'carapace-legs',name:'Carapace legs',cat:'range-armor',slot:'legs',tier:40,style:'range',era:'eoc',tags:['carapace','nature','green'],slug:'Carapace_legs',stats:{armour:268,lifeBonus:0,rangeStr:0}},
+  // Spined (T40 power range, Dagannoth lair)
+  {id:'spined-boots',name:'Spined boots',cat:'range-armor',slot:'boots',tier:40,style:'range',era:'classic',setKey:'spined',tags:['daggannoth','spined','range','dungeon','unique'],slug:'Spined_boots',stats:{armour:70,lifeBonus:0,rangeStr:0}},
+  {id:'spined-gloves',name:'Spined gloves',cat:'range-armor',slot:'gloves',tier:40,style:'range',era:'classic',setKey:'spined',tags:['daggannoth','spined','range','dungeon','unique'],slug:'Spined_gloves',stats:{armour:70,lifeBonus:0,rangeStr:0}},
   {id:'dhide-helm',name:"Black d'hide coif",cat:'range-armor',slot:'helm',tier:70,style:'range',era:'classic',tags:['dragonhide','black','dragon'],slug:"Black_dragonhide_coif",stats:{armour:382,lifeBonus:0,rangeStr:0}},
   {id:'dhide-body',name:"Black d'hide body",cat:'range-armor',slot:'body',tier:70,style:'range',era:'classic',tags:['dragonhide','black','dragon'],slug:"Black_dragonhide_body",stats:{armour:981,lifeBonus:0,rangeStr:0}},
   {id:'dhide-legs',name:"Black d'hide chaps",cat:'range-armor',slot:'legs',tier:70,style:'range',era:'classic',tags:['dragonhide','black','dragon'],slug:"Black_dragonhide_chaps",stats:{armour:804,lifeBonus:0,rangeStr:0}},
@@ -650,6 +668,13 @@ const ITEMS = [
   {id:'death-lotus-hood',name:'Death Lotus hood',cat:'range-armor',slot:'helm',tier:85,style:'range',era:'modern',setKey:'death-lotus',tags:['death-lotus','ports','range','degradable','eastern'],slug:'Death_Lotus_hood',stats:{armour:570,lifeBonus:0,rangeStr:0}},
   {id:'death-lotus-chest',name:'Death Lotus chestplate',cat:'range-armor',slot:'body',tier:85,style:'range',era:'modern',setKey:'death-lotus',tags:['death-lotus','ports','range','degradable','eastern'],slug:'Death_Lotus_chestplate',stats:{armour:1469,lifeBonus:0,rangeStr:0}},
   {id:'death-lotus-chaps',name:'Death Lotus chaps',cat:'range-armor',slot:'legs',tier:85,style:'range',era:'modern',setKey:'death-lotus',tags:['death-lotus','ports','range','degradable','eastern'],slug:'Death_Lotus_chaps',stats:{armour:1205,lifeBonus:0,rangeStr:0}},
+  // Tempest armour (T85 power range, Liberation of Mazcab raids)
+  {id:'tempest-boots',name:'Tempest boots',cat:'range-armor',slot:'boots',tier:85,style:'range',era:'modern',setKey:'tempest',tags:['raids','mazcab','range','t85','degradable'],slug:'Tempest_boots',stats:{armour:298,lifeBonus:0,rangeStr:0}},
+  {id:'tempest-gloves',name:'Tempest gloves',cat:'range-armor',slot:'gloves',tier:85,style:'range',era:'modern',setKey:'tempest',tags:['raids','mazcab','range','t85','degradable'],slug:'Tempest_gloves',stats:{armour:298,lifeBonus:0,rangeStr:0}},
+  {id:'achto-tempest-boots',name:'Achto Tempest boots',cat:'range-armor',slot:'boots',tier:85,style:'range',era:'modern',setKey:'achto-tempest',tags:['raids','mazcab','range','achto','glow','rare'],slug:'Achto_Tempest_boots',stats:{armour:298,lifeBonus:0,rangeStr:0}},
+  {id:'achto-tempest-gloves',name:'Achto Tempest gloves',cat:'range-armor',slot:'gloves',tier:85,style:'range',era:'modern',setKey:'achto-tempest',tags:['raids','mazcab','range','achto','glow','rare'],slug:'Achto_Tempest_gloves',stats:{armour:298,lifeBonus:0,rangeStr:0}},
+  // Pneumatic gloves (T85 power range, Araxxor/Araxxi)
+  {id:'pneumatic-gloves',name:'Pneumatic gloves',cat:'range-armor',slot:'gloves',tier:85,style:'range',era:'modern',tags:['araxxor','araxxi','spider','mechanical','range'],slug:'Pneumatic_gloves',stats:{armour:298,lifeBonus:0,rangeStr:0}},
   // Karil's set
   {id:'karil-helm',name:"Karil's coif",cat:'range-armor',slot:'helm',tier:70,style:'range',era:'classic',setKey:'karils',tags:['barrows','karil','dark','ranged'],slug:"Karil's_coif",stats:{armour:382,lifeBonus:0,rangeStr:0}},
   {id:'karil-body',name:"Karil's leathertop",cat:'range-armor',slot:'body',tier:70,style:'range',era:'classic',setKey:'karils',tags:['barrows','karil','dark','ranged'],slug:"Karil's_leathertop",stats:{armour:981,lifeBonus:0,rangeStr:0}},
@@ -664,16 +689,29 @@ const ITEMS = [
   {id:'mystic-helm',name:'Mystic hat',cat:'mage-armor',slot:'helm',tier:40,style:'mage',era:'classic',tags:['mystic','purple','robes'],slug:'Mystic_hat',stats:{armour:128,lifeBonus:0,mageBonus:3}},
   {id:'mystic-body',name:'Mystic robe top',cat:'mage-armor',slot:'body',tier:40,style:'mage',era:'classic',tags:['mystic','purple','robes'],slug:'Mystic_robe_top',stats:{armour:328,lifeBonus:0,mageBonus:7}},
   {id:'mystic-legs',name:'Mystic robe bottom',cat:'mage-armor',slot:'legs',tier:40,style:'mage',era:'classic',tags:['mystic','purple','robes'],slug:'Mystic_robe_bottom',stats:{armour:268,lifeBonus:0,mageBonus:5}},
+  // Skeletal (T40 power magic, Dagannoth lair)
+  {id:'skeletal-boots',name:'Skeletal boots',cat:'mage-armor',slot:'boots',tier:40,style:'mage',era:'classic',setKey:'skeletal',tags:['daggannoth','skeletal','magic','blue','unique'],slug:'Skeletal_boots',stats:{armour:70,lifeBonus:0,mageBonus:1}},
+  {id:'skeletal-gloves',name:'Skeletal gloves',cat:'mage-armor',slot:'gloves',tier:40,style:'mage',era:'classic',setKey:'skeletal',tags:['daggannoth','skeletal','magic','blue','unique'],slug:'Skeletal_gloves',stats:{armour:70,lifeBonus:0,mageBonus:1}},
   {id:'ahrim-helm',name:"Ahrim's hood",cat:'mage-armor',slot:'helm',tier:70,style:'mage',era:'classic',setKey:'ahrims',tags:['barrows','ahrim','dark','ancient'],slug:"Ahrim's_hood",stats:{armour:382,lifeBonus:0,mageBonus:6}},
   {id:'ahrim-body',name:"Ahrim's robe top",cat:'mage-armor',slot:'body',tier:70,style:'mage',era:'classic',setKey:'ahrims',tags:['barrows','ahrim','dark','ancient'],slug:"Ahrim's_robe_top",stats:{armour:981,lifeBonus:0,mageBonus:13}},
   {id:'ahrim-legs',name:"Ahrim's robe skirt",cat:'mage-armor',slot:'legs',tier:70,style:'mage',era:'classic',setKey:'ahrims',tags:['barrows','ahrim','dark','ancient'],slug:"Ahrim's_robe_skirt",stats:{armour:804,lifeBonus:0,mageBonus:10}},
   {id:'subjugation-helm',name:'Hood of subjugation',cat:'mage-armor',slot:'helm',tier:70,style:'mage',era:'eoc',setKey:'subjugation',tags:['zamorak','god-wars','red','subjugation'],slug:'Hood_of_subjugation',stats:{armour:382,lifeBonus:0,mageBonus:6,prayer:1}},
   {id:'subjugation-body',name:'Garb of subjugation',cat:'mage-armor',slot:'body',tier:70,style:'mage',era:'eoc',setKey:'subjugation',tags:['zamorak','god-wars','red','subjugation'],slug:'Garb_of_subjugation',stats:{armour:981,lifeBonus:0,mageBonus:13,prayer:1}},
   {id:'subjugation-legs',name:'Gown of subjugation',cat:'mage-armor',slot:'legs',tier:70,style:'mage',era:'eoc',setKey:'subjugation',tags:['zamorak','god-wars','red','subjugation'],slug:'Gown_of_subjugation',stats:{armour:804,lifeBonus:0,mageBonus:10,prayer:1}},
+  // Ganodermic (T75 power magic, Polypore dungeon)
+  {id:'ganodermic-boots',name:'Ganodermic boots',cat:'mage-armor',slot:'boots',tier:75,style:'mage',era:'eoc',tags:['ganodermic','fungal','slayer','magic','t75'],slug:'Ganodermic_boots',stats:{armour:220,lifeBonus:0,mageBonus:4}},
+  {id:'ganodermic-gloves',name:'Ganodermic gloves',cat:'mage-armor',slot:'gloves',tier:75,style:'mage',era:'eoc',tags:['ganodermic','fungal','slayer','magic','t75'],slug:'Ganodermic_gloves',stats:{armour:220,lifeBonus:0,mageBonus:4}},
   {id:'virtus-helm',name:'Virtus mask',cat:'mage-armor',slot:'helm',tier:80,style:'mage',era:'eoc',setKey:'virtus',tags:['virtus','nex','dark','endgame'],slug:'Virtus_mask',stats:{armour:512,lifeBonus:0,mageBonus:8}},
   {id:'virtus-body',name:'Virtus robe top',cat:'mage-armor',slot:'body',tier:80,style:'mage',era:'eoc',setKey:'virtus',tags:['virtus','nex','dark','endgame'],slug:'Virtus_robe_top',stats:{armour:1316,lifeBonus:0,mageBonus:18}},
   {id:'virtus-legs',name:'Virtus robe legs',cat:'mage-armor',slot:'legs',tier:80,style:'mage',era:'eoc',setKey:'virtus',tags:['virtus','nex','dark','endgame'],slug:'Virtus_robe_legs',stats:{armour:1080,lifeBonus:0,mageBonus:15}},
   {id:'virtus-boots',name:'Ragefire boots',cat:'mage-armor',slot:'boots',tier:80,style:'mage',era:'eoc',tags:['nex','dark','endgame'],slug:'Ragefire_boots',stats:{armour:250,lifeBonus:0,mageBonus:4}},
+  // Gloves of passage (T80 magic, Nex: Angel of Death)
+  {id:'gloves-of-passage',name:'Gloves of passage',cat:'mage-armor',slot:'gloves',tier:80,style:'mage',era:'modern',tags:['nex','aod','angel-of-death','magic','rare'],slug:'Gloves_of_passage',stats:{armour:250,lifeBonus:0,mageBonus:4}},
+  // Primeval armour (T85 power magic, Liberation of Mazcab raids)
+  {id:'primeval-boots',name:'Primeval boots',cat:'mage-armor',slot:'boots',tier:85,style:'mage',era:'modern',setKey:'primeval',tags:['raids','mazcab','magic','t85','degradable'],slug:'Primeval_boots',stats:{armour:298,lifeBonus:0,mageBonus:5}},
+  {id:'primeval-gloves',name:'Primeval gloves',cat:'mage-armor',slot:'gloves',tier:85,style:'mage',era:'modern',setKey:'primeval',tags:['raids','mazcab','magic','t85','degradable'],slug:'Primeval_gloves',stats:{armour:298,lifeBonus:0,mageBonus:5}},
+  {id:'achto-primeval-boots',name:'Achto Primeval boots',cat:'mage-armor',slot:'boots',tier:85,style:'mage',era:'modern',setKey:'achto-primeval',tags:['raids','mazcab','magic','achto','glow','rare'],slug:'Achto_Primeval_boots',stats:{armour:298,lifeBonus:0,mageBonus:5}},
+  {id:'achto-primeval-gloves',name:'Achto Primeval gloves',cat:'mage-armor',slot:'gloves',tier:85,style:'mage',era:'modern',setKey:'achto-primeval',tags:['raids','mazcab','magic','achto','glow','rare'],slug:'Achto_Primeval_gloves',stats:{armour:298,lifeBonus:0,mageBonus:5}},
   {id:'tectonic-helm',name:'Tectonic mask',cat:'mage-armor',slot:'helm',tier:90,style:'mage',era:'modern',setKey:'tectonic',tags:['tectonic','vorago','endgame','grey'],slug:'Tectonic_mask',stats:{armour:643,lifeBonus:0,mageBonus:10}},
   {id:'tectonic-body',name:'Tectonic robe top',cat:'mage-armor',slot:'body',tier:90,style:'mage',era:'modern',setKey:'tectonic',tags:['tectonic','vorago','endgame','grey'],slug:'Tectonic_robe_top',stats:{armour:1655,lifeBonus:0,mageBonus:24}},
   {id:'tectonic-legs',name:'Tectonic robe bottom',cat:'mage-armor',slot:'legs',tier:90,style:'mage',era:'modern',setKey:'tectonic',tags:['tectonic','vorago','endgame','grey'],slug:'Tectonic_robe_bottom',stats:{armour:1358,lifeBonus:0,mageBonus:20}},
@@ -692,6 +730,8 @@ const ITEMS = [
   {id:'cryptbloom-helm',name:'Cryptbloom helm',cat:'mage-armor',slot:'helm',tier:90,style:'mage',era:'modern',setKey:'cryptbloom',tags:['cryptbloom','croesus','tank','nature','green'],slug:'Cryptbloom_helm',stats:{armour:643,lifeBonus:0,mageBonus:0}},
   {id:'cryptbloom-body',name:'Cryptbloom top',cat:'mage-armor',slot:'body',tier:90,style:'mage',era:'modern',setKey:'cryptbloom',tags:['cryptbloom','croesus','tank','nature','green'],slug:'Cryptbloom_top',stats:{armour:1655,lifeBonus:0,mageBonus:0}},
   {id:'cryptbloom-legs',name:'Cryptbloom bottoms',cat:'mage-armor',slot:'legs',tier:90,style:'mage',era:'modern',setKey:'cryptbloom',tags:['cryptbloom','croesus','tank','nature','green'],slug:'Cryptbloom_bottoms',stats:{armour:1358,lifeBonus:0,mageBonus:0}},
+  {id:'cryptbloom-boots',name:'Cryptbloom boots',cat:'mage-armor',slot:'boots',tier:90,style:'mage',era:'modern',setKey:'cryptbloom',tags:['cryptbloom','croesus','tank','nature','green'],slug:'Cryptbloom_boots',stats:{armour:352,lifeBonus:0,mageBonus:0}},
+  {id:'cryptbloom-gloves',name:'Cryptbloom gloves',cat:'mage-armor',slot:'gloves',tier:90,style:'mage',era:'modern',setKey:'cryptbloom',tags:['cryptbloom','croesus','tank','nature','green'],slug:'Cryptbloom_gloves',stats:{armour:352,lifeBonus:0,mageBonus:0}},
   // Tumeken's resplendence (T95 power magic, Amascut boss)
   {id:'tumeken-helm',name:"Tumeken's damaged hood",cat:'mage-armor',slot:'helm',tier:95,style:'mage',era:'modern',setKey:'tumeken',tags:['tumeken','amascut','desert','elite','endgame'],slug:"Tumeken%27s_damaged_hood",stats:{armour:698,lifeBonus:0,mageBonus:10}},
   {id:'tumeken-body',name:"Tumeken's damaged top",cat:'mage-armor',slot:'body',tier:95,style:'mage',era:'modern',setKey:'tumeken',tags:['tumeken','amascut','desert','elite','endgame'],slug:"Tumeken%27s_damaged_top",stats:{armour:1798,lifeBonus:0,mageBonus:24}},
